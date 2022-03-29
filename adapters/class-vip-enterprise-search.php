@@ -15,18 +15,26 @@ use Elasticsearch_Extensions\Adapters\Adapter;
 class Elasticsearch_Extensions extends Adapter {
 
 	/**
-	 * Enables an aggregation based on post type.
+	 * Filters ElasticPress request query args to apply registered customizations.
+	 *
+	 * @param array  $request_args Request arguments.
+	 * @param string $path         Request path.
+	 * @param string $index        Index name.
+	 * @param string $type         Index type.
+	 * @param array  $query        Prepared Elasticsearch query.
+	 * @param array  $query_args   Query arguments.
+	 * @param mixed  $query_object Could be WP_Query, WP_User_Query, etc.
+	 *
+	 * @return array New request arguments.
 	 */
-	public static function enable_post_type_aggregation(): void {
-		// TODO.
+	public function filter_ep_query_request_args( $request_args, $path, $index, $type, $query, $query_args, $query_object ): array {
+		return $request_args;
 	}
 
 	/**
-	 * A function to enable an aggregation for a specific taxonomy.
-	 *
-	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
+	 * Setup function. Registers action and filter hooks.
 	 */
-	public static function enable_taxonomy_aggregation( string $taxonomy ): void {
-		// TODO.
+	public function setup(): void {
+		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 7 );
 	}
 }
