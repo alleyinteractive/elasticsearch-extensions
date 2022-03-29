@@ -45,18 +45,26 @@ abstract class Adapter {
 
 	/**
 	 * Enables an aggregation based on post type.
+	 *
+	 * @return Adapter The instance of the class to allow for chaining.
 	 */
-	public function enable_post_type_aggregation(): void {
+	public function enable_post_type_aggregation(): Adapter {
 		$this->aggregate_post_types = true;
+
+		return $this;
 	}
 
 	/**
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
+	 *
+	 * @return Adapter The instance of the class to allow for chaining.
 	 */
-	public function enable_taxonomy_aggregation( string $taxonomy ): void {
+	public function enable_taxonomy_aggregation( string $taxonomy ): Adapter {
 		$this->aggregate_taxonomies[] = $taxonomy;
+
+		return $this;
 	}
 
 	/**
@@ -104,9 +112,13 @@ abstract class Adapter {
 	 * Sets aggregation results.
 	 *
 	 * @param array $aggregations An array of aggregation results to be stored.
+	 *
+	 * @return Adapter The instance of the class to allow for chaining.
 	 */
-	protected function set_aggregations( array $aggregations ): void {
+	protected function set_aggregations( array $aggregations ): Adapter {
 		$this->aggregations = $aggregations;
+
+		return $this;
 	}
 
 	/**
