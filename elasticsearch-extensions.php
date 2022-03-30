@@ -18,7 +18,7 @@ require_once __DIR__ . '/lib/autoload.php';
 
 // Load adapter automatically based on environment settings.
 if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
-	require_once __DIR__ . '/adapters/class-vip-enterprise-search.php';
+	require_once __DIR__ . '/lib/adapters/class-vip-enterprise-search.php';
 }
 
 /**
