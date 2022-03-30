@@ -21,13 +21,28 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @param string $path         Request path.
 	 * @param string $index        Index name.
 	 * @param string $type         Index type.
-	 * @param array  $query        Prepared Elasticsearch query.
-	 * @param array  $query_args   Query arguments.
-	 * @param mixed  $query_object Could be WP_Query, WP_User_Query, etc.
 	 *
 	 * @return array New request arguments.
 	 */
-	public function filter_ep_query_request_args( $request_args, $path, $index, $type, $query, $query_args, $query_object ): array {
+	public function filter_ep_query_request_args( $request_args, $path, $index, $type ): array {
+		// Try to convert the request body to an array so we can work with it.
+		$dsl = json_decode( $request_args['body'], true );
+		if ( ! is_array( $dsl ) ) {
+			return $request_args;
+		}
+
+		// Add our aggregations.
+		if ( $this->get_aggregate_post_types() ) {
+			$dsl['aggs']['post_type'] = [
+				'terms' => [
+					'field' => 'post_type.raw',
+				],
+			];
+		}
+
+		// Re-encode the body into the request args.
+		$request_args['body'] = wp_json_encode( $dsl );
+
 		return $request_args;
 	}
 
@@ -35,6 +50,6 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Setup function. Registers action and filter hooks.
 	 */
 	public function setup(): void {
-		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 7 );
+		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 4 );
 	}
 }
