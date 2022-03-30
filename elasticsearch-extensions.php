@@ -14,21 +14,31 @@
 
 namespace Elasticsearch_Extensions;
 
+use Elasticsearch_Extensions\Adapters\Adapter;
+use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
+
 require_once __DIR__ . '/lib/autoload.php';
 
 // Load adapter automatically based on environment settings.
 if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
-	require_once __DIR__ . '/lib/adapters/class-vip-enterprise-search.php';
+	/**
+	 * Helper function for getting the instance of the VIP Enterprise Search adapter.
+	 *
+	 * @return Adapter
+	 */
+	function elasticsearch_extensions(): Adapter {
+		return VIP_Enterprise_Search::instance();
+	}
+} else {
+	/**
+	 * No matching adapter was found, so let's make the helper return null.
+	 *
+	 * @return null
+	 */
+	function elasticsearch_extensions() {
+		return null;
+	}
 }
 
-/**
- * Helper function for getting the instance of the Elasticsearch_Extensions
- * class based on the automatically loaded adapter, or null if none exists.
- *
- * @return mixed An Elasticsearch_Extensions adapter if successful, or null on failure.
- */
-function elasticsearch_extensions() {
-	return class_exists( 'Elasticsearch_Extensions' )
-		? Elasticsearch_Extensions::instance()
-		: null;
-}
+// Give the instance a kick so it registers its hooks.
+elasticsearch_extensions();

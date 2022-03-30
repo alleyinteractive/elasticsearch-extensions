@@ -5,14 +5,14 @@
  * @package Elasticsearch_Extensions
  */
 
-use Elasticsearch_Extensions\Adapters\Adapter;
+namespace Elasticsearch_Extensions\Adapters;
 
 /**
  * An adapter for WordPress VIP Enterprise Search.
  *
  * @package Elasticsearch_Extensions
  */
-class Elasticsearch_Extensions extends Adapter {
+class VIP_Enterprise_Search extends Adapter {
 
 	/**
 	 * Filters ElasticPress request query args to apply registered customizations.
