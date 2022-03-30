@@ -23,7 +23,7 @@ function autoload( string $class ) {
 	$dirs  = explode( '\\', $class );
 	$class = array_pop( $dirs );
 
-	require_once __DIR__ . '/lib/' . implode( '/', $dirs ) . '/class-' . $class . '.php';
+	require_once __DIR__ . '/' . implode( '/', $dirs ) . '/class-' . $class . '.php';
 }
 
 spl_autoload_register( '\Elasticsearch_Extensions\autoload' );
