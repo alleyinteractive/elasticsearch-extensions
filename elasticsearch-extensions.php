@@ -12,8 +12,7 @@
  * @package Elasticsearch_Extensions
  */
 
-namespace Elasticsearch_Extensions;
-
+use Elasticsearch_Extensions\Controller;
 use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 
 require_once __DIR__ . '/lib/autoload.php';
@@ -21,4 +20,13 @@ require_once __DIR__ . '/lib/autoload.php';
 // Load adapter automatically based on environment settings.
 if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
 	Controller::instance()->load_adapter( VIP_Enterprise_Search::instance() );
+}
+
+/**
+ * A helper function for getting the instance of the controller class.
+ *
+ * @return Controller
+ */
+function elasticsearch_extensions(): Controller {
+	return Controller::instance();
 }
