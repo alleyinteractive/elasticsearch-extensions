@@ -79,4 +79,45 @@ class Controller {
 	public function load_adapter( Adapter $adapter ): void {
 		$this->adapter = $adapter;
 	}
+
+	/**
+	 * Map a given field to the Elasticsearch index.
+	 *
+	 * @param  string $field The field to map.
+	 * @return string The mapped field.
+	 */
+	public function map_field( $field ) {
+		return $this->adapter->map_field( $field );
+	}
+
+	/**
+	 * Map a meta field. This will swap in the data type.
+	 *
+	 * @param  string $meta_key Meta key to map.
+	 * @param  string $type Data type to map.
+	 * @return string The mapped field.
+	 */
+	public function map_meta_field( string $meta_key, string $type = '' ): string {
+		if ( ! empty( $type ) ) {
+			return sprintf( $this->map_field( 'post_meta.' . $type ), $meta_key );
+		} else {
+			return sprintf( $this->map_field( 'post_meta' ), $meta_key );
+		}
+	}
+
+	/**
+	 * Map a taxonomy field. This will swap in the taxonomy name.
+	 *
+	 * @param  string $taxonomy Taxonomy to map.
+	 * @param  string $field Field to map.
+	 * @return string The mapped field.
+	 */
+	public function map_tax_field( string $taxonomy, string $field ): string  {
+		if ( 'post_tag' === $taxonomy ) {
+			$field = str_replace( 'term_', 'tag_', $field );
+		} elseif ( 'category' === $taxonomy ) {
+			$field = str_replace( 'term_', 'category_', $field );
+		}
+		return sprintf( $this->map_field( $field ), $taxonomy );
+	}
 }
