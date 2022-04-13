@@ -17,6 +17,9 @@ use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 
 require_once __DIR__ . '/lib/autoload.php';
 
+// Inject Controller into DSL class.
+Elasticsearch_Extensions\DSL::set_es_controller( Controller::instance() );
+
 // Load adapter automatically based on environment settings.
 if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
 	Controller::instance()->load_adapter( VIP_Enterprise_Search::instance() );
