@@ -44,6 +44,39 @@ abstract class Adapter {
 	private static Adapter $instance;
 
 	/**
+	 * Map core fields to the ES index.
+	 *
+	 * @var array|string[]
+	 */
+	protected array $field_map = [
+		'post_meta'              => 'post_meta.%s',
+		'post_meta.analyzed'     => 'post_meta.%s.analyzed',
+		'post_meta.long'         => 'post_meta.%s.long',
+		'post_meta.double'       => 'post_meta.%s.double',
+		'post_meta.binary'       => 'post_meta.%s.boolean',
+		'post_meta.date'         => 'post_meta.%s.date',
+		'post_meta.datetime'     => 'post_meta.%s.datetime',
+		'post_meta.time'         => 'post_meta.%s.time',
+		'post_meta.signed'       => 'post_meta.%s.signed',
+		'post_meta.unsigned'     => 'post_meta.%s.unsigned',
+		'term_id'                => 'terms.%s.term_id',
+		'term_slug'              => 'terms.%s.slug',
+		'term_name'              => 'terms.%s.name',
+		'term_name.analyzed'     => 'terms.%s.name.analyzed',
+		'term_tt_id'             => 'terms.%s.term_taxonomy_id',
+		'category_id'            => 'terms.category.term_id',
+		'category_slug'          => 'terms.category.slug',
+		'category_name'          => 'terms.category.name',
+		'category_name.analyzed' => 'terms.category.name.analyzed',
+		'category_tt_id'         => 'terms.category.term_taxonomy_id',
+		'tag_id'                 => 'terms.post_tag.term_id',
+		'tag_slug'               => 'terms.post_tag.slug',
+		'tag_name'               => 'terms.post_tag.name',
+		'tag_name.analyzed'      => 'terms.post_tag.name.analyzed',
+		'tag_tt_id'              => 'terms.post_tag.term_taxonomy_id',
+	];
+
+	/**
 	 * Enables an aggregation based on post type.
 	 */
 	public function enable_post_type_aggregation(): void {
@@ -98,6 +131,20 @@ abstract class Adapter {
 			self::$instance->setup();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Map a core field to the indexed counterpart in Elasticsearch.
+	 *
+	 * @param  string $field The core field to map.
+	 * @return string The mapped field reference.
+	 */
+	public function map_field( string $field ): string {
+		if ( ! empty( $this->field_map[ $field ] ) ) {
+			return $this->field_map[ $field ];
+		} else {
+			return $field;
+		}
 	}
 
 	/**
