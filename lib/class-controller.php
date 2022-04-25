@@ -60,6 +60,42 @@ class Controller {
 	}
 
 	/**
+	 * Get facet data from adapter.
+	 *
+	 * @return array
+	 */
+	public function get_facet_config(): array {
+		return $this->adapter->get_facet_config();
+	}
+
+	/**
+	 * Get facet data from adapter.
+	 *
+	 * @return array
+	 */
+	public function get_facet_data(): array {
+		return $this->adapter->get_facet_data();
+	}
+
+	/**
+	 * Get facet data by from adapter.
+	 *
+	 * @return Facet|null
+	 */
+	public function get_facet_data_by_name( $name = '' ) {
+		return $this->adapter->get_facet_data_by( 'name', $name );
+	}
+
+	/**
+	 * Get facet data by from adapter.
+	 *
+	 * @return Facet|null
+	 */
+	public function get_facet_data_by_query_var( $query_var = '' ) {
+		return $this->adapter->get_facet_data_by( 'query_var', $query_var );
+	}
+
+	/**
 	 * Get an instance of the class.
 	 *
 	 * @return Controller
@@ -98,11 +134,7 @@ class Controller {
 	 * @return string The mapped field.
 	 */
 	public function map_meta_field( string $meta_key, string $type = '' ): string {
-		if ( ! empty( $type ) ) {
-			return sprintf( $this->map_field( 'post_meta.' . $type ), $meta_key );
-		} else {
-			return sprintf( $this->map_field( 'post_meta' ), $meta_key );
-		}
+		return $this->adapter->map_meta_field( $meta_key, $type );
 	}
 
 	/**
@@ -113,11 +145,16 @@ class Controller {
 	 * @return string The mapped field.
 	 */
 	public function map_tax_field( string $taxonomy, string $field ): string  {
-		if ( 'post_tag' === $taxonomy ) {
-			$field = str_replace( 'term_', 'tag_', $field );
-		} elseif ( 'category' === $taxonomy ) {
-			$field = str_replace( 'term_', 'category_', $field );
-		}
-		return sprintf( $this->map_field( $field ), $taxonomy );
+		return $this->adapter->map_tax_field( $taxonomy, $field );
+	}
+
+	/**
+	 * Configures facets in ES Extensions.
+	 * Necessary to set up faceting.
+	 *
+	 * TODO Build out the array options in the DocBloc.
+	 */
+	public function set_facets_config( $facets_config ) {
+		$this->adapter->set_facets_config( $facets_config );
 	}
 }
