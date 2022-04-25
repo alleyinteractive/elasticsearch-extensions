@@ -7,6 +7,10 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use Elasticsearch_Extensions\Facets\Category;
+use Elasticsearch_Extensions\Facets\Post_Type;
+use Elasticsearch_Extensions\Facets\Tag;
+
 /**
  * An adapter for WordPress VIP Enterprise Search.
  *
@@ -33,11 +37,18 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Add our aggregations.
 		if ( $this->get_aggregate_post_types() ) {
-			$dsl['aggs']['post_type'] = [
-				'terms' => [
-					'field' => 'post_type.raw',
-				],
-			];
+			$post_type_facet = new Post_Type();
+			$dsl['aggs'] = array_merge( $dsl['aggs'], $post_type_facet->request() );
+		}
+
+		if ( $this->get_aggregate_categories() ) {
+			$category_facet = new Category();
+			$dsl['aggs'] = array_merge( $dsl['aggs'], $category_facet->request() );
+		}
+
+		if ( $this->get_aggregate_tags() ) {
+			$tag_facet = new Tag();
+			$dsl['aggs'] = array_merge( $dsl['aggs'], $tag_facet->request() );
 		}
 
 		$agg_taxonomies = $this->get_aggregate_taxonomies();

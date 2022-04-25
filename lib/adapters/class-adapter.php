@@ -18,6 +18,20 @@ use Elasticsearch_Extensions\Facet;
 abstract class Adapter {
 
 	/**
+	 * Whether WP Category aggregations are active or not.
+	 *
+	 * @var bool
+	 */
+	private bool $aggregate_categories = false;
+
+	/**
+	 * Whether WP Tag aggregations are active or not.
+	 *
+	 * @var bool
+	 */
+	private bool $aggregate_tags = false;
+
+	/**
 	 * Whether post type aggregations are active or not.
 	 *
 	 * @var bool
@@ -378,10 +392,24 @@ abstract class Adapter {
 	}
 
 	/**
+	 * Enables an aggregation based on WP Category.
+	 */
+	public function enable_category_aggregation(): void {
+		$this->aggregate_categories = true;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 */
 	public function enable_post_type_aggregation(): void {
 		$this->aggregate_post_types = true;
+	}
+
+	/**
+	 * Enables an aggregation based on WP Tags.
+	 */
+	public function enable_tag_aggregation(): void {
+		$this->aggregate_tags = true;
 	}
 
 	/**
@@ -403,7 +431,25 @@ abstract class Adapter {
 	}
 
 	/**
-	 * Gets the list of taxonomies to be aggregated.
+	 * Gets the flag for whether WP Categories should be aggregated or not.
+	 *
+	 * @return bool Whether WP Categories should be aggregated or not.
+	 */
+	protected function get_aggregate_categories(): bool {
+		return $this->aggregate_categories;
+	}
+
+	/**
+	 * Gets the flag for whether WP Tags should be aggregated or not.
+	 *
+	 * @return bool Whether WP Tags should be aggregated or not.
+	 */
+	protected function get_aggregate_tags(): bool {
+		return $this->aggregate_tags;
+	}
+
+	/**
+	 * Gets the list of custom taxonomies to be aggregated.
 	 *
 	 * @return array The list of taxonomy slugs to be aggregated.
 	 */
@@ -446,6 +492,37 @@ abstract class Adapter {
 		} else {
 			return $field;
 		}
+	}
+
+	/**
+	 * Map a meta field. This will swap in the data type.
+	 *
+	 * @param  string $meta_key Meta key to map.
+	 * @param  string $type Data type to map.
+	 * @return string The mapped field.
+	 */
+	public function map_meta_field( string $meta_key, string $type = '' ): string {
+		if ( ! empty( $type ) ) {
+			return sprintf( $this->map_field( 'post_meta.' . $type ), $meta_key );
+		} else {
+			return sprintf( $this->map_field( 'post_meta' ), $meta_key );
+		}
+	}
+
+	/**
+	 * Map a taxonomy field. This will swap in the taxonomy name.
+	 *
+	 * @param  string $taxonomy Taxonomy to map.
+	 * @param  string $field Field to map.
+	 * @return string The mapped field.
+	 */
+	public function map_tax_field( string $taxonomy, string $field ): string  {
+		if ( 'post_tag' === $taxonomy ) {
+			$field = str_replace( 'term_', 'tag_', $field );
+		} elseif ( 'category' === $taxonomy ) {
+			$field = str_replace( 'term_', 'category_', $field );
+		}
+		return sprintf( $this->map_field( $field ), $taxonomy );
 	}
 
 	/**
