@@ -28,7 +28,7 @@ class DSL {
 	 * @return array DSL fragment.
 	 */
 	public static function all_terms( string $taxonomy, string $field, array $values ): array {
-		$field = self::$controller->map_tax_field( $taxonomy, $field );
+		$field   = self::$controller->map_tax_field( $taxonomy, $field );
 		$queries = [];
 		foreach ( $values as $value ) {
 			$queries[] = [
@@ -152,7 +152,7 @@ class DSL {
 		 * @var array
 		 */
 		$fields = apply_filters(
-			'es_extensions_searchable_fields',
+			'elasticsearch_extensions_searchable_fields',
 			[
 				self::$controller->map_field( 'post_title.analyzed' ) . '^3',
 				self::$controller->map_field( 'post_excerpt' ),
@@ -175,7 +175,7 @@ class DSL {
 	/**
 	 * Setter for the controller.
 	 *
-	 * @param Controller $controller
+	 * @param Controller $controller ES Controller class.
 	 * @return void
 	 */
 	public static function set_es_controller( Controller $controller ) {
@@ -192,7 +192,7 @@ class DSL {
 	 */
 	public static function terms( $field, $values, $args = [] ) {
 		$field = self::$controller->map_field( $field );
-		$type = is_array( $values ) ? 'terms' : 'term';
+		$type  = is_array( $values ) ? 'terms' : 'term';
 
 		return [
 			$type => array_merge(

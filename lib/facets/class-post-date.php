@@ -53,10 +53,13 @@ class Post_Date extends Facet_Type {
 		foreach ( $values as $date ) {
 			$gte      = date( 'Y-m-d H:i:s', $date ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 			$lt       = date( 'Y-m-d H:i:s', strtotime( date( 'Y-m-d', $date ) . ' + 1 month' ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-			$should[] = DSL::range( 'post_date', [
-				'gte' => $gte,
-				'lt'  => $lt,
-			] );
+			$should[] = DSL::range(
+				'post_date',
+				[
+					'gte' => $gte,
+					'lt'  => $lt,
+				]
+			);
 		}
 
 		return [ 'bool' => [ 'should' => $should ] ];

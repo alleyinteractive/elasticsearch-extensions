@@ -38,16 +38,16 @@ class VIP_Enterprise_Search extends Adapter {
 		// Add our aggregations.
 		if ( $this->get_aggregate_post_types() ) {
 			$post_type_facet = new Post_Type();
-			$dsl['aggs'] = array_merge( $dsl['aggs'], $post_type_facet->request() );
+			$dsl['aggs']     = array_merge( $dsl['aggs'], $post_type_facet->request() );
 		}
 
 		if ( $this->get_aggregate_categories() ) {
 			$category_facet = new Category();
-			$dsl['aggs'] = array_merge( $dsl['aggs'], $category_facet->request() );
+			$dsl['aggs']    = array_merge( $dsl['aggs'], $category_facet->request() );
 		}
 
 		if ( $this->get_aggregate_tags() ) {
-			$tag_facet = new Tag();
+			$tag_facet   = new Tag();
 			$dsl['aggs'] = array_merge( $dsl['aggs'], $tag_facet->request() );
 		}
 
@@ -56,7 +56,7 @@ class VIP_Enterprise_Search extends Adapter {
 			foreach ( $agg_taxonomies as $agg_taxonomy ) {
 				$dsl['aggs'][ "taxonomy_{$agg_taxonomy}" ] = [
 					'terms' => [
-						'size' => 1000,
+						'size'  => 1000,
 						'field' => "terms.{$agg_taxonomy}.slug",
 					],
 				];
@@ -103,7 +103,7 @@ class VIP_Enterprise_Search extends Adapter {
 		$this->field_map['post_title.analyzed']           = 'post_title';
 		$this->field_map['post_type']                     = 'post_type.raw';
 		$this->field_map['post_excerpt']                  = 'post_excerpt';
-		$this->field_map['post_password']                 = 'post_password';  // This isn't indexed on VIP;
+		$this->field_map['post_password']                 = 'post_password';  // This isn't indexed on VIP.
 		$this->field_map['post_name']                     = 'post_name.raw';
 		$this->field_map['post_modified']                 = 'post_modified';
 		$this->field_map['post_modified.year']            = 'modified_date_terms.year';
@@ -155,15 +155,8 @@ class VIP_Enterprise_Search extends Adapter {
 		// Filter request args.
 		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 4 );
 
-		// Set aggregations.
-		add_action( 'ep_valid_response', function ( $response, $query, $query_args ) {
-			if ( ! empty( $response['aggregations'] ) ) {
-				$this->set_aggregations( $response['aggregations'] );
-			}
-		}, 10, 3 );
-
-		// Set Results.
-		add_action( 'ep_valid_response', [ $this, 'set_results' ], 10, 3 );
+		// Set Results and aggregations.
+		add_action( 'ep_valid_response', [ $this, 'set_results' ], 10, 1 );
 
 		// Parse face data.
 		add_action( 'ep_valid_response', [ $this, 'parse_facets' ], 11, 0 );
@@ -172,14 +165,17 @@ class VIP_Enterprise_Search extends Adapter {
 	/**
 	 * Set results from last query.
 	 *
-	 * @param $response
-	 * @param $query
-	 * @param $query_args
+	 * @param array $response Response from ES.
 	 * @return void
 	 */
-	public function set_results( $response, $query, $query_args ) {
-		// TODO ensure this is a search? Does EP restrict this to queries with post data?
-		if ( apply_filters( 'es_extensions_should_set_results', true ) ) {
+	public function set_results( $response ) {
+		// Set aggregations if applicable.
+		if ( ! empty( $response['aggregations'] ) ) {
+			$this->set_aggregations( $response['aggregations'] );
+		}
+
+		// TODO ensure this is a search and this isn't too broad.
+		if ( apply_filters( 'elasticsearch_extensions_should_set_results', true ) ) {
 			$this->results = $response;
 		}
 	}

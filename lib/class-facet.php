@@ -78,10 +78,10 @@ class Facet {
 	 */
 	protected function parse_type() {
 		if ( 'taxonomy_' === substr( $this->label, 0, 9 ) ) {
-			$this->type     = 'taxonomy';
-			$this->subtype  = $this->query_var = substr( $this->label, 9 );
+			$this->type    = 'taxonomy';
+			$this->subtype = $this->query_var = substr( $this->label, 9 ); // phpcs:ignore Squiz.PHP.DisallowMultipleAssignments.Found
 		} else {
-			$this->type = $this->query_var = $this->label;
+			$this->type = $this->query_var = $this->label; // phpcs:ignore Squiz.PHP.DisallowMultipleAssignments.Found
 		}
 	}
 
@@ -127,7 +127,7 @@ class Facet {
 			 * @param string      $type    Facet type.
 			 * @param string      $subtype Facet Subtype.
 			 */
-			$this->title = apply_filters( 'es_extensions_facet_title', '', $this->label, $this->type, $this->subtype );
+			$this->title = apply_filters( 'elasticsearch_extensions_facet_title', '', $this->label, $this->type, $this->subtype );
 			if ( null === $this->title ) {
 				switch ( $this->type ) {
 					case 'taxonomy':
@@ -140,15 +140,15 @@ class Facet {
 						break;
 
 					case 'post_type':
-						$this->title = __( 'Content Type', 'es-extensions' );
+						$this->title = __( 'Content Type', 'elasticsearch-extensions' );
 						break;
 
 					case 'post_date':
-						$this->title = __( 'Date', 'es-extensions' );
+						$this->title = __( 'Date', 'elasticsearch-extensions' );
 						break;
 
 					case 'post_author':
-						$this->title = __( 'Author', 'es-extensions' );
+						$this->title = __( 'Author', 'elasticsearch-extensions' );
 						break;
 
 					default:
@@ -176,7 +176,7 @@ class Facet {
 		 * @param string $type         Facet type.
 		 * @param string $subtype      Facet Subtype.
 		 */
-		$label = apply_filters( 'es_extensions_facet_bucket_label', null, $bucket, $this->label, $this->type, $this->subtype );
+		$label = apply_filters( 'elasticsearch_extensions_facet_bucket_label', null, $bucket, $this->label, $this->type, $this->subtype );
 		if ( null !== $label ) {
 			return $label;
 		}

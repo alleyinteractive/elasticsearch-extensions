@@ -80,18 +80,20 @@ class Controller {
 	/**
 	 * Get facet data by from adapter.
 	 *
+	 * @param string $name Name of the facet.
 	 * @return Facet|null
 	 */
-	public function get_facet_data_by_name( $name = '' ) {
+	public function get_facet_data_by_name( string $name = '' ) {
 		return $this->adapter->get_facet_data_by( 'name', $name );
 	}
 
 	/**
 	 * Get facet data by from adapter.
 	 *
+	 * @param string $query_var Query variable sting.
 	 * @return Facet|null
 	 */
-	public function get_facet_data_by_query_var( $query_var = '' ) {
+	public function get_facet_data_by_query_var( string $query_var = '' ) {
 		return $this->adapter->get_facet_data_by( 'query_var', $query_var );
 	}
 
@@ -144,7 +146,7 @@ class Controller {
 	 * @param  string $field Field to map.
 	 * @return string The mapped field.
 	 */
-	public function map_tax_field( string $taxonomy, string $field ): string  {
+	public function map_tax_field( string $taxonomy, string $field ): string {
 		return $this->adapter->map_tax_field( $taxonomy, $field );
 	}
 
@@ -153,6 +155,9 @@ class Controller {
 	 * Necessary to set up faceting.
 	 *
 	 * TODO Build out the array options in the DocBloc.
+	 *
+	 * @param array $facets_config Config array.
+	 * @return void
 	 */
 	public function set_facets_config( $facets_config ) {
 		$this->adapter->set_facets_config( $facets_config );

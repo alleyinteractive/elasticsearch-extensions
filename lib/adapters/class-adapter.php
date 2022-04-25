@@ -118,7 +118,7 @@ abstract class Adapter {
 	 *
 	 * TODO Add param DocBloc with full set of possible array keys.
 	 *
-	 * @param array $facets_config
+	 * @param array $facets_config Array configuration for facets.
 	 * @return void
 	 */
 	public function set_facets_config( array $facets_config ) {
@@ -138,6 +138,7 @@ abstract class Adapter {
 
 	/**
 	 * Get the configured facets.
+	 *
 	 * @return array
 	 */
 	public function get_facet_config(): array {
@@ -196,11 +197,11 @@ abstract class Adapter {
 
 		$options = wp_parse_args(
 			$options,
-			array(
+			[
 				'exclude_current'     => true,
 				'join_existing_terms' => true,
 				'join_terms_logic'    => [],
-			)
+			]
 		);
 
 		$facet_data = [];
@@ -211,7 +212,7 @@ abstract class Adapter {
 				continue;
 			}
 
-			$facet_data[ $label ]          = $this->facets[ $label ];
+			$facet_data[ $label ]        = $this->facets[ $label ];
 			$facet_data[ $label ]->items = [];
 
 			/*
@@ -240,7 +241,7 @@ abstract class Adapter {
 			}
 
 			foreach ( $items as $item ) {
-				$datum = apply_filters( 'es_extensions_facet_datum', false, $item, $this->facets );
+				$datum = apply_filters( 'elasticsearch_extensions_facet_datum', false, $item, $this->facets );
 				if ( false === $datum ) {
 					$query_vars = [];
 					$selected   = false;
@@ -353,14 +354,14 @@ abstract class Adapter {
 			}
 		}
 
-		return apply_filters( 'es_extensions_facet_data', $facet_data );
+		return apply_filters( 'elasticsearch_extensions_facet_data', $facet_data );
 	}
 
 	/**
 	 * Get Facet by field
 	 *
 	 * @param string $field Facet field. See get_facet_data for acceptable values.
-	 * @param string $value
+	 * @param string $value Value corresponding to the field.
 	 * @return Facet|null
 	 */
 	public function get_facet_data_by( string $field = '', string $value = '' ) {
@@ -516,7 +517,7 @@ abstract class Adapter {
 	 * @param  string $field Field to map.
 	 * @return string The mapped field.
 	 */
-	public function map_tax_field( string $taxonomy, string $field ): string  {
+	public function map_tax_field( string $taxonomy, string $field ): string {
 		if ( 'post_tag' === $taxonomy ) {
 			$field = str_replace( 'term_', 'tag_', $field );
 		} elseif ( 'category' === $taxonomy ) {
@@ -529,7 +530,7 @@ abstract class Adapter {
 	 * Pull the facets out of the ES response.
 	 */
 	public function parse_facets() {
-		$this->facets = apply_filters( 'es_extensions_parse_facets', [] );
+		$this->facets = apply_filters( 'elasticsearch_extensions_parse_facets', [] );
 		if ( empty( $this->facets ) ) {
 			if ( ! empty( $this->results['aggregations'] ) ) {
 				foreach ( $this->results['aggregations'] as $label => $buckets ) {
