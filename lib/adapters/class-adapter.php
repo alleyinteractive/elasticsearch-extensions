@@ -7,6 +7,8 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use Elasticsearch_Extensions\Facet;
+
 /**
  * An abstract class that establishes base functionality and sets requirements
  * for implementing classes.
@@ -35,6 +37,27 @@ abstract class Adapter {
 	 * @var array
 	 */
 	private array $aggregations = [];
+
+	/**
+	 * Facets.
+	 *
+	 * @var array
+	 */
+	public array $facets = [];
+
+	/**
+	 * Facets.
+	 *
+	 * @var array
+	 */
+	public array $facets_config = [];
+
+	/**
+	 * HTTP Response from last query.
+	 *
+	 * @var array HTTP Response.
+	 */
+	public array $results;
 
 	/**
 	 * Holds a reference to the singleton instance.
@@ -77,6 +100,284 @@ abstract class Adapter {
 	];
 
 	/**
+	 * Configures facets.
+	 *
+	 * TODO Add param DocBloc with full set of possible array keys.
+	 *
+	 * @param array $facets_config
+	 * @return void
+	 */
+	public function set_facets_config( array $facets_config ) {
+		$config = [];
+		foreach ( $facets_config as $label => $facet_config ) {
+			if (
+				'taxonomy' === $facet_config['type']
+				&& 'taxonomy_' !== substr( $label, 0, 9 )
+			) {
+				$label = "taxonomy_{$label}";
+			}
+
+			$config[ $label ] = $facet_config;
+		}
+		$this->facets_config = $config;
+	}
+
+	/**
+	 * Get the configured facets.
+	 * @return array
+	 */
+	public function get_facet_config(): array {
+		return $this->facets_config;
+	}
+
+	/**
+	 * Parse the raw facet data from Elasticsearch into a constructive format.
+	 *
+	 * Specifically:
+	 *
+	 *     array(
+	 *         'Label' => array(
+	 *             'type'     => [type requested],
+	 *             'count'    => [count requested],
+	 *             'taxonomy' => [taxonomy requested, if applicable],
+	 *             'interval' => [interval requested, if applicable],
+	 *             'field'    => [field requested, if applicable],
+	 *             'items'    => array(
+	 *                 array(
+	 *                     'query_vars' => array( [query_var] => [value] ),
+	 *                     'name' => [formatted string for this facet],
+	 *                     'count' => [number of results in this facet],
+	 *                 )
+	 *             )
+	 *         )
+	 *     )
+	 *
+	 * The returning array is mostly the data as requested in the WP args, with
+	 * the addition of the 'items' key. This is an array of arrays, each one
+	 * being a term in the facet response. The 'query_vars' can be used to
+	 * generate links/form fields. The name is suitable for display, and the
+	 * count is useful for your facet UI.
+	 *
+	 * @param array $options {
+	 *     Optional. Options for getting facet data.
+	 *
+	 *     @type boolean $exclude_current If true, excludes the currently-selected
+	 *                                    facets in the list. This is most helpful
+	 *                                    when outputting a list of links, but
+	 *                                    should probably be disabled if outputting
+	 *                                    a list of checkboxes. Defaults to true.
+	 * }
+	 * @return array|Facet[] See above for further details.
+	 */
+	public function get_facet_data( array $options = [] ): array {
+		if ( empty( $this->facets ) ) {
+			return [];
+		}
+
+		$facets = $this->results['aggregations'];
+
+		if ( empty( $facets ) ) {
+			return [];
+		}
+
+		$options = wp_parse_args(
+			$options,
+			array(
+				'exclude_current'     => true,
+				'join_existing_terms' => true,
+				'join_terms_logic'    => [],
+			)
+		);
+
+		$facet_data = [];
+
+		foreach ( $facets as $label => $facet ) {
+			// At this point, $this->facets is an array of Facet objects...
+			if ( empty( $this->facets[ $label ] ) ) {
+				continue;
+			}
+
+			$facet_data[ $label ]          = $this->facets[ $label ];
+			$facet_data[ $label ]->items = [];
+
+			/*
+			 * All taxonomy terms are going to have the same query_var, so run
+			 * this before the loop.
+			 */
+			if ( 'taxonomy' === $this->facets[ $label ]->type ) {
+				// TODO There is no class value set for `taxonomy`. Why not? Also, these should be arrays, not classes as per ES Admin. Why are these facet objects? I suspect this is a root issue.
+				$tax_query_var = $this->get_taxonomy_query_var( $this->facets[ $label ]->query_var );
+
+				if ( ! $tax_query_var ) {
+					continue;
+				}
+
+				$existing_term_slugs = ( get_query_var( $tax_query_var ) ) ? explode( ',', get_query_var( $tax_query_var ) ) : [];
+			}
+
+			$items = [];
+			if ( ! empty( $facet['buckets'] ) ) {
+				$items = (array) $facet['buckets'];
+			}
+
+			// Some facet types like date_histogram don't support the max results parameter.
+			if ( count( $items ) > $this->facets[ $label ]->count ) {
+				$items = array_slice( $items, 0, $this->facets[ $label ]->count );
+			}
+
+			foreach ( $items as $item ) {
+				$datum = apply_filters( 'es_extensions_facet_datum', false, $item, $this->facets );
+				if ( false === $datum ) {
+					$query_vars = [];
+					$selected   = false;
+
+					switch ( $this->facets[ $label ]->type ) {
+						case 'taxonomy':
+							$term = get_term_by( 'slug', $item['key'], $this->facets[ $label ]->query_var );
+
+							if ( ! $term ) {
+								continue 2; // switch() is considered a looping structure.
+							}
+
+							// Don't allow refinement on a term we're already refining on.
+							$selected = in_array( $term->slug, $existing_term_slugs, true );
+							if ( $options['exclude_current'] && $selected ) {
+								continue 2;
+							}
+
+							$slugs = [ $term->slug ];
+							if ( $options['join_existing_terms'] ) {
+								$slugs = array_merge( $existing_term_slugs, $slugs );
+							}
+
+							$join_logic = ',';
+							if (
+								isset( $options['join_terms_logic'][ $this->facets[ $label ]->query_var ] )
+								&& '+' === $options['join_terms_logic'][ $this->facets[ $label ]->query_var ]
+							) {
+								$join_logic = '+';
+							}
+
+							$query_vars = [
+								$tax_query_var => implode( $join_logic, $slugs ),
+							];
+							$name       = $term->name;
+
+							break;
+
+						case 'post_type':
+							$post_type = get_post_type_object( $item['key'] );
+
+							if ( ! $post_type || $post_type->exclude_from_search ) {
+								continue 2;  // switch() is considered a looping structure.
+							}
+
+							$query_vars = [ 'post_type' => $item['key'] ];
+							$name       = $post_type->labels->singular_name;
+
+							break;
+
+						case 'author':
+							$user = get_user_by( 'login', $item['key'] );
+
+							if ( ! $user ) {
+								continue 2;
+							}
+
+							$name       = $user->display_name;
+							$query_vars = [ 'author' => $user->ID ];
+
+							break;
+
+						case 'date_histogram':
+							$timestamp = $item['key'] / 1000;
+
+							switch ( $this->facets[ $label ]->interval ) {
+								case 'year':
+									$query_vars = [
+										'year' => gmdate( 'Y', $timestamp ),
+									];
+									$name       = gmdate( 'Y', $timestamp );
+									break;
+
+								case 'month':
+									$query_vars = [
+										'year'     => gmdate( 'Y', $timestamp ),
+										'monthnum' => gmdate( 'n', $timestamp ),
+									];
+									$name       = gmdate( 'F Y', $timestamp );
+									break;
+
+								case 'day':
+									$query_vars = [
+										'year'     => gmdate( 'Y', $timestamp ),
+										'monthnum' => gmdate( 'n', $timestamp ),
+										'day'      => gmdate( 'j', $timestamp ),
+									];
+									$name       = gmdate( 'F j, Y', $timestamp );
+									break;
+
+								default:
+									continue 3; // switch() is considered a looping structure.
+							}
+
+							break;
+
+						default:
+							// continue 2; // switch() is considered a looping structure.
+					}
+
+					$datum = [
+						'query_vars' => $query_vars,
+						'name'       => $name,
+						'count'      => $item['doc_count'],
+						'selected'   => $selected,
+					];
+				}
+
+				$facet_data[ $label ]->items[] = $datum;
+			}
+		}
+
+		return apply_filters( 'es_extensions_facet_data', $facet_data );
+	}
+
+	/**
+	 * Get Facet by field
+	 *
+	 * @param string $field Facet field. See get_facet_data for acceptable values.
+	 * @param string $value
+	 * @return Facet|null
+	 */
+	public function get_facet_data_by( string $field = '', string $value = '' ) {
+		$facet_data = $this->get_facet_data();
+		foreach ( $facet_data as $facet ) {
+			if ( isset( $facet[ $field ] ) && $value === $facet[ $field ] ) {
+				return $facet;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get the query var for a given taxonomy name.
+	 *
+	 * @access protected
+	 *
+	 * @param  string $taxonomy_name A valid taxonomy.
+	 * @return string The query var for the given taxonomy.
+	 */
+	protected function get_taxonomy_query_var( string $taxonomy_name ) {
+		$taxonomy = get_taxonomy( $taxonomy_name );
+
+		if ( ! $taxonomy || is_wp_error( $taxonomy ) ) {
+			return false;
+		}
+
+		return $taxonomy->query_var;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 */
 	public function enable_post_type_aggregation(): void {
@@ -115,7 +416,7 @@ abstract class Adapter {
 	 *
 	 * @return array The aggregation results.
 	 */
-	protected function get_aggregations(): array {
+	public function get_aggregations(): array {
 		return $this->aggregations;
 	}
 
@@ -144,6 +445,23 @@ abstract class Adapter {
 			return $this->field_map[ $field ];
 		} else {
 			return $field;
+		}
+	}
+
+	/**
+	 * Pull the facets out of the ES response.
+	 */
+	public function parse_facets() {
+		$this->facets = apply_filters( 'es_extensions_parse_facets', [] );
+		if ( empty( $this->facets ) ) {
+			if ( ! empty( $this->results['aggregations'] ) ) {
+				foreach ( $this->results['aggregations'] as $label => $buckets ) {
+					if ( empty( $buckets['buckets'] ) ) {
+						continue;
+					}
+					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'] );
+				}
+			}
 		}
 	}
 
