@@ -40,6 +40,18 @@ class VIP_Enterprise_Search extends Adapter {
 			];
 		}
 
+		$agg_taxonomies = $this->get_aggregate_taxonomies();
+		if ( ! empty( $agg_taxonomies ) ) {
+			foreach ( $agg_taxonomies as $agg_taxonomy ) {
+				$dsl['aggs'][ "taxonomy_{$agg_taxonomy}" ] = [
+					'terms' => [
+						'size' => 1000,
+						'field' => "terms.{$agg_taxonomy}.slug",
+					],
+				];
+			}
+		}
+
 		// Re-encode the body into the request args.
 		$request_args['body'] = wp_json_encode( $dsl );
 
@@ -126,7 +138,38 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Setup function. Registers action and filter hooks.
 	 */
 	public function setup(): void {
+		// Set field mappings.
 		$this->set_field_map();
+
+		// Filter request args.
 		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 4 );
+
+		// Set aggregations.
+		add_action( 'ep_valid_response', function ( $response, $query, $query_args ) {
+			if ( ! empty( $response['aggregations'] ) ) {
+				$this->set_aggregations( $response['aggregations'] );
+			}
+		}, 10, 3 );
+
+		// Set Results.
+		add_action( 'ep_valid_response', [ $this, 'set_results' ], 10, 3 );
+
+		// Parse face data.
+		add_action( 'ep_valid_response', [ $this, 'parse_facets' ], 11, 0 );
+	}
+
+	/**
+	 * Set results from last query.
+	 *
+	 * @param $response
+	 * @param $query
+	 * @param $query_args
+	 * @return void
+	 */
+	public function set_results( $response, $query, $query_args ) {
+		// TODO ensure this is a search? Does EP restrict this to queries with post data?
+		if ( apply_filters( 'es_extensions_should_set_results', true ) ) {
+			$this->results = $response;
+		}
 	}
 }
