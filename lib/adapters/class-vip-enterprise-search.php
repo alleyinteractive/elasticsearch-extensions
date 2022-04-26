@@ -7,6 +7,7 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Facets\Category;
 use Elasticsearch_Extensions\Facets\Post_Type;
 use Elasticsearch_Extensions\Facets\Tag;
@@ -19,7 +20,100 @@ use Elasticsearch_Extensions\Facets\Tag;
 class VIP_Enterprise_Search extends Adapter {
 
 	/**
+	 * Add facets to EP query.
+	 * Filters `ep_post_formatted_args`.
+	 *
+	 * @param array $query
+	 * @return array
+	 * @see \ElasticPress\Indexable\Post\Post.
+	 */
+	public function add_facets_to_ep_query( $query ) {
+		// Do we have any facets specified?
+		$searched_facets = get_query_var( 'fs' );
+		if ( empty( $searched_facets ) ) {
+			return $query;
+		}
+
+		// Try to get the list of configured facets.
+		$configured_facets = $this->get_facet_config();
+		if ( empty( $configured_facets ) ) {
+			return $query;
+		}
+
+		// Match searched facets against configured facets and augment the query accordingly.
+		foreach ( $searched_facets as $facet_label => $facet_terms ) {
+			// Skip any specified facets that are not configured.
+			if ( empty( $configured_facets[ $facet_label ]['type'] ) ) {
+				continue;
+			}
+
+			// Loop over terms and add each based on type.
+			foreach ( $facet_terms as $facet_term ) { // phpcs:ignore WordPressVIPMinimum.Variables.VariableAnalysis.UnusedVariable
+				switch ( $configured_facets[ $facet_label ]['type'] ) {
+					case 'taxonomy':
+						$query['query']['function_score']['query']['bool']['must'][] = [
+							'terms' => [
+								'terms.' . $configured_facets[ $facet_label ]['taxonomy'] . '.slug' => [
+									$facet_term,
+								],
+							],
+						];
+						break;
+					case 'post_type':
+						$query['query']['function_score']['query']['bool']['must'][] = [
+							'terms' => [
+								'post_type.raw' => [
+									$facet_term,
+								],
+							],
+						];
+						break;
+				}
+			}
+		}
+
+		if ( isset( $searched_facets['date'] ) && '' !== $searched_facets['date'] ) {
+			$year               = $searched_facets['date'];
+			$date_range         = [];
+			$date_range['from'] = $year . '-01-01 00:00:00';
+			$date_range['to']   = $year . '-12-01 00:00:00';
+
+			// Add to the ES Query.
+			if ( ! empty( $date_range ) ) {
+				$query['query']['function_score']['query']['bool']['must'][] = DSL::range('post_date', $date_range	);
+			}
+		}
+
+		return $query;
+	}
+
+	/**
+	 * Allow empty searching in conjunction with faceting.
+	 * Filters `ep_post_formatted_args`.
+	 *
+	 * Since EP is not "expecting"  our custom faceting,
+	 * it does a match_all when no search query string is present.
+	 * For that same reason, if there are no facets, EP's match_all is required.
+	 *
+	 * @param array $formatted_args Formatted ES args.
+	 * @param array $args           WP args.
+	 * @see \ElasticPress\Indexable\Post\Post
+	 */
+	public function allow_empty_search( $formatted_args, $args ) {
+		if (
+			isset( $args['s'] )
+			&& '' === $args['s']
+			&& ! empty( $args['fs'] )
+			&& true === $this->empty_search_faceting
+		) {
+			unset( $formatted_args['query']['match_all'] );
+		}
+		return $formatted_args;
+	}
+
+	/**
 	 * Filters ElasticPress request query args to apply registered customizations.
+	 * Filters `ep_query_request_args`.
 	 *
 	 * @param array  $request_args Request arguments.
 	 * @param string $path         Request path.
@@ -27,6 +121,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @param string $type         Index type.
 	 *
 	 * @return array New request arguments.
+	 * @see \ElasticPress\Elasticsearch
 	 */
 	public function filter_ep_query_request_args( $request_args, $path, $index, $type ): array {
 		// Try to convert the request body to an array, so we can work with it.
@@ -152,21 +247,32 @@ class VIP_Enterprise_Search extends Adapter {
 		// Set field mappings.
 		$this->set_field_map();
 
+		// Add term faceting and date filtering to ElasticPress.
+		add_filter( 'ep_post_formatted_args', [ $this, 'add_facets_to_ep_query' ], 10, 1 );
+
+		// Allow for empty search strings.
+		add_filter( 'ep_post_formatted_args', [ $this, 'allow_empty_search' ], 10, 3 );
+
 		// Filter request args.
 		add_filter( 'ep_query_request_args', [ $this, 'filter_ep_query_request_args' ], 10, 4 );
 
 		// Set Results and aggregations.
 		add_action( 'ep_valid_response', [ $this, 'set_results' ], 10, 1 );
 
-		// Parse face data.
+		/*
+		 * Parse face data. Added on 11 to ensure that the results and aggs have been set.
+		 * @see VIP_Enterprise_Search::set_results()
+		 */
 		add_action( 'ep_valid_response', [ $this, 'parse_facets' ], 11, 0 );
 	}
 
 	/**
 	 * Set results from last query.
+	 * Filters `ep_valid_response`.
 	 *
 	 * @param array $response Response from ES.
 	 * @return void
+	 * @see \ElasticPress\Elasticsearch
 	 */
 	public function set_results( $response ) {
 		// Set aggregations if applicable.
