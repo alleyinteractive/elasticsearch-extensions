@@ -482,6 +482,20 @@ abstract class Adapter {
 	}
 
 	/**
+	 * Parses the name of the facet from the facet config based
+	 * on the label returned from the aggregation results.
+	 *
+	 * Allows the Facet class to set the Human-readable name for
+	 * the facet on initialization.
+	 *
+	 * @param string $label Label for the facet.
+	 * @return string
+	 */
+	public function get_facet_name_from_label( string $label ): string {
+		return $this->facets_config[ $label ]['name'] ?? '';
+	}
+
+	/**
 	 * Get an instance of the class.
 	 *
 	 * @return Adapter
@@ -554,7 +568,7 @@ abstract class Adapter {
 					if ( empty( $buckets['buckets'] ) ) {
 						continue;
 					}
-					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'] );
+					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'], $this->get_facet_name_from_label( $label ) );
 				}
 			}
 		}
