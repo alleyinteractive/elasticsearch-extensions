@@ -37,7 +37,7 @@ class Controller {
 	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_category_aggregation( array $args ): Controller {
+	public function enable_category_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_category_aggregation();
 			$defaults = [
@@ -71,14 +71,15 @@ class Controller {
 	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_tag_aggregation( array $args ): Controller {
+	public function enable_tag_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_tag_aggregation();
 			$defaults = [
 				'count'     => 1000,
 				'name'      => 'Tags',
 				'startOpen' => false,
-				'type'      => 'post_tag',
+				'taxonomy'  => 'post_tag',
+				'type'      => 'taxonomy',
 			];
 
 			$args = wp_parse_args( $args, $defaults );
@@ -93,7 +94,7 @@ class Controller {
 	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_post_type_aggregation( array $args ): Controller {
+	public function enable_post_type_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_post_type_aggregation( $args );
 			$defaults = [
@@ -117,7 +118,7 @@ class Controller {
 	 * @param array  $args     Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_taxonomy_aggregation( string $taxonomy, array $args ): Controller {
+	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_taxonomy_aggregation( $taxonomy );
 			$defaults = [
