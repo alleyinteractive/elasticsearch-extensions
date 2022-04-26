@@ -9,6 +9,7 @@ namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Facets\Category;
+use Elasticsearch_Extensions\Facets\Post_Date;
 use Elasticsearch_Extensions\Facets\Post_Type;
 use Elasticsearch_Extensions\Facets\Tag;
 
@@ -72,18 +73,7 @@ class VIP_Enterprise_Search extends Adapter {
 			}
 		}
 
-		// TODO Is this the desired DSL for date facets?
-		if ( isset( $searched_facets['date'] ) && '' !== $searched_facets['date'] ) {
-			$year               = $searched_facets['date'];
-			$date_range         = [];
-			$date_range['from'] = $year . '-01-01 00:00:00';
-			$date_range['to']   = $year . '-12-01 00:00:00';
-
-			// Add to the ES Query.
-			if ( ! empty( $date_range ) ) {
-				$query['query']['function_score']['query']['bool']['must'][] = DSL::range( 'post_date', $date_range );
-			}
-		}
+		// TODO Write DSL for date faceting as configured.
 
 		return $query;
 	}
@@ -132,6 +122,12 @@ class VIP_Enterprise_Search extends Adapter {
 		}
 
 		// Add our aggregations.
+		if ( $this->get_aggregate_post_dates() ) {
+			$post_date_facet = new Post_Date();
+			$post_date_facet::set_calendar_interval( $this->facets_config['post_date']['calendar_interval'] );
+			$dsl['aggs']     = array_merge( $dsl['aggs'], $post_date_facet->request() );
+		}
+
 		if ( $this->get_aggregate_post_types() ) {
 			$post_type_facet = new Post_Type();
 			$dsl['aggs']     = array_merge( $dsl['aggs'], $post_type_facet->request() );
