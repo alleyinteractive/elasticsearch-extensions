@@ -227,7 +227,6 @@ abstract class Adapter {
 			 * this before the loop.
 			 */
 			if ( 'taxonomy' === $this->facets[ $label ]->type ) {
-				// TODO There is no class value set for `taxonomy`. Why not? Also, these should be arrays, not classes as per ES Admin. Why are these facet objects? I suspect this is a root issue.
 				$tax_query_var = $this->get_taxonomy_query_var( $this->facets[ $label ]->query_var );
 
 				if ( ! $tax_query_var ) {
@@ -243,6 +242,7 @@ abstract class Adapter {
 			}
 
 			// Some facet types like date_histogram don't support the max results parameter.
+			// TODO Refactor this. The `count` attribute doesn't exist at this point.
 			if ( count( $items ) > $this->facets[ $label ]->count ) {
 				$items = array_slice( $items, 0, $this->facets[ $label ]->count );
 			}
@@ -280,9 +280,18 @@ abstract class Adapter {
 								$join_logic = '+';
 							}
 
-							$query_vars = [
-								$tax_query_var => implode( $join_logic, $slugs ),
-							];
+							// TODO Refactor to handle this better?
+							// TODO Adapter::get_taxonomy_query_var() sets tags query vars as 'tag', which, without this edit,
+							//      gives rise to a mismatch between the query var set in Facet::parse_type().
+							if ( 'tag' === $tax_query_var ) {
+								$query_vars = [
+									'post_tag' => implode( $join_logic, $slugs ),
+								];
+							} else {
+								$query_vars = [
+									$tax_query_var => implode( $join_logic, $slugs ),
+								];
+							}
 							$name       = $term->name;
 
 							break;
