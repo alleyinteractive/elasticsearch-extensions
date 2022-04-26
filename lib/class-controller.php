@@ -89,6 +89,30 @@ class Controller {
 	}
 
 	/**
+	 * Enables an aggregation based on post dates.
+	 *
+	 * @param array $args Arguments to pass to the adapter's facet configuration.
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_post_date_aggregation( array $args = [] ): Controller {
+		if ( isset( $this->adapter ) ) {
+			$this->adapter->enable_post_date_aggregation();
+			$defaults = [
+				'count'             => 1000,
+				'calendar_interval' => 'month',
+				'name'              => 'Publish Date',
+				'startOpen'         => false,
+				'type'              => 'post_date',
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+			$this->adapter->add_facet_config( $args );
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 *
 	 * @param array $args Arguments to pass to the adapter's facet configuration.
@@ -96,7 +120,7 @@ class Controller {
 	 */
 	public function enable_post_type_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_type_aggregation( $args );
+			$this->adapter->enable_post_type_aggregation();
 			$defaults = [
 				'count'     => 1000,
 				'name'      => 'Post Type',

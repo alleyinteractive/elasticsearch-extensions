@@ -32,6 +32,13 @@ abstract class Adapter {
 	private bool $aggregate_tags = false;
 
 	/**
+	 * Whether post date aggregations are active or not.
+	 *
+	 * @var bool
+	 */
+	private bool $aggregate_post_dates = false;
+
+	/**
 	 * Whether post type aggregations are active or not.
 	 *
 	 * @var bool
@@ -320,10 +327,10 @@ abstract class Adapter {
 
 							break;
 
-						case 'date_histogram':
+						case 'post_date':
 							$timestamp = $item['key'] / 1000;
 
-							switch ( $this->facets[ $label ]->interval ) {
+							switch ( $this->facets[ $label ]->config['calendar_interval'] ) {
 								case 'year':
 									$query_vars = [
 										'year' => gmdate( 'Y', $timestamp ),
@@ -425,6 +432,13 @@ abstract class Adapter {
 	/**
 	 * Enables an aggregation based on post type.
 	 */
+	public function enable_post_date_aggregation(): void {
+		$this->aggregate_post_dates = true;
+	}
+
+	/**
+	 * Enables an aggregation based on post type.
+	 */
 	public function enable_post_type_aggregation(): void {
 		$this->aggregate_post_types = true;
 	}
@@ -452,6 +466,15 @@ abstract class Adapter {
 	 */
 	protected function get_aggregate_post_types(): bool {
 		return $this->aggregate_post_types;
+	}
+
+	/**
+	 * Gets the flag for whether post dates should be aggregated or not.
+	 *
+	 * @return bool Whether post dates should be aggregated or not.
+	 */
+	protected function get_aggregate_post_dates(): bool {
+		return $this->aggregate_post_dates;
 	}
 
 	/**
@@ -488,20 +511,6 @@ abstract class Adapter {
 	 */
 	public function get_aggregations(): array {
 		return $this->aggregations;
-	}
-
-	/**
-	 * Parses the name of the facet from the facet config based
-	 * on the label returned from the aggregation results.
-	 *
-	 * Allows the Facet class to set the Human-readable name for
-	 * the facet on initialization.
-	 *
-	 * @param string $label Label for the facet.
-	 * @return string
-	 */
-	public function get_facet_name_from_label( string $label ): string {
-		return $this->facets_config[ $label ]['name'] ?? '';
 	}
 
 	/**
@@ -577,7 +586,7 @@ abstract class Adapter {
 					if ( empty( $buckets['buckets'] ) ) {
 						continue;
 					}
-					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'], $this->get_facet_name_from_label( $label ) );
+					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'], $this->facets_config[ $label ] );
 				}
 			}
 		}
