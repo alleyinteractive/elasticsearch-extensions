@@ -70,9 +70,9 @@ class Facet {
 	/**
 	 * Build this facet object.
 	 *
-	 * @param string $label       The label as provided by ES.
-	 * @param array  $buckets     The buckets/results for the facet.
-	 * @param array $facet_config Config for the Facet.
+	 * @param string $label        The label as provided by ES.
+	 * @param array  $buckets      The buckets/results for the facet.
+	 * @param array  $facet_config Config for the Facet.
 	 */
 	public function __construct( string $label, array $buckets, array $facet_config = [] ) {
 		$this->label   = $label;

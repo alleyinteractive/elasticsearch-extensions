@@ -288,8 +288,7 @@ abstract class Adapter {
 							}
 
 							// TODO Refactor to handle this better?
-							// TODO Adapter::get_taxonomy_query_var() sets tags query vars as 'tag', which, without this edit,
-							//      gives rise to a mismatch between the query var set in Facet::parse_type().
+							// TODO Adapter::get_taxonomy_query_var() sets tags query vars as 'tag', which, without this edit, gives rise to a mismatch between the query var set in Facet::parse_type().
 							if ( 'tag' === $tax_query_var ) {
 								$query_vars = [
 									'post_tag' => implode( $join_logic, $slugs ),
@@ -299,7 +298,7 @@ abstract class Adapter {
 									$tax_query_var => implode( $join_logic, $slugs ),
 								];
 							}
-							$name       = $term->name;
+							$name = $term->name;
 
 							break;
 

@@ -23,11 +23,12 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Add facets to EP query.
 	 * Filters `ep_post_formatted_args`.
 	 *
+	 * @see \ElasticPress\Indexable\Post\Post::format_args() For the `ep_post_formatted_args` filter.
+	 *
 	 * @param array $query Formatted Elasticsearch query.
 	 * @return array
-	 * @see \ElasticPress\Indexable\Post\Post.
 	 */
-	public function add_facets_to_ep_query( $query ) {
+	public function add_facets_to_ep_query( $query ): array {
 		// Do we have any facets specified?
 		$searched_facets = get_query_var( 'fs' );
 		if ( empty( $searched_facets ) ) {
@@ -126,7 +127,7 @@ class VIP_Enterprise_Search extends Adapter {
 		if ( $this->get_aggregate_post_dates() ) {
 			$post_date_facet = new Post_Date();
 			$post_date_facet::set_calendar_interval( $this->facets_config['post_date']['calendar_interval'] );
-			$dsl['aggs']     = array_merge( $dsl['aggs'], $post_date_facet->request() );
+			$dsl['aggs'] = array_merge( $dsl['aggs'], $post_date_facet->request() );
 		}
 
 		if ( $this->get_aggregate_post_types() ) {
@@ -257,10 +258,7 @@ class VIP_Enterprise_Search extends Adapter {
 		// Set Results and aggregations.
 		add_action( 'ep_valid_response', [ $this, 'set_results' ], 10, 1 );
 
-		/*
-		 * Parse face data. Added on 11 to ensure that the results and aggs have been set.
-		 * @see VIP_Enterprise_Search::set_results()
-		 */
+		// Parse face data. Added on 11 to ensure that the results and aggs have been set.
 		add_action( 'ep_valid_response', [ $this, 'parse_facets' ], 11, 0 );
 	}
 
@@ -268,9 +266,10 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Set results from last query.
 	 * Filters `ep_valid_response`.
 	 *
-	 * @param array $response Response from ES.
+	 * @see \ElasticPress\Elasticsearch::query() For the `ep_valid_response` filter.
+	 *
+	 * @param array $response Elasticsearch decoded response.
 	 * @return void
-	 * @see \ElasticPress\Elasticsearch
 	 */
 	public function set_results( $response ) {
 		// Set aggregations if applicable.

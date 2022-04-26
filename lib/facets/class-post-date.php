@@ -32,7 +32,9 @@ class Post_Date extends Facet_Type {
 	/**
 	 * Set calendar interval.
 	 *
-	 * @param string $calendar_interval
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html
+	 *
+	 * @param string $calendar_interval Calendar interval.
 	 * @return void
 	 */
 	public static function set_calendar_interval( string $calendar_interval ) {
