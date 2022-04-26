@@ -23,7 +23,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Add facets to EP query.
 	 * Filters `ep_post_formatted_args`.
 	 *
-	 * @param array $query
+	 * @param array $query Formatted Elasticsearch query.
 	 * @return array
 	 * @see \ElasticPress\Indexable\Post\Post.
 	 */
@@ -80,7 +80,7 @@ class VIP_Enterprise_Search extends Adapter {
 
 			// Add to the ES Query.
 			if ( ! empty( $date_range ) ) {
-				$query['query']['function_score']['query']['bool']['must'][] = DSL::range('post_date', $date_range	);
+				$query['query']['function_score']['query']['bool']['must'][] = DSL::range( 'post_date', $date_range );
 			}
 		}
 

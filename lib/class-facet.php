@@ -26,7 +26,7 @@ class Facet {
 	public array $buckets;
 
 	/**
-	 * The name for this facet section.
+	 * The human-readable name for this facet section.
 	 *
 	 * @var string
 	 */
@@ -65,6 +65,7 @@ class Facet {
 	 *
 	 * @param string $label   The label as provided by ES.
 	 * @param array  $buckets The buckets/results for the facet.
+	 * @param string $name    Human readable name for the facet.
 	 */
 	public function __construct( string $label, array $buckets, $name = '' ) {
 		$this->label   = $label;
