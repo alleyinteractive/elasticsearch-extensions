@@ -7,7 +7,6 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Facets\Category;
 use Elasticsearch_Extensions\Facets\Post_Date;
 use Elasticsearch_Extensions\Facets\Post_Type;
@@ -86,9 +85,10 @@ class VIP_Enterprise_Search extends Adapter {
 	 * it does a match_all when no search query string is present.
 	 * For that same reason, if there are no facets, EP's match_all is required.
 	 *
+	 * @see \ElasticPress\Indexable\Post\Post::format_args() For the `ep_post_formatted_args` filter.
+	 *
 	 * @param array $formatted_args Formatted ES args.
 	 * @param array $args           WP args.
-	 * @see \ElasticPress\Indexable\Post\Post
 	 */
 	public function allow_empty_search( $formatted_args, $args ) {
 		if (
@@ -106,13 +106,14 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Filters ElasticPress request query args to apply registered customizations.
 	 * Filters `ep_query_request_args`.
 	 *
+	 * @see \ElasticPress\Elasticsearch::query() For the `ep_query_request_args` filter.
+	 *
 	 * @param array  $request_args Request arguments.
 	 * @param string $path         Request path.
 	 * @param string $index        Index name.
 	 * @param string $type         Index type.
 	 *
 	 * @return array New request arguments.
-	 * @see \ElasticPress\Elasticsearch
 	 */
 	public function filter_ep_query_request_args( $request_args, $path, $index, $type ): array {
 		// Try to convert the request body to an array, so we can work with it.
