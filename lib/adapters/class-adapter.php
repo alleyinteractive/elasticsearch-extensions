@@ -53,6 +53,13 @@ abstract class Adapter {
 	private array $aggregations = [];
 
 	/**
+	 * Enable faceting on empty searches
+	 *
+	 * @var bool
+	 */
+	protected bool $empty_search_faceting = false;
+
+	/**
 	 * Facets.
 	 *
 	 * @var array
@@ -118,22 +125,22 @@ abstract class Adapter {
 	 *
 	 * TODO Add param DocBloc with full set of possible array keys.
 	 *
-	 * @param array $facets_config Array configuration for facets.
+	 * @param array $facet_config Array configuration for a facet.
 	 * @return void
 	 */
-	public function set_facets_config( array $facets_config ) {
+	public function add_facet_config( array $facet_config ) {
 		$config = [];
-		foreach ( $facets_config as $label => $facet_config ) {
-			if (
-				'taxonomy' === $facet_config['type']
-				&& 'taxonomy_' !== substr( $label, 0, 9 )
-			) {
-				$label = "taxonomy_{$label}";
-			}
-
-			$config[ $label ] = $facet_config;
+		$label  = $facet_config['type'];
+		if (
+			'taxonomy' === $facet_config['type']
+			&& ! empty( $facet_config['taxonomy'] )
+			&& 'taxonomy_' !== substr( $facet_config['taxonomy'], 0, 9 )
+		) {
+			$label = "taxonomy_{$facet_config['taxonomy']}";
 		}
-		$this->facets_config = $config;
+
+		$config[ $label ]    = $facet_config;
+		$this->facets_config = array_merge( $this->facets_config, $config );
 	}
 
 	/**
@@ -400,6 +407,13 @@ abstract class Adapter {
 	}
 
 	/**
+	 * Enables faceting on empty search query strings.
+	 */
+	public function enable_empty_search_faceting(): void {
+		$this->empty_search_faceting = true;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 */
 	public function enable_post_type_aggregation(): void {
@@ -528,6 +542,9 @@ abstract class Adapter {
 
 	/**
 	 * Pull the facets out of the ES response.
+	 * Filters `ep_valid_response`.
+	 *
+	 * @see \ElasticPress\Elasticsearch
 	 */
 	public function parse_facets() {
 		$this->facets = apply_filters( 'elasticsearch_extensions_parse_facets', [] );
