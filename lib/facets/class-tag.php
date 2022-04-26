@@ -37,7 +37,7 @@ class Tag extends Facet_Type {
 		return [
 			'taxonomy_post_tag' => [
 				'terms' => [
-					'field' => $this->es->map_tax_field( 'post_tag', 'tag_slug' ),
+					'field' => $this->controller->map_tax_field( 'post_tag', 'tag_slug' ),
 				],
 			],
 		];

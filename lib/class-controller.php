@@ -32,11 +32,33 @@ class Controller {
 	private static Controller $instance;
 
 	/**
+	 * Enable aggregations based on WP Categories.
+	 *
+	 * @param array $args Arguments to pass to the adapter's facet configuration.
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_category_aggregation( array $args ): Controller {
+		if ( isset( $this->adapter ) ) {
+			$this->adapter->enable_category_aggregation();
+			$defaults = [
+				'count'     => 1000,
+				'name'      => 'Categories',
+				'startOpen' => false,
+				'type'      => 'category',
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+			$this->adapter->add_facet_config( $args );
+		}
+		return $this;
+	}
+
+	/**
 	 * Enable faceting on empty search query strings.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_empty_search_faceting() {
+	public function enable_empty_search_faceting(): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_empty_search_faceting();
 		}
@@ -44,8 +66,31 @@ class Controller {
 	}
 
 	/**
+	 * Enable aggregations based on WP Tags.
+	 *
+	 * @param array $args Arguments to pass to the adapter's facet configuration.
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_tag_aggregation( array $args ): Controller {
+		if ( isset( $this->adapter ) ) {
+			$this->adapter->enable_tag_aggregation();
+			$defaults = [
+				'count'     => 1000,
+				'name'      => 'Tags',
+				'startOpen' => false,
+				'type'      => 'post_tag',
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+			$this->adapter->add_facet_config( $args );
+		}
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 *
+	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_post_type_aggregation( array $args ): Controller {
