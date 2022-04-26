@@ -66,11 +66,11 @@ class Facet {
 	 * @param string $label   The label as provided by ES.
 	 * @param array  $buckets The buckets/results for the facet.
 	 */
-	public function __construct( string $label, array $buckets ) {
+	public function __construct( string $label, array $buckets, $name = '' ) {
 		$this->label   = $label;
 		$this->buckets = $buckets;
+		$this->name    = $name;
 		$this->parse_type();
-		// TODO Add getter and setter for facet names. currently only resides in title().
 	}
 
 	/**
