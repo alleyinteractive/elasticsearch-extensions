@@ -72,6 +72,7 @@ class VIP_Enterprise_Search extends Adapter {
 			}
 		}
 
+		// TODO Is this the desired DSL for date facets?
 		if ( isset( $searched_facets['date'] ) && '' !== $searched_facets['date'] ) {
 			$year               = $searched_facets['date'];
 			$date_range         = [];
