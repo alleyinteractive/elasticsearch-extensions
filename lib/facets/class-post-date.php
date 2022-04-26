@@ -22,6 +22,24 @@ class Post_Date extends Facet_Type {
 	protected string $query_var = 'post_date';
 
 	/**
+	 * Calendar intervals.
+	 *
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html
+	 * @var string
+	 */
+	private static string $calendar_interval = 'month';
+
+	/**
+	 * Set calendar interval.
+	 *
+	 * @param string $calendar_interval
+	 * @return void
+	 */
+	public static function set_calendar_interval( string $calendar_interval ) {
+		self::$calendar_interval = $calendar_interval;
+	}
+
+	/**
 	 * Build the facet request.
 	 *
 	 * @return array
@@ -30,11 +48,11 @@ class Post_Date extends Facet_Type {
 		return [
 			'post_date' => [
 				'date_histogram' => [
-					'field'         => $this->controller->map_field( 'post_date' ),
-					'interval'      => 'month',
-					'format'        => 'yyyy-MM',
-					'min_doc_count' => 2,
-					'order'         => [
+					'field'             => $this->controller->map_field( 'post_date' ),
+					'calendar_interval' => self::$calendar_interval,
+					'format'            => 'yyyy-MM',
+					'min_doc_count'     => 2,
+					'order'             => [
 						'_key' => 'desc',
 					],
 				],
@@ -44,6 +62,8 @@ class Post_Date extends Facet_Type {
 
 	/**
 	 * Get the request filter DSL clause.
+	 *
+	 * TODO update DSL for use with other calendar intervals.
 	 *
 	 * @param  array $values Values to pass to filter.
 	 * @return array
