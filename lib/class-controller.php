@@ -32,13 +32,34 @@ class Controller {
 	private static Controller $instance;
 
 	/**
+	 * Enable faceting on empty search query strings.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_empty_search_faceting() {
+		if ( isset( $this->adapter ) ) {
+			$this->adapter->enable_empty_search_faceting();
+		}
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_post_type_aggregation(): Controller {
+	public function enable_post_type_aggregation( array $args ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_type_aggregation();
+			$this->adapter->enable_post_type_aggregation( $args );
+			$defaults = [
+				'count'     => 1000,
+				'name'      => 'Post Type',
+				'startOpen' => false,
+				'type'      => 'post_type',
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+			$this->adapter->add_facet_config( $args );
 		}
 
 		return $this;
@@ -48,12 +69,22 @@ class Controller {
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 *
+	 * @param array  $args     Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_taxonomy_aggregation( string $taxonomy ): Controller {
+	public function enable_taxonomy_aggregation( string $taxonomy, array $args ): Controller {
 		if ( isset( $this->adapter ) ) {
 			$this->adapter->enable_taxonomy_aggregation( $taxonomy );
+			$defaults = [
+				'count'     => 1000,
+				'name'      => $taxonomy,
+				'startOpen' => false,
+				'taxonomy'  => $taxonomy,
+				'type'      => 'taxonomy',
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+			$this->adapter->add_facet_config( $args );
 		}
 
 		return $this;
@@ -148,18 +179,5 @@ class Controller {
 	 */
 	public function map_tax_field( string $taxonomy, string $field ): string {
 		return $this->adapter->map_tax_field( $taxonomy, $field );
-	}
-
-	/**
-	 * Configures facets in ES Extensions.
-	 * Necessary to set up faceting.
-	 *
-	 * TODO Build out the array options in the DocBloc.
-	 *
-	 * @param array $facets_config Config array.
-	 * @return void
-	 */
-	public function set_facets_config( $facets_config ) {
-		$this->adapter->set_facets_config( $facets_config );
 	}
 }
