@@ -19,3 +19,7 @@ Elasticsearch plugin is in use, and will register the appropriate hooks.
 Customize the Elasticsearch integration using filter hooks in your site's
 theme. A full list of available filter hooks is
 [available in the wiki](https://github.com/alleyinteractive/elasticsearch-extensions/wiki).
+
+## Faceted Search
+
+TODO Add documentation regarding all of the facet-related features as well as code samples for setting up facets.
