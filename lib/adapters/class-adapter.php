@@ -60,11 +60,11 @@ abstract class Adapter {
 	private array $aggregations = [];
 
 	/**
-	 * Enable faceting on empty searches
+	 * Enable empty searches (no keyword set).
 	 *
 	 * @var bool
 	 */
-	protected bool $empty_search_faceting = false;
+	protected bool $empty_search = false;
 
 	/**
 	 * Facets.
@@ -424,8 +424,8 @@ abstract class Adapter {
 	/**
 	 * Enables faceting on empty search query strings.
 	 */
-	public function enable_empty_search_faceting(): void {
-		$this->empty_search_faceting = true;
+	public function enable_empty_search(): void {
+		$this->empty_search = true;
 	}
 
 	/**

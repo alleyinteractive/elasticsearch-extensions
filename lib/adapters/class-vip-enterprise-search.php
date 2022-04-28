@@ -82,7 +82,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Allow empty searching in conjunction with faceting.
 	 * Filters `ep_post_formatted_args`.
 	 *
-	 * Since EP is not "expecting"  our custom faceting,
+	 * Since EP is not "expecting" our custom faceting,
 	 * it does a match_all when no search query string is present.
 	 * For that same reason, if there are no facets, EP's match_all is required.
 	 *
@@ -95,8 +95,7 @@ class VIP_Enterprise_Search extends Adapter {
 		if (
 			isset( $args['s'] )
 			&& '' === $args['s']
-			&& ! empty( $args['fs'] )
-			&& true === $this->empty_search_faceting
+			&& true === $this->empty_search
 		) {
 			unset( $formatted_args['query']['match_all'] );
 		}

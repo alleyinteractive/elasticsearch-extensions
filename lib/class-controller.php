@@ -54,13 +54,13 @@ class Controller {
 	}
 
 	/**
-	 * Enable faceting on empty search query strings.
+	 * Enable empty search query strings.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_empty_search_faceting(): Controller {
+	public function enable_empty_search(): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_empty_search_faceting();
+			$this->adapter->enable_empty_search();
 		}
 		return $this;
 	}
