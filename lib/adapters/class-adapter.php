@@ -7,7 +7,7 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\Facet;
+use Elasticsearch_Extensions\Aggregation;
 
 /**
  * An abstract class that establishes base functionality and sets requirements
@@ -18,39 +18,11 @@ use Elasticsearch_Extensions\Facet;
 abstract class Adapter {
 
 	/**
-	 * Whether WP Category aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_categories = false;
-
-	/**
-	 * Whether WP Tag aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_tags = false;
-
-	/**
-	 * Whether post date aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_post_dates = false;
-
-	/**
-	 * Whether post type aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_post_types = false;
-
-	/**
-	 * Stores an array of taxonomy slugs that should be added to aggregations.
+	 * Aggregation configuration to be added to the Elasticsearch request.
 	 *
 	 * @var array
 	 */
-	private array $aggregate_taxonomies = [];
+	private array $aggregation_config = [];
 
 	/**
 	 * Stores aggregation data from the Elasticsearch response.
@@ -60,32 +32,11 @@ abstract class Adapter {
 	private array $aggregations = [];
 
 	/**
-	 * Enable empty searches (no keyword set).
+	 * Whether to allow empty searches (no keyword set).
 	 *
 	 * @var bool
 	 */
-	protected bool $empty_search = false;
-
-	/**
-	 * Facets.
-	 *
-	 * @var array
-	 */
-	public array $facets = [];
-
-	/**
-	 * Facets.
-	 *
-	 * @var array
-	 */
-	public array $facets_config = [];
-
-	/**
-	 * HTTP Response from last query.
-	 *
-	 * @var array HTTP Response.
-	 */
-	public array $results;
+	private bool $allow_empty_search = false;
 
 	/**
 	 * Holds a reference to the singleton instance.
@@ -95,37 +46,61 @@ abstract class Adapter {
 	private static Adapter $instance;
 
 	/**
-	 * Map core fields to the ES index.
+	 * Get an aggregation by a field key and value.
 	 *
-	 * @var array|string[]
+	 * @param string $field Field key.
+	 * @param string $value Field value.
+	 *
+	 * @return Aggregation|null
 	 */
-	protected array $field_map = [
-		'post_meta'              => 'post_meta.%s',
-		'post_meta.analyzed'     => 'post_meta.%s.analyzed',
-		'post_meta.long'         => 'post_meta.%s.long',
-		'post_meta.double'       => 'post_meta.%s.double',
-		'post_meta.binary'       => 'post_meta.%s.boolean',
-		'post_meta.date'         => 'post_meta.%s.date',
-		'post_meta.datetime'     => 'post_meta.%s.datetime',
-		'post_meta.time'         => 'post_meta.%s.time',
-		'post_meta.signed'       => 'post_meta.%s.signed',
-		'post_meta.unsigned'     => 'post_meta.%s.unsigned',
-		'term_id'                => 'terms.%s.term_id',
-		'term_slug'              => 'terms.%s.slug',
-		'term_name'              => 'terms.%s.name',
-		'term_name.analyzed'     => 'terms.%s.name.analyzed',
-		'term_tt_id'             => 'terms.%s.term_taxonomy_id',
-		'category_id'            => 'terms.category.term_id',
-		'category_slug'          => 'terms.category.slug',
-		'category_name'          => 'terms.category.name',
-		'category_name.analyzed' => 'terms.category.name.analyzed',
-		'category_tt_id'         => 'terms.category.term_taxonomy_id',
-		'tag_id'                 => 'terms.post_tag.term_id',
-		'tag_slug'               => 'terms.post_tag.slug',
-		'tag_name'               => 'terms.post_tag.name',
-		'tag_name.analyzed'      => 'terms.post_tag.name.analyzed',
-		'tag_tt_id'              => 'terms.post_tag.term_taxonomy_id',
-	];
+	public function get_aggregation_by( string $field = '', string $value = '' ) {
+		foreach ( $this->aggregations as $aggregation ) {
+			if ( isset( $aggregation->$field ) && $value === $aggregation->$field ) {
+				return $aggregation;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the aggregation configuration.
+	 *
+	 * @return array
+	 */
+	public function get_aggregation_config(): array {
+		return $this->aggregation_config;
+	}
+
+	/**
+	 * Gets the value for allow_empty_search.
+	 *
+	 * @return bool Whether to allow empty search or not.
+	 */
+	public function get_allow_empty_search(): bool {
+		return $this->allow_empty_search;
+	}
+
+	/**
+	 * Returns a map of generic field names and types to the specific field
+	 * path used in the mapping of the Elasticsearch plugin that is in use.
+	 * Implementing classes need to provide this map, as it will be different
+	 * between each plugin's Elasticsearch implementation.
+	 *
+	 * @return array The field map.
+	 */
+	abstract protected function get_field_map(): array;
+
+	/**
+	 * Sets the value for allow_empty_search.
+	 *
+	 * @param bool $allow_empty_search Whether to allow empty search or not.
+	 */
+	public function set_allow_empty_search( bool $allow_empty_search ): void {
+		$this->allow_empty_search = $allow_empty_search;
+	}
+
+	// TODO: Refactor line.
 
 	/**
 	 * Configures facets.
@@ -148,15 +123,6 @@ abstract class Adapter {
 
 		$config[ $label ]    = $facet_config;
 		$this->facets_config = array_merge( $this->facets_config, $config );
-	}
-
-	/**
-	 * Get the configured facets.
-	 *
-	 * @return array
-	 */
-	public function get_facet_config(): array {
-		return $this->facets_config;
 	}
 
 	/**
@@ -380,23 +346,6 @@ abstract class Adapter {
 	}
 
 	/**
-	 * Get Facet by field
-	 *
-	 * @param string $field Facet field. See get_facet_data for acceptable values.
-	 * @param string $value Value corresponding to the field.
-	 * @return Facet|null
-	 */
-	public function get_facet_data_by( string $field = '', string $value = '' ) {
-		$facet_data = $this->get_facet_data();
-		foreach ( $facet_data as $facet ) {
-			if ( isset( $facet[ $field ] ) && $value === $facet[ $field ] ) {
-				return $facet;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Get the query var for a given taxonomy name.
 	 *
 	 * @access protected
@@ -412,95 +361,6 @@ abstract class Adapter {
 		}
 
 		return $taxonomy->query_var;
-	}
-
-	/**
-	 * Enables an aggregation based on WP Category.
-	 */
-	public function enable_category_aggregation(): void {
-		$this->aggregate_categories = true;
-	}
-
-	/**
-	 * Enables faceting on empty search query strings.
-	 */
-	public function enable_empty_search(): void {
-		$this->empty_search = true;
-	}
-
-	/**
-	 * Enables an aggregation based on post type.
-	 */
-	public function enable_post_date_aggregation(): void {
-		$this->aggregate_post_dates = true;
-	}
-
-	/**
-	 * Enables an aggregation based on post type.
-	 */
-	public function enable_post_type_aggregation(): void {
-		$this->aggregate_post_types = true;
-	}
-
-	/**
-	 * Enables an aggregation based on WP Tags.
-	 */
-	public function enable_tag_aggregation(): void {
-		$this->aggregate_tags = true;
-	}
-
-	/**
-	 * A function to enable an aggregation for a specific taxonomy.
-	 *
-	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 */
-	public function enable_taxonomy_aggregation( string $taxonomy ): void {
-		$this->aggregate_taxonomies[] = $taxonomy;
-	}
-
-	/**
-	 * Gets the flag for whether post types should be aggregated or not.
-	 *
-	 * @return bool Whether post types should be aggregated or not.
-	 */
-	protected function get_aggregate_post_types(): bool {
-		return $this->aggregate_post_types;
-	}
-
-	/**
-	 * Gets the flag for whether post dates should be aggregated or not.
-	 *
-	 * @return bool Whether post dates should be aggregated or not.
-	 */
-	protected function get_aggregate_post_dates(): bool {
-		return $this->aggregate_post_dates;
-	}
-
-	/**
-	 * Gets the flag for whether WP Categories should be aggregated or not.
-	 *
-	 * @return bool Whether WP Categories should be aggregated or not.
-	 */
-	protected function get_aggregate_categories(): bool {
-		return $this->aggregate_categories;
-	}
-
-	/**
-	 * Gets the flag for whether WP Tags should be aggregated or not.
-	 *
-	 * @return bool Whether WP Tags should be aggregated or not.
-	 */
-	protected function get_aggregate_tags(): bool {
-		return $this->aggregate_tags;
-	}
-
-	/**
-	 * Gets the list of custom taxonomies to be aggregated.
-	 *
-	 * @return array The list of taxonomy slugs to be aggregated.
-	 */
-	protected function get_aggregate_taxonomies(): array {
-		return $this->aggregate_taxonomies;
 	}
 
 	/**
@@ -527,17 +387,14 @@ abstract class Adapter {
 	}
 
 	/**
-	 * Map a core field to the indexed counterpart in Elasticsearch.
+	 * Maps a field key to the Elasticsearch mapped field path.
 	 *
-	 * @param  string $field The core field to map.
+	 * @param string $field The field key to map.
+	 *
 	 * @return string The mapped field reference.
 	 */
 	public function map_field( string $field ): string {
-		if ( ! empty( $this->field_map[ $field ] ) ) {
-			return $this->field_map[ $field ];
-		} else {
-			return $field;
-		}
+		return $this->get_field_map()[ $field ] ?? $field;
 	}
 
 	/**

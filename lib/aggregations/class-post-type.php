@@ -1,21 +1,21 @@
 <?php
 /**
- * Post type facet type
+ * Elasticsearch Extensions: Post Type Aggregation Class
  *
  * @package Elasticsearch_Extensions
  */
 
-namespace Elasticsearch_Extensions\Facets;
+namespace Elasticsearch_Extensions\Aggregations;
 
 use Elasticsearch_Extensions\DSL;
 
 /**
- * Post type facet type. Responsible for building
- * the DSL and requests for post type facets.
+ * Post type aggregation type. Responsible for building the DSL and requests for
+ * post type aggregations.
  */
-class Post_Type extends Facet_Type {
+class Post_Type extends Aggregation_Type {
 	/**
-	 * The query var this facet should use.
+	 * The query var this aggregation should use.
 	 *
 	 * @var string
 	 */

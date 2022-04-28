@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for Facets.
+ * Elasticsearch Extensions: Aggregation Class
  *
  * @package Elasticsearch_Extensions
  */
@@ -8,82 +8,82 @@
 namespace Elasticsearch_Extensions;
 
 /**
- * Elasticsearch facet/aggregation.
+ * Elasticsearch aggregation.
  */
-class Facet {
+class Aggregation {
 	/**
-	 * The label for this facet, as provided by ES.
+	 * The label for this aggregation, as provided by Elasticsearch.
 	 *
 	 * @var string
 	 */
 	public string $label;
 
 	/**
-	 * This facet's buckets (results).
+	 * This aggregation's buckets (results).
 	 *
 	 * @var array
 	 */
 	public array $buckets;
 
 	/**
-	 * Facet Config.
+	 * Aggregation configuration.
 	 *
 	 * @var array
 	 */
 	public array $config;
 
 	/**
-	 * The human-readable name for this facet section.
+	 * The human-readable name for this aggregation.
 	 *
 	 * @var string
 	 */
 	public string $name;
 
 	/**
-	 * The label for this facet section.
+	 * The label for this aggregation.
 	 *
 	 * @var string
 	 */
 	public string $title;
 
 	/**
-	 * The parsed type from the facet label.
+	 * The parsed type from the aggregation label.
 	 *
 	 * @var string
 	 */
 	public string $type;
 
 	/**
-	 * The parsed subtype from the facet label, if applicable.
+	 * The parsed subtype from the aggregation label, if applicable.
 	 *
 	 * @var string
 	 */
 	public string $subtype;
 
 	/**
-	 * The query var this facet.
+	 * The query var this aggregation.
 	 *
 	 * @var string
 	 */
 	public string $query_var;
 
 	/**
-	 * Build this facet object.
+	 * Build this aggregation object.
 	 *
-	 * @param string $label        The label as provided by ES.
-	 * @param array  $buckets      The buckets/results for the facet.
-	 * @param array  $facet_config Config for the Facet.
+	 * @param string $label   The label as provided by ES.
+	 * @param array  $buckets The buckets/results for the aggregation.
+	 * @param array  $config  Config for the aggregation.
 	 */
-	public function __construct( string $label, array $buckets, array $facet_config = [] ) {
+	public function __construct( string $label, array $buckets, array $config = [] ) {
 		$this->label   = $label;
 		$this->buckets = $buckets;
-		$this->config  = $facet_config;
+		$this->config  = $config;
 		$this->name    = $this->config['name'];
 		$this->parse_type();
 	}
 
 	/**
-	 * Parse the type (and subtype) for this facet.
+	 * Parse the type (and subtype) for this aggregation.
 	 */
 	protected function parse_type() {
 		if ( 'taxonomy_' === substr( $this->label, 0, 9 ) ) {
@@ -95,16 +95,16 @@ class Facet {
 	}
 
 	/**
-	 * Get the field (checkbox) name for this facet.
+	 * Get the field (checkbox) name for this aggregation.
 	 *
 	 * @return string
 	 */
 	public function field_name(): string {
-		return sprintf( 'facets[%s][]', $this->query_var );
+		return sprintf( 'fs[%s][]', $this->query_var );
 	}
 
 	/**
-	 * Get the buckets for this facet.
+	 * Get the buckets for this aggregation.
 	 *
 	 * @return array
 	 */
@@ -113,7 +113,7 @@ class Facet {
 	}
 
 	/**
-	 * Does this facet have any results?
+	 * Does this aggregation have any results?
 	 *
 	 * @return boolean
 	 */
@@ -122,21 +122,21 @@ class Facet {
 	}
 
 	/**
-	 * Get the title for this facet section.
+	 * Get the title for this aggregation section.
 	 *
 	 * @return string
 	 */
 	public function title(): string {
 		if ( ! isset( $this->title ) ) {
 			/**
-			 * Filter the facet title.
+			 * Filter the aggregation title.
 			 *
-			 * @param null|string $title   The facet title. Defaults to null.
-			 * @param string      $label   Facet label.
-			 * @param string      $type    Facet type.
-			 * @param string      $subtype Facet Subtype.
+			 * @param null|string $title   The aggregation title. Defaults to null.
+			 * @param string      $label   Aggregation label.
+			 * @param string      $type    Aggregation type.
+			 * @param string      $subtype Aggregation Subtype.
 			 */
-			$this->title = apply_filters( 'elasticsearch_extensions_facet_title', '', $this->label, $this->type, $this->subtype );
+			$this->title = apply_filters( 'elasticsearch_extensions_aggregation_title', '', $this->label, $this->type, $this->subtype );
 			if ( null === $this->title ) {
 				switch ( $this->type ) {
 					case 'taxonomy':
@@ -178,14 +178,14 @@ class Facet {
 	 */
 	public function get_label_for_bucket( array $bucket ): string {
 		/**
-		 * Filter the facet bucket label.
+		 * Filter the aggregation bucket label.
 		 *
 		 * @param string $bucket_label Bucket label. Defaults to null.
-		 * @param string $label        Facet label.
-		 * @param string $type         Facet type.
-		 * @param string $subtype      Facet Subtype.
+		 * @param string $label        Aggregation label.
+		 * @param string $type         Aggregation type.
+		 * @param string $subtype      Aggregation Subtype.
 		 */
-		$label = apply_filters( 'elasticsearch_extensions_facet_bucket_label', null, $bucket, $this->label, $this->type, $this->subtype );
+		$label = apply_filters( 'elasticsearch_extensions_aggregation_bucket_label', null, $bucket, $this->label, $this->type, $this->subtype );
 		if ( null !== $label ) {
 			return $label;
 		}
@@ -250,7 +250,7 @@ class Facet {
 		if ( 'post_date' === $this->type ) {
 			$value = absint( $value ) / 1000;
 		}
-		$values = ! empty( $_GET['facets'][ $this->query_var ] ) ? (array) $_GET['facets'][ $this->query_var ] : []; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$values = ! empty( $_GET['fs'][ $this->query_var ] ) ? (array) $_GET['fs'][ $this->query_var ] : []; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		checked( in_array( $value, $values ) ); // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict
 	}
 }

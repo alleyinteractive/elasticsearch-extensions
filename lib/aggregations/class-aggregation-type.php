@@ -1,28 +1,28 @@
 <?php
 /**
- * Facet types abstract class.
+ * Elasticsearch Extensions: Aggregation_Type Abstract Class
  *
  * @package Elasticsearch_Extensions
  */
 
-namespace Elasticsearch_Extensions\Facets;
+namespace Elasticsearch_Extensions\Aggregations;
 
 use Elasticsearch_Extensions\Controller;
 
 /**
- * Facet types abstract class. Responsible for building
- * the DSL and requests for facets.
+ * Aggregation type abstract class. Responsible for building the DSL and
+ * requests for aggregations.
  */
-abstract class Facet_Type {
+abstract class Aggregation_Type {
 	/**
-	 * The logic mode this facet should use. 'and' or 'or'.
+	 * The logic mode this aggregation should use. One of 'and', 'or'.
 	 *
 	 * @var string
 	 */
 	protected string $logic = 'or';
 
 	/**
-	 * The query var this facet should use.
+	 * The query var this aggregation should use.
 	 *
 	 * @var string
 	 */
@@ -36,14 +36,14 @@ abstract class Facet_Type {
 	protected Controller $controller;
 
 	/**
-	 * Build the facet type object.
+	 * Build the aggregation type object.
 	 */
 	public function __construct() {
 		$this->controller = Controller::instance();
 	}
 
 	/**
-	 * Build the facet request.
+	 * Build the aggregation request.
 	 *
 	 * @return array
 	 */
@@ -52,13 +52,14 @@ abstract class Facet_Type {
 	/**
 	 * Get the request filter DSL clause.
 	 *
-	 * @param  array $values Values to pass to filter.
-	 * @return array
+	 * @param array $values Values to pass to filter.
+	 *
+	 * @return array The filtered DSL.
 	 */
 	abstract public function filter( array $values ): array;
 
 	/**
-	 * Get the logic mode for this facet.
+	 * Get the logic mode for this aggregation.
 	 *
 	 * @return string 'and' or 'or'.
 	 */
@@ -67,7 +68,7 @@ abstract class Facet_Type {
 	}
 
 	/**
-	 * Get the query var for this facet.
+	 * Get the query var for this aggregation.
 	 *
 	 * @return string
 	 */
