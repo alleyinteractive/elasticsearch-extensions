@@ -66,8 +66,8 @@ abstract class Aggregation {
 		}
 
 		// Extract selected values from the query var.
-		$fs       = get_query_var( 'fs' );
-		$selected = $fs[ $this->query_var ] ?? [];
+		$fs                 = get_query_var( 'fs' );
+		$selected           = $fs[ $this->query_var ] ?? [];
 		$this->query_values = array_values( array_filter( $selected ) );
 	}
 

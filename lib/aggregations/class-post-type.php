@@ -45,7 +45,7 @@ class Post_Type extends Aggregation {
 		$label = apply_filters( 'elasticsearch_extensions_aggregation_post_type_label', 'singular_name' );
 
 		foreach ( $buckets as $bucket ) {
-			$post_type = get_post_type_object( $bucket['key'] );
+			$post_type       = get_post_type_object( $bucket['key'] );
 			$this->buckets[] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
