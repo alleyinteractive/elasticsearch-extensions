@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
+use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 
 /**
  * The controller class, which is responsible for loading adapters and
@@ -64,17 +65,7 @@ class Controller {
 	 */
 	public function enable_post_date_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_aggregation_config(
-				wp_parse_args(
-					$args,
-					[
-						'count'             => 1000,
-						'calendar_interval' => 'year',
-						'label'             => __( 'Date', 'elasticsearch-extensions' ),
-						'type'              => 'post_date',
-					]
-				)
-			);
+			$this->adapter->enable_post_date_aggregation( $args );
 		}
 
 		return $this;
@@ -89,16 +80,7 @@ class Controller {
 	 */
 	public function enable_post_type_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_aggregation_config(
-				wp_parse_args(
-					$args,
-					[
-						'count' => 1000,
-						'label' => __( 'Content Type', 'elasticsearch-extensions' ),
-						'type'  => 'post_type',
-					]
-				)
-			);
+			$this->adapter->enable_post_type_aggregation( $args );
 		}
 
 		return $this;
@@ -114,18 +96,7 @@ class Controller {
 	 */
 	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_aggregation_config(
-				wp_parse_args(
-					$args,
-					[
-						'count'    => 1000,
-						// TODO: Get taxonomy label based on slug.
-						'label'    => $taxonomy,
-						'taxonomy' => $taxonomy,
-						'type'     => 'taxonomy',
-					]
-				)
-			);
+			$this->adapter->enable_taxonomy_aggregation( $taxonomy, $args );
 		}
 
 		return $this;
@@ -138,8 +109,10 @@ class Controller {
 	 *
 	 * @return Aggregation|null
 	 */
-	public function get_aggregation_by_name( string $label = '' ) {
-		return $this->adapter->get_aggregation_by( 'label', $label );
+	public function get_aggregation_by_label( string $label = '' ) {
+		return isset( $this->adapter )
+			? $this->adapter->get_aggregation_by( 'label', $label )
+			: null;
 	}
 
 	/**
@@ -150,16 +123,20 @@ class Controller {
 	 * @return Aggregation|null
 	 */
 	public function get_aggregation_by_query_var( string $query_var = '' ) {
-		return $this->adapter->get_aggregation_by( 'query_var', $query_var );
+		return isset( $this->adapter )
+			? $this->adapter->get_aggregation_by( 'query_var', $query_var )
+			: null;
 	}
 
 	/**
 	 * Get all aggregations from the adapter.
 	 *
-	 * @return array
+	 * @return array An array of aggregation data grouped by aggregation type.
 	 */
 	public function get_aggregations(): array {
-		return $this->adapter->get_aggregations();
+		return isset( $this->adapter )
+			? $this->adapter->get_aggregations()
+			: [];
 	}
 
 	/**
@@ -175,46 +152,11 @@ class Controller {
 	}
 
 	/**
-	 * Loads an instance of an Adapter into the controller.
-	 *
-	 * @param Adapter $adapter The adapter to load.
+	 * Dynamically loads an instance of an Adapter based on environment settings.
 	 */
-	public function load_adapter( Adapter $adapter ): void {
-		$this->adapter = $adapter;
-	}
-
-	/**
-	 * Map a given field to the Elasticsearch index.
-	 *
-	 * @param string $field The field to map.
-	 *
-	 * @return string The mapped field.
-	 */
-	public function map_field( $field ) {
-		return $this->adapter->map_field( $field );
-	}
-
-	/**
-	 * Map a meta field. This will swap in the data type.
-	 *
-	 * @param string $meta_key Meta key to map.
-	 * @param string $type Data type to map.
-	 *
-	 * @return string The mapped field.
-	 */
-	public function map_meta_field( string $meta_key, string $type = '' ): string {
-		return $this->adapter->map_meta_field( $meta_key, $type );
-	}
-
-	/**
-	 * Map a taxonomy field. This will swap in the taxonomy name.
-	 *
-	 * @param string $taxonomy Taxonomy to map.
-	 * @param string $field Field to map.
-	 *
-	 * @return string The mapped field.
-	 */
-	public function map_tax_field( string $taxonomy, string $field ): string {
-		return $this->adapter->map_tax_field( $taxonomy, $field );
+	public function load_adapter(): void {
+		if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
+			$this->adapter = VIP_Enterprise_Search::instance();
+		}
 	}
 }
