@@ -95,10 +95,22 @@ class DSL {
 	 * @return array DSL fragment.
 	 */
 	public function aggregate_terms( string $aggregation, string $mapped_field ): array {
+		/**
+		 * Allows the `size` property of a terms aggregation to be filtered. By
+		 * default, Elasticsearch Extensions will return up to 1000 different
+		 * terms on a terms aggregation, but this value can be increased for
+		 * completeness or decreased for performance.
+		 *
+		 * @param int    $size        The maximum number of terms to return.
+		 * @param string $aggregation The unique aggregation slug.
+		 */
+		$size = apply_filters( 'elasticsearch_extensions_aggregation_term_size', 1000, $aggregation );
+
 		return [
 			$aggregation => [
 				'terms' => [
 					'field' => $mapped_field,
+					'size'  => $size,
 				],
 			],
 		];

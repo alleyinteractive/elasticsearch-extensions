@@ -22,6 +22,13 @@ class Bucket {
 	public int $count;
 
 	/**
+	 * The machine-readable key for this bucket (e.g., post type slug).
+	 *
+	 * @var string
+	 */
+	public string $key;
+
+	/**
 	 * The human-readable label for this bucket.
 	 *
 	 * @var string
@@ -36,24 +43,17 @@ class Bucket {
 	public bool $selected;
 
 	/**
-	 * The machine-readable value for this bucket (e.g., post type slug).
-	 *
-	 * @var string
-	 */
-	public string $value;
-
-	/**
 	 * Constructor. Sets property values.
 	 *
-	 * @param string $value    The machine-readable value for this bucket (e.g., post type slug).
+	 * @param string $key      The machine-readable key for this bucket (e.g., post type slug).
 	 * @param int    $count    Optional. The number of results in this bucket. Defaults to 0.
 	 * @param string $label    Optional. The human-readable label for this bucket. Defaults to $value.
 	 * @param bool   $selected Optional. Whether this bucket is selected or not. Defaults to false.
 	 */
-	public function __construct( string $value, int $count = 0, string $label = '', bool $selected = false ) {
-		$this->value    = $value;
+	public function __construct( string $key, int $count = 0, string $label = '', bool $selected = false ) {
+		$this->key      = $key;
 		$this->count    = $count;
-		$this->label    = $label ?: $value;
+		$this->label    = $label ?: $key;
 		$this->selected = $selected;
 	}
 }

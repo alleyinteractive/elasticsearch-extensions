@@ -17,6 +17,19 @@ use Elasticsearch_Extensions\DSL;
 class VIP_Enterprise_Search extends Adapter {
 
 	/**
+	 * A callback for the ep_valid_response action hook. Parses aggregations
+	 * from the raw Elasticsearch response and adds the buckets to the
+	 * configured aggregations.
+	 *
+	 * @param array $response Response from the Elasticsearch server.
+	 */
+	public function action__ep_valid_response( $response ): void {
+		if ( ! empty( $response['aggregations'] ) ) {
+			$this->parse_aggregations( $response['aggregations'] );
+		}
+	}
+
+	/**
 	 * Gets the field map for this adapter.
 	 *
 	 * @return array The field map.
@@ -119,171 +132,5 @@ class VIP_Enterprise_Search extends Adapter {
 		// Register filter hooks.
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
-	}
-
-	// TODO: REFACTOR LINE
-
-	/**
-	 * Add facets to EP query.
-	 * Filters `ep_post_formatted_args`.
-	 *
-	 * @see \ElasticPress\Indexable\Post\Post::format_args() For the `ep_post_formatted_args` filter.
-	 *
-	 * @param array $query Formatted Elasticsearch query.
-	 * @return array
-	 */
-	public function add_facets_to_ep_query( $query ): array {
-		// Do we have any facets specified?
-		$searched_facets = get_query_var( 'fs' );
-		if ( empty( $searched_facets ) ) {
-			return $query;
-		}
-
-		// Try to get the list of configured facets.
-		$configured_facets = $this->get_facet_config();
-		if ( empty( $configured_facets ) ) {
-			return $query;
-		}
-
-		// Match searched facets against configured facets and augment the query accordingly.
-		foreach ( $searched_facets as $facet_label => $facet_terms ) {
-			// Skip any specified facets that are not configured.
-			if ( empty( $configured_facets[ $facet_label ]['type'] ) ) {
-				continue;
-			}
-
-			// Loop over terms and add each based on type.
-			foreach ( $facet_terms as $facet_term ) { // phpcs:ignore WordPressVIPMinimum.Variables.VariableAnalysis.UnusedVariable
-				switch ( $configured_facets[ $facet_label ]['type'] ) {
-					case 'taxonomy':
-						$query['query']['function_score']['query']['bool']['must'][] = [
-							'terms' => [
-								'terms.' . $configured_facets[ $facet_label ]['taxonomy'] . '.slug' => [
-									$facet_term,
-								],
-							],
-						];
-						break;
-					case 'post_type':
-						$query['query']['function_score']['query']['bool']['must'][] = [
-							'terms' => [
-								'post_type.raw' => [
-									$facet_term,
-								],
-							],
-						];
-						break;
-				}
-			}
-		}
-
-		// TODO Write DSL for date faceting as configured.
-
-		return $query;
-	}
-
-	/**
-	 * Allow empty searching in conjunction with faceting.
-	 * Filters `ep_post_formatted_args`.
-	 *
-	 * Since EP is not "expecting" our custom faceting,
-	 * it does a match_all when no search query string is present.
-	 * For that same reason, if there are no facets, EP's match_all is required.
-	 *
-	 * @see \ElasticPress\Indexable\Post\Post::format_args() For the `ep_post_formatted_args` filter.
-	 *
-	 * @param array $formatted_args Formatted ES args.
-	 * @param array $args           WP args.
-	 */
-	public function allow_empty_search( $formatted_args, $args ) {
-		if (
-			isset( $args['s'] )
-			&& '' === $args['s']
-			&& true === $this->empty_search
-		) {
-			unset( $formatted_args['query']['match_all'] );
-		}
-		return $formatted_args;
-	}
-
-	/**
-	 * Filters ElasticPress request query args to apply registered customizations.
-	 * Filters `ep_query_request_args`.
-	 *
-	 * @see \ElasticPress\Elasticsearch::query() For the `ep_query_request_args` filter.
-	 *
-	 * @param array  $request_args Request arguments.
-	 * @param string $path         Request path.
-	 * @param string $index        Index name.
-	 * @param string $type         Index type.
-	 *
-	 * @return array New request arguments.
-	 */
-	public function filter_ep_query_request_args( $request_args, $path, $index, $type ): array {
-		// Try to convert the request body to an array, so we can work with it.
-		$dsl = json_decode( $request_args['body'], true );
-		if ( ! is_array( $dsl ) ) {
-			return $request_args;
-		}
-
-		// Add our aggregations.
-		if ( $this->get_aggregate_post_dates() ) {
-			$post_date_facet = new Post_Date();
-			$post_date_facet::set_calendar_interval( $this->facets_config['post_date']['calendar_interval'] );
-			$dsl['aggs'] = array_merge( $dsl['aggs'], $post_date_facet->request() );
-		}
-
-		if ( $this->get_aggregate_post_types() ) {
-			$post_type_facet = new Post_Type();
-			$dsl['aggs']     = array_merge( $dsl['aggs'], $post_type_facet->request() );
-		}
-
-		if ( $this->get_aggregate_categories() ) {
-			$category_facet = new Category();
-			$dsl['aggs']    = array_merge( $dsl['aggs'], $category_facet->request() );
-		}
-
-		if ( $this->get_aggregate_tags() ) {
-			$tag_facet   = new Tag();
-			$dsl['aggs'] = array_merge( $dsl['aggs'], $tag_facet->request() );
-		}
-
-		$agg_taxonomies = $this->get_aggregate_taxonomies();
-		if ( ! empty( $agg_taxonomies ) ) {
-			foreach ( $agg_taxonomies as $agg_taxonomy ) {
-				$dsl['aggs'][ "taxonomy_{$agg_taxonomy}" ] = [
-					'terms' => [
-						'size'  => 1000,
-						'field' => "terms.{$agg_taxonomy}.slug",
-					],
-				];
-			}
-		}
-
-		// Re-encode the body into the request args.
-		$request_args['body'] = wp_json_encode( $dsl );
-
-		return $request_args;
-	}
-
-	/**
-	 * Set results from last query.
-	 * Filters `ep_valid_response`.
-	 *
-	 * @see \ElasticPress\Elasticsearch::query() For the `ep_valid_response` filter.
-	 *
-	 * @param array $response Elasticsearch decoded response.
-	 * @return void
-	 */
-	public function set_results( $response ) {
-		// Set aggregations if applicable.
-		if ( ! empty( $response['aggregations'] ) ) {
-			$this->set_aggregations( $response['aggregations'] );
-		}
-
-		// TODO ensure this is a search and this isn't too broad.
-		if ( apply_filters( 'elasticsearch_extensions_should_set_results', true ) ) {
-			$this->results = $response;
-		}
 	}
 }

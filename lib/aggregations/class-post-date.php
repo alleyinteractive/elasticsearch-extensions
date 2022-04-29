@@ -40,6 +40,30 @@ class Post_Date extends Aggregation {
 	}
 
 	/**
+	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
+	 * Bucket objects and saves them in this object.
+	 *
+	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
+	 */
+	public function parse_buckets( array $buckets ): void {
+		foreach ( $buckets as $bucket ) {
+			/**
+			 * Allows the label for a date aggregation to be filtered. For
+			 * example, can be used to convert "2022-04" to "April 2022".
+			 *
+			 * @param string $label The label to use.
+			 */
+			$label           = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $bucket['key'] );
+			$this->buckets[] = new Bucket(
+				$bucket['key'],
+				$bucket['doc_count'],
+				$label,
+				$this->is_selected( $bucket['key'] ),
+			);
+		}
+	}
+
+	/**
 	 * Get DSL for the aggregation to add to the Elasticsearch request object.
 	 * Instructs Elasticsearch to return buckets for this aggregation in the
 	 * response.

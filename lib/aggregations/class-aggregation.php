@@ -64,6 +64,11 @@ abstract class Aggregation {
 				$this->$key = $value;
 			}
 		}
+
+		// Extract selected values from the query var.
+		$fs       = get_query_var( 'fs' );
+		$selected = $fs[ $this->query_var ] ?? [];
+		$this->query_values = array_values( array_filter( $selected ) );
 	}
 
 	/**
@@ -101,6 +106,26 @@ abstract class Aggregation {
 	public function get_query_values(): array {
 		return $this->query_values;
 	}
+
+	/**
+	 * Determines whether the specified key is selected in the query for this
+	 * aggregation.
+	 *
+	 * @param string $key The key to check.
+	 *
+	 * @return bool True if selected, false if not.
+	 */
+	protected function is_selected( string $key ): bool {
+		return in_array( $key, $this->query_values, true );
+	}
+
+	/**
+	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
+	 * Bucket objects and saves them in this object.
+	 *
+	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
+	 */
+	abstract public function parse_buckets( array $buckets ): void;
 
 	/**
 	 * Get DSL for the aggregation to add to the Elasticsearch request object.

@@ -29,6 +29,33 @@ class Post_Type extends Aggregation {
 	}
 
 	/**
+	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
+	 * Bucket objects and saves them in this object.
+	 *
+	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
+	 */
+	public function parse_buckets( array $buckets ): void {
+		/**
+		 * Allows the label field for a post type aggregation to be filtered.
+		 * For example, this filter could be used to use the plural form of the
+		 * label instead of the singular.
+		 *
+		 * @param string $label The slug of the label to use. See get_post_type_labels() for a full list of options.
+		 */
+		$label = apply_filters( 'elasticsearch_extensions_aggregation_post_type_label', 'singular_name' );
+
+		foreach ( $buckets as $bucket ) {
+			$post_type = get_post_type_object( $bucket['key'] );
+			$this->buckets[] = new Bucket(
+				$bucket['key'],
+				$bucket['doc_count'],
+				$post_type->labels->$label,
+				$this->is_selected( $bucket['key'] ),
+			);
+		}
+	}
+
+	/**
 	 * Get DSL for the aggregation to add to the Elasticsearch request object.
 	 * Instructs Elasticsearch to return buckets for this aggregation in the
 	 * response.

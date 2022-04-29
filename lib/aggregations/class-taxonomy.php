@@ -41,6 +41,24 @@ class Taxonomy extends Aggregation {
 	}
 
 	/**
+	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
+	 * Bucket objects and saves them in this object.
+	 *
+	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
+	 */
+	public function parse_buckets( array $buckets ): void {
+		foreach ( $buckets as $bucket ) {
+			$term = get_term_by( 'slug', $bucket['key'] );
+			$this->buckets[] = new Bucket(
+				$bucket['key'],
+				$bucket['doc_count'],
+				$term->name,
+				$this->is_selected( $bucket['key'] ),
+			);
+		}
+	}
+
+	/**
 	 * Get DSL for the aggregation to add to the Elasticsearch request object.
 	 * Instructs Elasticsearch to return buckets for this aggregation in the
 	 * response.
@@ -48,30 +66,17 @@ class Taxonomy extends Aggregation {
 	 * @return array DSL fragment.
 	 */
 	public function request(): array {
-		// Negotiate the field based on taxonomy type.
-		switch ( $this->taxonomy->name ?? '' ) {
-			case 'category':
-				$field = 'category_slug';
-				break;
-			case 'post_tag':
-				$field = 'tag_slug';
-				break;
-			default:
-				$field = 'term_slug';
-				break;
-		}
-
 		/**
 		 * Filters the unmapped field name used in a taxonomy aggregation.
 		 *
 		 * @param string      $field    The field to aggregate.
 		 * @param WP_Taxonomy $taxonomy The taxonomy for this aggregation.
 		 */
-		$field = apply_filters( 'elasticsearch_extensions_aggregation_taxonomy_field', $field, $this->taxonomy );
+		$field = apply_filters( 'elasticsearch_extensions_aggregation_taxonomy_field', 'slug', $this->taxonomy );
 
 		return $this->dsl->aggregate_terms(
 			$this->query_var,
-			$this->dsl->map_field( $field )
+			$this->dsl->map_tax_field( $this->taxonomy->name, $field )
 		);
 	}
 }

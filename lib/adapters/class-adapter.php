@@ -26,7 +26,7 @@ abstract class Adapter {
 	 *
 	 * @var array
 	 */
-	private array $aggregations = [];
+	protected array $aggregations = [];
 
 	/**
 	 * Whether to allow empty searches (no keyword set).
@@ -56,7 +56,7 @@ abstract class Adapter {
 	 * @param Aggregation $aggregation The aggregation to add.
 	 */
 	private function add_aggregation( Aggregation $aggregation ): void {
-		$this->aggregations[ $aggregation->query_var() ] = $aggregation;
+		$this->aggregations[ $aggregation->get_query_var() ] = $aggregation;
 	}
 
 	/**
@@ -146,6 +146,20 @@ abstract class Adapter {
 			self::$instance->setup();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Parses aggregations from an aggregations object in an Elasticsearch
+	 * response into the loaded aggregations.
+	 *
+	 * @param array $aggregations Aggregations from the Elasticsearch response.
+	 */
+	protected function parse_aggregations( array $aggregations ): void {
+		foreach ( $aggregations as $aggregation_key => $aggregation ) {
+			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
+				$this->aggregations[ $aggregation_key ]->parse( $aggregation );
+			}
+		}
 	}
 
 	/**
