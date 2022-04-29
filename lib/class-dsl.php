@@ -7,6 +7,8 @@
 
 namespace Elasticsearch_Extensions;
 
+use Elasticsearch_Extensions\Aggregations\Post_Date;
+
 /**
  * Handles DSL creation and modification for Elasticsearch queries.
  */
@@ -28,6 +30,78 @@ class DSL {
 	 */
 	public function __construct( array $field_map ) {
 		$this->field_map = $field_map;
+	}
+
+	/**
+	 * Returns DSL for a date_histogram aggregation on a given field key at a
+	 * given interval.
+	 *
+	 * @param string $aggregation  The aggregation slug to use for grouping.
+	 * @param string $mapped_field The mapped field to use for the date aggregation.
+	 * @param string $interval     The interval to aggregate (year, month, etc).
+	 *
+	 * @return array DSL fragment.
+	 */
+	public function aggregate_date_histogram( string $aggregation, string $mapped_field, string $interval ): array {
+		// Negotiate format based on interval.
+		switch ( $interval ) {
+			case 'year':
+				$format = 'yyyy';
+				break;
+			case 'quarter':
+			case 'month':
+				$format = 'yyyy-MM';
+				break;
+			case 'week':
+			case 'day':
+				$format = 'yyyy-MM-dd';
+				break;
+			default:
+				$format = 'yyyy-MM-dd\'T\'HH:mm:ss.SSSZ';
+				break;
+		}
+
+		/**
+		 * Filters the Elasticsearch date format string used in the
+		 * date_histogram aggregation.
+		 *
+		 * @param string $format       The format to use.
+		 * @param string $interval     The interval to aggregate (year, month, etc).
+		 * @param string $aggregation  The aggregation slug to use for grouping.
+		 * @param string $mapped_field The mapped field to use for the date aggregation.
+		 */
+		$format = apply_filters( 'elasticsearch_extensions_aggregation_date_format', $format, $interval, $aggregation, $mapped_field );
+
+		return [
+			$aggregation => [
+				'date_histogram' => [
+					'calendar_interval' => $interval,
+					'field'             => $mapped_field,
+					'format'            => $format,
+					'order'             => [
+						'_key' => 'desc',
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Returns DSL for a terms aggregation on a given field key.
+	 *
+	 * @param string $aggregation  The aggregation slug to use for grouping.
+	 * @param string $mapped_field The mapped field to use for the term aggregation.
+	 *
+	 * @return array DSL fragment.
+	 */
+	public function aggregate_terms( string $aggregation, string $mapped_field ): array {
+		return [
+			$aggregation => [
+				'terms' => [
+					'field' => $mapped_field,
+				],
+			],
+		];
 	}
 
 	/**
@@ -161,18 +235,18 @@ class DSL {
 	/**
 	 * Build a multi_match DSL fragment.
 	 *
-	 * @param array  $fields ES fields. Must already be mapped.
-	 * @param string $query  Search phrase to query.
-	 * @param array  $args   Optional. Additional DSL arguments.
+	 * @param array  $mapped_fields ES fields. Must already be mapped.
+	 * @param string $query         Search phrase to query.
+	 * @param array  $args          Optional. Additional DSL arguments.
 	 *
 	 * @return array DSL fragment.
 	 */
-	public function multi_match( array $fields, string $query, array $args = [] ): array {
+	public function multi_match( array $mapped_fields, string $query, array $args = [] ): array {
 		return [
 			'multi_match' => array_merge(
 				[
 					'query'  => $query,
-					'fields' => $fields,
+					'fields' => $mapped_fields,
 				],
 				$args
 			),

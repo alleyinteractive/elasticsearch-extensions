@@ -9,6 +9,7 @@ namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
 use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
+use Elasticsearch_Extensions\Aggregations\Aggregation;
 
 /**
  * The controller class, which is responsible for loading adapters and
@@ -65,7 +66,7 @@ class Controller {
 	 */
 	public function enable_post_date_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_date_aggregation( $args );
+			$this->adapter->add_post_date_aggregation( $args );
 		}
 
 		return $this;
@@ -80,7 +81,7 @@ class Controller {
 	 */
 	public function enable_post_type_aggregation( array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_type_aggregation( $args );
+			$this->adapter->add_post_type_aggregation( $args );
 		}
 
 		return $this;
@@ -96,7 +97,7 @@ class Controller {
 	 */
 	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
 		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_taxonomy_aggregation( $taxonomy, $args );
+			$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
 		}
 
 		return $this;
@@ -109,7 +110,7 @@ class Controller {
 	 *
 	 * @return Aggregation|null
 	 */
-	public function get_aggregation_by_label( string $label = '' ) {
+	public function get_aggregation_by_label( string $label = '' ): ?Aggregation {
 		return isset( $this->adapter )
 			? $this->adapter->get_aggregation_by( 'label', $label )
 			: null;
@@ -122,7 +123,7 @@ class Controller {
 	 *
 	 * @return Aggregation|null
 	 */
-	public function get_aggregation_by_query_var( string $query_var = '' ) {
+	public function get_aggregation_by_query_var( string $query_var = '' ): ?Aggregation {
 		return isset( $this->adapter )
 			? $this->adapter->get_aggregation_by( 'query_var', $query_var )
 			: null;

@@ -7,7 +7,10 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\Aggregation;
+use Elasticsearch_Extensions\Aggregations\Aggregation;
+use Elasticsearch_Extensions\Aggregations\Post_Date;
+use Elasticsearch_Extensions\Aggregations\Post_Type;
+use Elasticsearch_Extensions\Aggregations\Taxonomy;
 use Elasticsearch_Extensions\DSL;
 
 /**
@@ -48,6 +51,43 @@ abstract class Adapter {
 	private static Adapter $instance;
 
 	/**
+	 * Adds an Aggregation to the list of active aggregations.
+	 *
+	 * @param Aggregation $aggregation The aggregation to add.
+	 */
+	private function add_aggregation( Aggregation $aggregation ): void {
+		$this->aggregations[ $aggregation->query_var() ] = $aggregation;
+	}
+
+	/**
+	 * Adds a new post date aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_post_date_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Post_Date( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new post type aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_post_type_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Post_Type( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new taxonomy aggregation to the list of active aggregations.
+	 *
+	 * @param string $taxonomy The taxonomy slug to add (e.g., category, post_tag).
+	 * @param array  $args     Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_taxonomy_aggregation( string $taxonomy, array $args = [] ): void {
+		$this->add_aggregation( new Taxonomy( $this->dsl, wp_parse_args( $args, [ 'taxonomy' => $taxonomy ] ) ) );
+	}
+
+	/**
 	 * Get an aggregation by a field key and value.
 	 *
 	 * @param string $field Field key.
@@ -55,7 +95,7 @@ abstract class Adapter {
 	 *
 	 * @return Aggregation|null
 	 */
-	public function get_aggregation_by( string $field = '', string $value = '' ) {
+	public function get_aggregation_by( string $field = '', string $value = '' ): ?Aggregation {
 		foreach ( $this->aggregations as $aggregation ) {
 			if ( isset( $aggregation->$field ) && $value === $aggregation->$field ) {
 				return $aggregation;
@@ -70,8 +110,8 @@ abstract class Adapter {
 	 *
 	 * @return array
 	 */
-	public function get_aggregation_config(): array {
-		return $this->aggregation_config;
+	public function get_aggregations(): array {
+		return $this->aggregations;
 	}
 
 	/**
@@ -95,32 +135,6 @@ abstract class Adapter {
 	abstract protected function get_field_map(): array;
 
 	/**
-	 * Sets the value for allow_empty_search.
-	 *
-	 * @param bool $allow_empty_search Whether to allow empty search or not.
-	 */
-	public function set_allow_empty_search( bool $allow_empty_search ): void {
-		$this->allow_empty_search = $allow_empty_search;
-	}
-
-	/**
-	 * Sets up the singleton by registering action and filter hooks and loading
-	 * the DSL class with the field map.
-	 */
-	abstract public function setup(): void;
-
-	// TODO: Refactor line.
-
-	/**
-	 * Gets aggregation results.
-	 *
-	 * @return array The aggregation results.
-	 */
-	public function get_aggregations(): array {
-		return $this->aggregations;
-	}
-
-	/**
 	 * Get an instance of the class.
 	 *
 	 * @return Adapter
@@ -135,31 +149,17 @@ abstract class Adapter {
 	}
 
 	/**
-	 * Pull the facets out of the ES response.
-	 * Filters `ep_valid_response`.
+	 * Sets the value for allow_empty_search.
 	 *
-	 * @see \ElasticPress\Elasticsearch
+	 * @param bool $allow_empty_search Whether to allow empty search or not.
 	 */
-	public function parse_facets() {
-		$this->facets = apply_filters( 'elasticsearch_extensions_parse_facets', [] );
-		if ( empty( $this->facets ) ) {
-			if ( ! empty( $this->results['aggregations'] ) ) {
-				foreach ( $this->results['aggregations'] as $label => $buckets ) {
-					if ( empty( $buckets['buckets'] ) ) {
-						continue;
-					}
-					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'], $this->facets_config[ $label ] );
-				}
-			}
-		}
+	public function set_allow_empty_search( bool $allow_empty_search ): void {
+		$this->allow_empty_search = $allow_empty_search;
 	}
 
 	/**
-	 * Sets aggregation results.
-	 *
-	 * @param array $aggregations An array of aggregation results to be stored.
+	 * Sets up the singleton by registering action and filter hooks and loading
+	 * the DSL class with the field map.
 	 */
-	protected function set_aggregations( array $aggregations ): void {
-		$this->aggregations = $aggregations;
-	}
+	abstract public function setup(): void;
 }

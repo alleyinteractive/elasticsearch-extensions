@@ -16,37 +16,29 @@ use Elasticsearch_Extensions\DSL;
  */
 class Post_Type extends Aggregation {
 
-	// TODO: REFACTOR LINE
-
 	/**
-	 * The query var this aggregation should use.
+	 * Configure the Post Type aggregation.
 	 *
-	 * @var string
+	 * @param DSL   $dsl  The DSL object, initialized with the map from the adapter.
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
-	protected string $query_var = 'post_type';
-
-	/**
-	 * Build the facet request.
-	 *
-	 * @return array
-	 */
-	public function request(): array {
-		return [
-			'post_type' => [
-				'terms' => [
-					'field' => $this->controller->map_field( 'post_type' ),
-				],
-			],
-		];
+	public function __construct( DSL $dsl, array $args ) {
+		$this->label     = __( 'Content Type', 'elasticsearch-extensions' );
+		$this->query_var = 'post_type';
+		parent::__construct( $dsl, $args );
 	}
 
 	/**
-	 * Get the request filter DSL clause.
+	 * Get DSL for the aggregation to add to the Elasticsearch request object.
+	 * Instructs Elasticsearch to return buckets for this aggregation in the
+	 * response.
 	 *
-	 * @param  array $values Values to pass to filter.
-	 * @return array
+	 * @return array DSL fragment.
 	 */
-	public function filter( array $values ): array {
-		return DSL::terms( 'post_type', $values );
+	public function request(): array {
+		return $this->dsl->aggregate_terms(
+			$this->query_var,
+			$this->dsl->map_field( 'post_type' )
+		);
 	}
 }

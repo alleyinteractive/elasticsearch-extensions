@@ -8,9 +8,6 @@
 namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\DSL;
-use Elasticsearch_Extensions\Aggregations\Post_Date;
-use Elasticsearch_Extensions\Aggregations\Post_Type;
-use Elasticsearch_Extensions\Aggregations\Taxonomy;
 
 /**
  * An adapter for WordPress VIP Enterprise Search.

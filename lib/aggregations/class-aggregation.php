@@ -17,18 +17,11 @@ use Elasticsearch_Extensions\DSL;
 abstract class Aggregation {
 
 	/**
-	 * The logic mode this aggregation should use. One of 'and', 'or'.
+	 * Results for this aggregation from Elasticsearch. An array of Bucket objects.
 	 *
-	 * @var string
+	 * @var array
 	 */
-	protected string $logic = 'or';
-
-	/**
-	 * The query var this aggregation should use.
-	 *
-	 * @var string
-	 */
-	protected string $query_var;
+	protected array $buckets = [];
 
 	/**
 	 * A reference to the DSL class, initialized with the map from the adapter.
@@ -38,45 +31,83 @@ abstract class Aggregation {
 	protected DSL $dsl;
 
 	/**
+	 * The human-readable label for this aggregation.
+	 *
+	 * @var string
+	 */
+	protected string $label = '';
+
+	/**
+	 * The query var this aggregation should use.
+	 *
+	 * @var string
+	 */
+	protected string $query_var = '';
+
+	/**
+	 * The values for the query var for this aggregation.
+	 *
+	 * @var array
+	 */
+	protected array $query_values = [];
+
+	/**
 	 * Build the aggregation type object.
 	 *
-	 * @param DSL $dsl The DSL object, initialized with the map from the adapter.
+	 * @param DSL   $dsl  The DSL object, initialized with the map from the adapter.
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
-	public function __construct( DSL $dsl ) {
+	public function __construct( DSL $dsl, array $args = [] ) {
 		$this->dsl = $dsl;
+		foreach ( $args as $key => $value ) {
+			if ( property_exists( $this, $key ) ) {
+				$this->$key = $value;
+			}
+		}
 	}
 
 	/**
-	 * Get the request filter DSL clause.
+	 * Gets a list of results for this aggregation.
 	 *
-	 * @param array $values Values to pass to filter.
-	 *
-	 * @return array The filtered DSL.
+	 * @return array An array of Bucket objects.
 	 */
-	abstract public function filter( array $values ): array;
+	public function get_buckets(): array {
+		return $this->buckets;
+	}
 
 	/**
-	 * Get the logic mode for this aggregation.
+	 * Gets the human-readable label for this aggregation.
 	 *
-	 * @return string 'and' or 'or'.
+	 * @return string The human-readable label for this aggregation.
 	 */
-	public function logic(): string {
-		return $this->logic;
+	public function get_label(): string {
+		return $this->label;
 	}
 
 	/**
 	 * Get the query var for this aggregation.
 	 *
-	 * @return string
+	 * @return string The query var for this aggregation.
 	 */
-	public function query_var(): string {
+	public function get_query_var(): string {
 		return $this->query_var;
 	}
 
 	/**
-	 * Build the aggregation request.
+	 * Get the values for the query var for this aggregation.
 	 *
-	 * @return array
+	 * @return array The values for the query var.
+	 */
+	public function get_query_values(): array {
+		return $this->query_values;
+	}
+
+	/**
+	 * Get DSL for the aggregation to add to the Elasticsearch request object.
+	 * Instructs Elasticsearch to return buckets for this aggregation in the
+	 * response.
+	 *
+	 * @return array DSL fragment.
 	 */
 	abstract public function request(): array;
 }

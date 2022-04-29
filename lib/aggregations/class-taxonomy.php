@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions\Aggregations;
 
 use Elasticsearch_Extensions\DSL;
+use WP_Taxonomy;
 
 /**
  * Taxonomy aggregation class. Responsible for building the DSL and requests
@@ -17,49 +18,60 @@ use Elasticsearch_Extensions\DSL;
 class Taxonomy extends Aggregation {
 
 	/**
-	 * Get the query var for a given taxonomy name.
+	 * A reference to the taxonomy this aggregation is associated with.
 	 *
-	 * @param string $taxonomy_name The taxonomy slug.
-	 *
-	 * @return string The query var for the given taxonomy or an empty string on failure.
+	 * @var WP_Taxonomy
 	 */
-	private function get_taxonomy_query_var( string $taxonomy_name ) {
-		$taxonomy = get_taxonomy( $taxonomy_name );
+	protected WP_Taxonomy $taxonomy;
 
-		return $taxonomy->query_var ?? '';
+	/**
+	 * Configure the Post Type aggregation.
+	 *
+	 * @param DSL   $dsl  The DSL object, initialized with the map from the adapter.
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function __construct( DSL $dsl, array $args ) {
+		$taxonomy = get_taxonomy( $args['taxonomy'] ?? null );
+		if ( ! empty( $taxonomy ) ) {
+			$this->taxonomy  = $taxonomy;
+			$this->label     = $taxonomy->labels->singular_name;
+			$this->query_var = 'taxonomy_' . $taxonomy->query_var;
+		}
+		parent::__construct( $dsl, $args );
 	}
 
-	// TODO: REFACTOR LINE
-
 	/**
-	 * The query var this aggregation should use.
+	 * Get DSL for the aggregation to add to the Elasticsearch request object.
+	 * Instructs Elasticsearch to return buckets for this aggregation in the
+	 * response.
 	 *
-	 * @var string
-	 */
-	protected string $query_var = 'post_type';
-
-	/**
-	 * Build the facet request.
-	 *
-	 * @return array
+	 * @return array DSL fragment.
 	 */
 	public function request(): array {
-		return [
-			'post_type' => [
-				'terms' => [
-					'field' => $this->controller->map_field( 'post_type' ),
-				],
-			],
-		];
-	}
+		// Negotiate the field based on taxonomy type.
+		switch ( $this->taxonomy->name ?? '' ) {
+			case 'category':
+				$field = 'category_slug';
+				break;
+			case 'post_tag':
+				$field = 'tag_slug';
+				break;
+			default:
+				$field = 'term_slug';
+				break;
+		}
 
-	/**
-	 * Get the request filter DSL clause.
-	 *
-	 * @param  array $values Values to pass to filter.
-	 * @return array
-	 */
-	public function filter( array $values ): array {
-		return DSL::terms( 'post_type', $values );
+		/**
+		 * Filters the unmapped field name used in a taxonomy aggregation.
+		 *
+		 * @param string      $field    The field to aggregate.
+		 * @param WP_Taxonomy $taxonomy The taxonomy for this aggregation.
+		 */
+		$field = apply_filters( 'elasticsearch_extensions_aggregation_taxonomy_field', $field, $this->taxonomy );
+
+		return $this->dsl->aggregate_terms(
+			$this->query_var,
+			$this->dsl->map_field( $field )
+		);
 	}
 }
