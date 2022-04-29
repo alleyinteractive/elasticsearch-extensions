@@ -97,6 +97,7 @@ abstract class Adapter {
 	 */
 	public function get_aggregation_by( string $field = '', string $value = '' ): ?Aggregation {
 		foreach ( $this->aggregations as $aggregation ) {
+			/** Type hinting. @var Aggregation $aggregation */
 			if ( isset( $aggregation->$field ) && $value === $aggregation->$field ) {
 				return $aggregation;
 			}
@@ -155,9 +156,10 @@ abstract class Adapter {
 	 * @param array $aggregations Aggregations from the Elasticsearch response.
 	 */
 	protected function parse_aggregations( array $aggregations ): void {
-		foreach ( $aggregations as $aggregation_key => $aggregation ) {
-			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
-				$this->aggregations[ $aggregation_key ]->parse( $aggregation );
+		foreach ( $aggregations as $aggregation ) {
+			/** Type hinting. @var Aggregation $aggregation */
+			if ( isset( $this->aggregations[ $aggregation->get_query_var() ] ) ) {
+				$this->aggregations[ $aggregation->get_query_var() ]->parse( $aggregation );
 			}
 		}
 	}

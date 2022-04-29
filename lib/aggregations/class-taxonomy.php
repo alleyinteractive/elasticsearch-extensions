@@ -41,6 +41,37 @@ class Taxonomy extends Aggregation {
 	}
 
 	/**
+	 * Get DSL for filters that should be applied in the DSL in order to match
+	 * the requested values.
+	 *
+	 * @return array|null DSL fragment or null if no filters to apply.
+	 */
+	public function filter(): ?array {
+		return ! empty( $this->query_values )
+			? $this->dsl->terms(
+				$this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() ),
+				$this->query_values
+			) : null;
+	}
+
+	/**
+	 * Provides a central place for the term field to be filtered. Defaults to
+	 * 'term_slug' but can be modified via the filter to operate on term IDs,
+	 * names, etc.
+	 *
+	 * @return string The term field name.
+	 */
+	private function get_term_field(): string {
+		/**
+		 * Filters the unmapped field name used in a taxonomy aggregation.
+		 *
+		 * @param string      $field    The field to aggregate.
+		 * @param WP_Taxonomy $taxonomy The taxonomy for this aggregation.
+		 */
+		return apply_filters( 'elasticsearch_extensions_aggregation_taxonomy_field', 'term_slug', $this->taxonomy );
+	}
+
+	/**
 	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
 	 * Bucket objects and saves them in this object.
 	 *
@@ -66,17 +97,9 @@ class Taxonomy extends Aggregation {
 	 * @return array DSL fragment.
 	 */
 	public function request(): array {
-		/**
-		 * Filters the unmapped field name used in a taxonomy aggregation.
-		 *
-		 * @param string      $field    The field to aggregate.
-		 * @param WP_Taxonomy $taxonomy The taxonomy for this aggregation.
-		 */
-		$field = apply_filters( 'elasticsearch_extensions_aggregation_taxonomy_field', 'slug', $this->taxonomy );
-
 		return $this->dsl->aggregate_terms(
 			$this->query_var,
-			$this->dsl->map_tax_field( $this->taxonomy->name, $field )
+			$this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() )
 		);
 	}
 }

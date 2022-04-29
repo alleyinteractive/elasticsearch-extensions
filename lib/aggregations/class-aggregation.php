@@ -72,6 +72,14 @@ abstract class Aggregation {
 	}
 
 	/**
+	 * Get DSL for filters that should be applied in the DSL in order to match
+	 * the requested values.
+	 *
+	 * @return array|null DSL fragment or null if no filters to apply.
+	 */
+	abstract public function filter(): ?array;
+
+	/**
 	 * Gets a list of results for this aggregation.
 	 *
 	 * @return array An array of Bucket objects.

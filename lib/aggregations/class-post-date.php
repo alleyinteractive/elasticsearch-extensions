@@ -40,6 +40,17 @@ class Post_Date extends Aggregation {
 	}
 
 	/**
+	 * Get DSL for filters that should be applied in the DSL in order to match
+	 * the requested values.
+	 *
+	 * @return array|null DSL fragment or null if no filters to apply.
+	 */
+	public function filter(): ?array {
+		// TODO.
+		return null;
+	}
+
+	/**
 	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
 	 * Bucket objects and saves them in this object.
 	 *

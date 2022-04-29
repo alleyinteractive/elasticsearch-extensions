@@ -7,6 +7,7 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\DSL;
 
 /**
@@ -27,6 +28,60 @@ class VIP_Enterprise_Search extends Adapter {
 		if ( ! empty( $response['aggregations'] ) ) {
 			$this->parse_aggregations( $response['aggregations'] );
 		}
+	}
+
+	/**
+	 * A callback for the ep_post_formatted_args filter hook. Allows empty
+	 * searches, if enabled, and applies any requested aggregation filters.
+	 *
+	 * @param array $formatted_args Elasticsearch query arguments.
+	 * @param array $args           WordPress query arguments.
+	 *
+	 * @return array The modified Elasticsearch query arguments.
+	 */
+	public function filter__ep_post_formatted_args( $formatted_args, $args ) {
+		// Enable empty search, if requested.
+		if ( $this->get_allow_empty_search() && ! empty( $args['s'] ) ) {
+			unset( $formatted_args['query']['match_all'] );
+		}
+
+		// Add requested aggregations.
+		foreach ( $this->aggregations as $aggregation ) {
+			/** Type hinting. @var Aggregation $aggregation */
+			$filter = $aggregation->filter();
+			if ( ! empty( $filter ) ) {
+				$formatted_args['query']['function_score']['query']['bool']['must'][] = $filter;
+			}
+		}
+
+		return $formatted_args;
+	}
+
+	/**
+	 * A callback for the ep_query_request_args filter. Adds aggregations to the
+	 * request so that the response will include aggregation buckets.
+	 *
+	 * @param array $request_args The request args to be filtered.
+	 *
+	 * @return array The filtered request args.
+	 */
+	public function filter__ep_query_request_args( $request_args ): array {
+		// Try to convert the request body to an array, so we can work with it.
+		$dsl = json_decode( $request_args['body'], true );
+		if ( ! is_array( $dsl ) ) {
+			return $request_args;
+		}
+
+		// Add our aggregations.
+		foreach ( $this->aggregations as $aggregation ) {
+			/** Type hinting. @var Aggregation $aggregation */
+			$dsl['aggs'][ $aggregation->get_query_var() ] = $aggregation->request();
+		}
+
+		// Re-encode the body into the request args.
+		$request_args['body'] = wp_json_encode( $dsl );
+
+		return $request_args;
 	}
 
 	/**

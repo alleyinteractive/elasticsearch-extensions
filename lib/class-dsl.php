@@ -73,14 +73,12 @@ class DSL {
 		$format = apply_filters( 'elasticsearch_extensions_aggregation_date_format', $format, $interval, $aggregation, $mapped_field );
 
 		return [
-			$aggregation => [
-				'date_histogram' => [
-					'calendar_interval' => $interval,
-					'field'             => $mapped_field,
-					'format'            => $format,
-					'order'             => [
-						'_key' => 'desc',
-					],
+			'date_histogram' => [
+				'calendar_interval' => $interval,
+				'field'             => $mapped_field,
+				'format'            => $format,
+				'order'             => [
+					'_key' => 'desc',
 				],
 			],
 		];
@@ -107,11 +105,9 @@ class DSL {
 		$size = apply_filters( 'elasticsearch_extensions_aggregation_term_size', 1000, $aggregation );
 
 		return [
-			$aggregation => [
-				'terms' => [
-					'field' => $mapped_field,
-					'size'  => $size,
-				],
+			'terms' => [
+				'field' => $mapped_field,
+				'size'  => $size,
 			],
 		];
 	}
