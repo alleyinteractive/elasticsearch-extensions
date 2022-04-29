@@ -1,19 +1,21 @@
 <?php
 /**
- * Elasticsearch Extensions: Aggregation_Type Abstract Class
+ * Elasticsearch Extensions: Aggregation Abstract Class
  *
  * @package Elasticsearch_Extensions
  */
 
 namespace Elasticsearch_Extensions\Aggregations;
 
-use Elasticsearch_Extensions\Controller;
+use Elasticsearch_Extensions\DSL;
 
 /**
- * Aggregation type abstract class. Responsible for building the DSL and
- * requests for aggregations.
+ * Aggregation abstract class. Responsible for building the DSL and requests
+ * for aggregations as well as holding the result of the aggregation after a
+ * response was received.
  */
-abstract class Aggregation_Type {
+abstract class Aggregation {
+
 	/**
 	 * The logic mode this aggregation should use. One of 'and', 'or'.
 	 *
@@ -29,25 +31,20 @@ abstract class Aggregation_Type {
 	protected string $query_var;
 
 	/**
-	 * A reference to the ES controller.
+	 * A reference to the DSL class, initialized with the map from the adapter.
 	 *
-	 * @var Controller
+	 * @var DSL
 	 */
-	protected Controller $controller;
+	protected DSL $dsl;
 
 	/**
 	 * Build the aggregation type object.
-	 */
-	public function __construct() {
-		$this->controller = Controller::instance();
-	}
-
-	/**
-	 * Build the aggregation request.
 	 *
-	 * @return array
+	 * @param DSL $dsl The DSL object, initialized with the map from the adapter.
 	 */
-	abstract public function request(): array;
+	public function __construct( DSL $dsl ) {
+		$this->dsl = $dsl;
+	}
 
 	/**
 	 * Get the request filter DSL clause.
@@ -75,4 +72,11 @@ abstract class Aggregation_Type {
 	public function query_var(): string {
 		return $this->query_var;
 	}
+
+	/**
+	 * Build the aggregation request.
+	 *
+	 * @return array
+	 */
+	abstract public function request(): array;
 }

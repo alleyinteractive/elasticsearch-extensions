@@ -1,19 +1,21 @@
 <?php
 /**
- * Post date facet type.
+ * Elasticsearch Extensions: Post_Date Aggregation Class
  *
  * @package Elasticsearch_Extensions
  */
 
-namespace Elasticsearch_Extensions\Facets;
-
-use Elasticsearch_Extensions\DSL;
+namespace Elasticsearch_Extensions\Aggregations;
 
 /**
- * Post date facet type. Responsible for building
- * the DSL and requests for post date facets.
+ * Post date aggregation class. Responsible for building the DSL and requests
+ * for aggregations as well as holding the result of the aggregation after a
+ * response was received.
  */
-class Post_Date extends Facet_Type {
+class Post_Date extends Aggregation {
+
+	// TODO: REFACTOR LINE
+
 	/**
 	 * The query var this facet should use.
 	 *
