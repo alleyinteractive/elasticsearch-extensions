@@ -27,7 +27,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @var Aggregation[]
 	 */
-	protected array $aggregations = [];
+	private array $aggregations = [];
 
 	/**
 	 * Whether to allow empty searches (no keyword set).
@@ -43,6 +43,20 @@ abstract class Adapter implements Hookable {
 	 * @var DSL
 	 */
 	protected DSL $dsl;
+
+	/**
+	 * An optional array of post types to restrict search to.
+	 *
+	 * @var string[]
+	 */
+	private array $restricted_post_types = [];
+
+	/**
+	 * An optional array of taxonomies to restrict search to.
+	 *
+	 * @var string[]
+	 */
+	private array $restricted_taxonomies = [];
 
 	/**
 	 * Constructor. Sets up the DSL object with this adapter's field map.
@@ -93,7 +107,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param string $label Aggregation label.
 	 *
-	 * @return Aggregation|null The aggregation, if found, or null if not.
+	 * @return ?Aggregation The aggregation, if found, or null if not.
 	 */
 	public function get_aggregation_by_label( string $label ): ?Aggregation {
 		foreach ( $this->aggregations as $aggregation ) {
@@ -110,7 +124,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param string $query_var Aggregation query var.
 	 *
-	 * @return Aggregation|null The aggregation, if found, or null if not.
+	 * @return ?Aggregation The aggregation, if found, or null if not.
 	 */
 	public function get_aggregation_by_query_var( string $query_var ): ?Aggregation {
 		foreach ( $this->aggregations as $aggregation ) {
@@ -125,7 +139,7 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Get the aggregation configuration.
 	 *
-	 * @return array
+	 * @return Aggregation[]
 	 */
 	public function get_aggregations(): array {
 		return $this->aggregations;
@@ -152,6 +166,24 @@ abstract class Adapter implements Hookable {
 	abstract protected function get_field_map(): array;
 
 	/**
+	 * Gets the list of restricted post types.
+	 *
+	 * @return string[] The list of restricted post type slugs.
+	 */
+	protected function get_restricted_post_types(): array {
+		return $this->restricted_post_types;
+	}
+
+	/**
+	 * Gets the list of restricted taxonomies.
+	 *
+	 * @return string[] The list of restricted taxonomy slugs.
+	 */
+	protected function get_restricted_taxonomies(): array {
+		return $this->restricted_taxonomies;
+	}
+
+	/**
 	 * Parses aggregations from an aggregations object in an Elasticsearch
 	 * response into the loaded aggregations.
 	 *
@@ -163,6 +195,24 @@ abstract class Adapter implements Hookable {
 				$this->aggregations[ $aggregation_key ]->parse_buckets( $aggregation['buckets'] ?? [] );
 			}
 		}
+	}
+
+	/**
+	 * Restricts searchable post types to the provided list.
+	 *
+	 * @param string[] $post_types The array of post types to restrict search to.
+	 */
+	public function restrict_post_types( array $post_types ): void {
+		$this->restricted_post_types = $post_types;
+	}
+
+	/**
+	 * Restricts searchable taxonomies to the provided list.
+	 *
+	 * @param string[] $taxonomies The array of taxonomies to restrict search to.
+	 */
+	public function restrict_taxonomies( array $taxonomies ): void {
+		$this->restricted_taxonomies = $taxonomies;
 	}
 
 	/**

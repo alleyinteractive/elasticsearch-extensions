@@ -7,8 +7,6 @@
 
 namespace Elasticsearch_Extensions;
 
-use Elasticsearch_Extensions\Aggregations\Post_Date;
-
 /**
  * Handles DSL creation and modification for Elasticsearch queries.
  */

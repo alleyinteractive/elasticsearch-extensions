@@ -7,7 +7,6 @@
 
 namespace Elasticsearch_Extensions\Aggregations;
 
-use Elasticsearch_Extensions\Aggregations\Bucket;
 use Elasticsearch_Extensions\DSL;
 
 /**

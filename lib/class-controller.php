@@ -8,8 +8,6 @@
 namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
-use Elasticsearch_Extensions\Adapters\Generic;
-use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\Interfaces\Hookable;
 
@@ -45,9 +43,8 @@ class Controller implements Hookable {
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function disable_empty_search(): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->set_allow_empty_search( false );
-		}
+		$this->adapter->set_allow_empty_search( false );
+
 		return $this;
 	}
 
@@ -57,9 +54,8 @@ class Controller implements Hookable {
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_empty_search(): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->set_allow_empty_search( true );
-		}
+		$this->adapter->set_allow_empty_search( true );
+
 		return $this;
 	}
 
@@ -71,9 +67,7 @@ class Controller implements Hookable {
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_post_date_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_post_date_aggregation( $args );
-		}
+		$this->adapter->add_post_date_aggregation( $args );
 
 		return $this;
 	}
@@ -86,9 +80,7 @@ class Controller implements Hookable {
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_post_type_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_post_type_aggregation( $args );
-		}
+		$this->adapter->add_post_type_aggregation( $args );
 
 		return $this;
 	}
@@ -102,9 +94,7 @@ class Controller implements Hookable {
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
-		}
+		$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
 
 		return $this;
 	}
@@ -114,12 +104,10 @@ class Controller implements Hookable {
 	 *
 	 * @param string $label Label for the aggregation.
 	 *
-	 * @return Aggregation|null
+	 * @return ?Aggregation The matching aggregation, or null on failure.
 	 */
 	public function get_aggregation_by_label( string $label = '' ): ?Aggregation {
-		return isset( $this->adapter )
-			? $this->adapter->get_aggregation_by_label( $label )
-			: null;
+		return $this->adapter->get_aggregation_by_label( $label );
 	}
 
 	/**
@@ -127,12 +115,10 @@ class Controller implements Hookable {
 	 *
 	 * @param string $query_var Query variable.
 	 *
-	 * @return Aggregation|null
+	 * @return ?Aggregation The matching aggregation, or null on failure.
 	 */
 	public function get_aggregation_by_query_var( string $query_var = '' ): ?Aggregation {
-		return isset( $this->adapter )
-			? $this->adapter->get_aggregation_by_query_var( $query_var )
-			: null;
+		return $this->adapter->get_aggregation_by_query_var( $query_var );
 	}
 
 	/**
@@ -141,16 +127,14 @@ class Controller implements Hookable {
 	 * @return array An array of aggregation data grouped by aggregation type.
 	 */
 	public function get_aggregations(): array {
-		return isset( $this->adapter )
-			? $this->adapter->get_aggregations()
-			: [];
+		return $this->adapter->get_aggregations();
 	}
 
 	/**
 	 * Registers action and/or filter hooks with WordPress.
 	 */
 	public function hook(): void {
-		add_action( 'init', [ $this, 'action__init' ], 99 );
+		add_action( 'init', [ $this, 'action__init' ], 1000 );
 	}
 
 	/**
@@ -167,6 +151,32 @@ class Controller implements Hookable {
 		} else {
 			$this->adapter = Factory::generic_adapter();
 		}
+	}
+
+	/**
+	 * Restricts searchable post types to the provided list.
+	 *
+	 * @param string[] $post_types The array of post types to restrict search to.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function restrict_post_types( array $post_types ): Controller {
+		$this->adapter->restrict_post_types( $post_types );
+
+		return $this;
+	}
+
+	/**
+	 * Restricts searchable taxonomies to the provided list.
+	 *
+	 * @param string[] $taxonomies The array of taxonomies to restrict search to.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function restrict_taxonomies( array $taxonomies ): Controller {
+		$this->adapter->restrict_taxonomies( $taxonomies );
+
+		return $this;
 	}
 
 	/**

@@ -7,7 +7,6 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\Aggregations\Aggregation;
 use WP_Query;
 
 /**
@@ -54,6 +53,33 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * A callback for the ep_indexable_post_types filter hook. Filters the list
+	 * of post types that should be indexed in ElasticPress based on what was
+	 * configured. If no restrictions were specified, uses the default list
+	 * (all public post types).
+	 *
+	 * @param array $post_types An associative array of post type slugs.
+	 *
+	 * @return array The modified list of post types to index.
+	 */
+	public function filter__ep_indexable_post_types( $post_types ) {
+
+		// Determine whether we should filter the list or not.
+		$restricted_post_types = $this->get_restricted_post_types();
+		if ( empty( $restricted_post_types ) ) {
+			return $post_types;
+		}
+
+		// Rebuild the list of post types using the allowlist.
+		$filtered_post_types = [];
+		foreach ( $restricted_post_types as $post_type ) {
+			$filtered_post_types[ $post_type ] = $post_type;
+		}
+
+		return $filtered_post_types;
+	}
+
+	/**
 	 * A callback for the ep_post_formatted_args filter hook. Allows empty
 	 * searches, if enabled, and applies any requested aggregation filters.
 	 *
@@ -69,8 +95,7 @@ class VIP_Enterprise_Search extends Adapter {
 		}
 
 		// Add requested aggregations.
-		foreach ( $this->aggregations as $aggregation ) {
-			/** Type hinting. @var Aggregation $aggregation */
+		foreach ( $this->get_aggregations() as $aggregation ) {
 			$filter = $aggregation->filter();
 			if ( ! empty( $filter ) ) {
 				$formatted_args['query']['function_score']['query']['bool']['must'][] = $filter;
@@ -96,8 +121,7 @@ class VIP_Enterprise_Search extends Adapter {
 		}
 
 		// Add our aggregations.
-		foreach ( $this->aggregations as $aggregation ) {
-			/** Type hinting. @var Aggregation $aggregation */
+		foreach ( $this->get_aggregations() as $aggregation ) {
 			$dsl['aggs'][ $aggregation->get_query_var() ] = $aggregation->request();
 		}
 
@@ -105,6 +129,20 @@ class VIP_Enterprise_Search extends Adapter {
 		$request_args['body'] = wp_json_encode( $dsl );
 
 		return $request_args;
+	}
+
+	/**
+	 * A callback for the vip_search_post_taxonomies_allow_list filter hook.
+	 * Filters the list of taxonomies that should be indexed in ElasticPress
+	 * based on what was configured. If no restrictions were specified, uses the
+	 * default list (all public taxonomies).
+	 *
+	 * @param array $taxonomies A list of taxonomy slugs.
+	 *
+	 * @return array The modified list of taxonomies to index.
+	 */
+	public function filter__vip_search_post_taxonomies_allow_list( $taxonomies ) {
+		return $this->get_restricted_taxonomies() ?: $taxonomies;
 	}
 
 	/**
@@ -205,8 +243,10 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Register filter hooks.
 		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
+		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
+		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 	}
 
 	/**
@@ -219,7 +259,9 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Unregister filter hooks.
 		remove_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ] );
+		remove_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
 		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
+		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 	}
 }
