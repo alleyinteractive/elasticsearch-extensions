@@ -36,7 +36,7 @@ class Taxonomy extends Aggregation {
 		if ( ! empty( $taxonomy ) ) {
 			$this->taxonomy  = $taxonomy;
 			$this->label     = $taxonomy->labels->singular_name;
-			$this->query_var = 'taxonomy_' . $taxonomy->query_var;
+			$this->query_var = 'taxonomy_' . ( $taxonomy->query_var ?: $taxonomy->name );
 		}
 
 		// Remove the taxonomy slug from arguments before passing them to the constructor so we don't overwrite $this->taxonomy.
