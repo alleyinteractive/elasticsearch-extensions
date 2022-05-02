@@ -31,12 +31,19 @@ class Taxonomy extends Aggregation {
 	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
 	public function __construct( DSL $dsl, array $args ) {
+		// Try to get a taxonomy object based on the provided taxonomy slug.
 		$taxonomy = get_taxonomy( $args['taxonomy'] ?? null );
 		if ( ! empty( $taxonomy ) ) {
 			$this->taxonomy  = $taxonomy;
 			$this->label     = $taxonomy->labels->singular_name;
 			$this->query_var = 'taxonomy_' . $taxonomy->query_var;
 		}
+
+		// Remove the taxonomy slug from arguments before passing them to the constructor so we don't overwrite $this->taxonomy.
+		if ( isset( $args['taxonomy'] ) ) {
+			unset( $args['taxonomy'] );
+		}
+
 		parent::__construct( $dsl, $args );
 	}
 
