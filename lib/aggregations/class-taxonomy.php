@@ -86,13 +86,15 @@ class Taxonomy extends Aggregation {
 	 */
 	public function parse_buckets( array $buckets ): void {
 		foreach ( $buckets as $bucket ) {
-			$term            = get_term_by( 'slug', $bucket['key'] );
-			$this->buckets[] = new Bucket(
-				$bucket['key'],
-				$bucket['doc_count'],
-				$term->name,
-				$this->is_selected( $bucket['key'] ),
-			);
+			$term = get_term_by( 'slug', $bucket['key'], $this->taxonomy->name );
+			if ( ! empty( $term ) ) {
+				$this->buckets[] = new Bucket(
+					$bucket['key'],
+					$bucket['doc_count'],
+					$term->name,
+					$this->is_selected( $bucket['key'] ),
+				);
+			}
 		}
 	}
 
