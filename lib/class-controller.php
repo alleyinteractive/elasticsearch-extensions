@@ -38,15 +38,17 @@ class Controller {
 		}
 
 		// Add action hooks.
-		add_action( 'after_setup_theme', [ $this, 'action__after_setup_theme' ] );
+		add_action( 'init', [ $this, 'action__init' ], 99 );
 	}
 
 	/**
-	 * A callback for the after_setup_theme action hook. Invokes a custom hook
-	 * for this plugin to make it easier to configure within other themes and
-	 * plugins.
+	 * A callback for the init action hook. Invokes a custom hook for this
+	 * plugin to make it easier to configure within other themes and plugins.
+	 * Runs at a later priority to ensure that other actions that are run as
+	 * part of init (especially taxonomy registration) are complete before this
+	 * action runs, since it depends on registrations being done already.
 	 */
-	public function action__after_setup_theme(): void {
+	public function action__init(): void {
 		do_action( 'elasticsearch_extensions_config', $this );
 	}
 
