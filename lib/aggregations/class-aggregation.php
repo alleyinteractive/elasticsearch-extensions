@@ -73,6 +73,37 @@ abstract class Aggregation {
 	}
 
 	/**
+	 * Outputs checkboxes for all buckets in the aggregation.
+	 *
+	 * @param string $container_classes Optional. Classnames to apply to the container.
+	 * @param string $input_classes     Optional. Classnames to apply to the input element.
+	 */
+	public function checkboxes( string $container_classes = '', string $input_classes = '' ) {
+		foreach ( $this->buckets as $bucket ) {
+			?>
+			<div
+				<?php if ( ! empty( $container_classes ) ) : ?>
+					class="<?php echo esc_attr( $container_classes ); ?>"
+				<?php endif; ?>
+			>
+				<label>
+					<input
+						<?php checked( $bucket->selected ); ?>
+						<?php if ( ! empty( $input_classes ) ) : ?>
+							class="<?php echo esc_attr( $input_classes ); ?>"
+						<?php endif; ?>
+						name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
+						type="checkbox"
+						value="<?php echo esc_attr( $bucket->key ); ?>"
+					/>
+					<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
+				</label>
+			</div>
+			<?php
+		}
+	}
+
+	/**
 	 * Get DSL for filters that should be applied in the DSL in order to match
 	 * the requested values.
 	 *
