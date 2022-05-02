@@ -75,6 +75,11 @@ abstract class Aggregation {
 	 * Outputs checkboxes for all buckets in the aggregation.
 	 */
 	public function checkboxes() {
+		// Bail if we have no buckets.
+		if ( empty( $this->buckets ) ) {
+			return;
+		}
+
 		?>
 		<fieldset class="elasticsearch-extensions__checkbox-group">
 			<legend><?php echo esc_html( $this->get_label() ); ?></legend>
@@ -170,6 +175,11 @@ abstract class Aggregation {
 	 * Outputs a select control for all buckets in the aggregation.
 	 */
 	public function select() {
+		// Bail if we have no buckets.
+		if ( empty( $this->buckets ) ) {
+			return;
+		}
+
 		?>
 		<div class="elasticsearch-extensions__select-control">
 			<label for="<?php echo esc_attr( $this->get_query_var() ); ?>">
