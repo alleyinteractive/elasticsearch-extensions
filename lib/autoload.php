@@ -23,7 +23,12 @@ function autoload( string $class ) {
 	$dirs  = explode( '\\', $class );
 	$class = array_pop( $dirs );
 
-	require_once __DIR__ . '/' . implode( '/', $dirs ) . '/class-' . $class . '.php';
+	// Negotiate filename.
+	$filename = ! in_array( 'interfaces', $dirs, true )
+		? 'class-' . $class . '.php'
+		: $class . '.php';
+
+	require_once __DIR__ . '/' . implode( '/', $dirs ) . '/' . $filename;
 }
 
 spl_autoload_register( '\Elasticsearch_Extensions\autoload' );

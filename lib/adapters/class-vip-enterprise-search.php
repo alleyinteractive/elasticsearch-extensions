@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\Aggregations\Aggregation;
+use WP_Query;
 
 /**
  * An adapter for WordPress VIP Enterprise Search.
@@ -15,20 +16,6 @@ use Elasticsearch_Extensions\Aggregations\Aggregation;
  * @package Elasticsearch_Extensions
  */
 class VIP_Enterprise_Search extends Adapter {
-
-	/**
-	 * Constructor. Sets up action and filter hooks.
-	 */
-	public function __construct() {
-		// Register action hooks.
-		add_action( 'ep_valid_response', [ $this, 'action__ep_valid_response' ] );
-
-		// Register filter hooks.
-		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
-		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
-
-		parent::__construct();
-	}
 
 	/**
 	 * A callback for the ep_valid_response action hook. Parses aggregations
@@ -41,6 +28,29 @@ class VIP_Enterprise_Search extends Adapter {
 		if ( ! empty( $response['aggregations'] ) ) {
 			$this->parse_aggregations( $response['aggregations'] );
 		}
+	}
+
+	/**
+	 * A callback for the ep_elasticpress_enabled filter hook. Overrides the
+	 * normal behavior for ElasticPress to determine if it is enabled to allow
+	 * for an empty search string, if allowable by the configuration on this
+	 * adapter.
+	 *
+	 * @param bool     $enabled  Whether ElasticPress is enabled for the query or not.
+	 * @param WP_Query $wp_query The WP_Query being examined.
+	 *
+	 * @return bool Whether ElasticPress should be active for the query or not.
+	 */
+	public function filter__ep_elasticpress_enabled( $enabled, $wp_query ) {
+		if ( $this->get_allow_empty_search()
+			&& $wp_query->is_search()
+			&& $wp_query->is_main_query()
+			&& ! is_admin()
+		) {
+			return true;
+		}
+
+		return $enabled;
 	}
 
 	/**
@@ -184,5 +194,32 @@ class VIP_Enterprise_Search extends Adapter {
 			'term_slug'                     => 'terms.%s.slug',
 			'term_tt_id'                    => 'terms.%s.term_taxonomy_id',
 		];
+	}
+
+	/**
+	 * Registers action and/or filter hooks with WordPress.
+	 */
+	public function hook(): void {
+		// Register action hooks.
+		add_action( 'ep_valid_response', [ $this, 'action__ep_valid_response' ] );
+
+		// Register filter hooks.
+		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
+		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
+		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
+	}
+
+	/**
+	 * Unregisters action and/or filter hooks that were registered in the hook
+	 * method.
+	 */
+	public function unhook(): void {
+		// Unregister action hooks.
+		remove_action( 'ep_valid_response', [ $this, 'action__ep_valid_response' ] );
+
+		// Unregister filter hooks.
+		remove_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ] );
+		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
+		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 	}
 }

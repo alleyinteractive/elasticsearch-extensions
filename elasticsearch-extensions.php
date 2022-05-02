@@ -13,6 +13,7 @@
  */
 
 use Elasticsearch_Extensions\Controller;
+use Elasticsearch_Extensions\Registry;
 
 require_once __DIR__ . '/lib/autoload.php';
 
@@ -22,12 +23,8 @@ require_once __DIR__ . '/lib/autoload.php';
  * @return Controller
  */
 function elasticsearch_extensions(): Controller {
-	static $elasticsearch_extensions;
-	if ( ! isset( $elasticsearch_extensions ) ) {
-		$elasticsearch_extensions = new Controller();
-	}
-	return $elasticsearch_extensions;
+	return Registry::controller();
 }
 
 // Bootstrap the plugin.
-elasticsearch_extensions();
+elasticsearch_extensions()->load_adapter();

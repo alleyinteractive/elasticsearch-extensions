@@ -22,4 +22,15 @@ class Generic extends Adapter {
 	public function get_field_map(): array {
 		return [];
 	}
+
+	/**
+	 * Registers action and/or filter hooks with WordPress.
+	 */
+	public function hook(): void {}
+
+	/**
+	 * Unregisters action and/or filter hooks that were registered in the hook
+	 * method.
+	 */
+	public function unhook(): void {}
 }

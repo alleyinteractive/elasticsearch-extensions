@@ -12,6 +12,7 @@ use Elasticsearch_Extensions\Aggregations\Post_Date;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
 use Elasticsearch_Extensions\Aggregations\Taxonomy;
 use Elasticsearch_Extensions\DSL;
+use Elasticsearch_Extensions\Interfaces\Hookable;
 
 /**
  * An abstract class that establishes base functionality and sets requirements
@@ -19,7 +20,7 @@ use Elasticsearch_Extensions\DSL;
  *
  * @package Elasticsearch_Extensions
  */
-abstract class Adapter {
+abstract class Adapter implements Hookable {
 
 	/**
 	 * Stores aggregation data from the Elasticsearch response.

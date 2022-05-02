@@ -11,6 +11,7 @@ use Elasticsearch_Extensions\Adapters\Adapter;
 use Elasticsearch_Extensions\Adapters\Generic;
 use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 use Elasticsearch_Extensions\Aggregations\Aggregation;
+use Elasticsearch_Extensions\Interfaces\Hookable;
 
 /**
  * The controller class, which is responsible for loading adapters and
@@ -18,7 +19,7 @@ use Elasticsearch_Extensions\Aggregations\Aggregation;
  *
  * @package Elasticsearch_Extensions
  */
-class Controller {
+class Controller implements Hookable {
 
 	/**
 	 * The active adapter.
@@ -26,20 +27,6 @@ class Controller {
 	 * @var Adapter
 	 */
 	private Adapter $adapter;
-
-	/**
-	 * Constructor. Dynamically loads an Adapter based on environment settings.
-	 */
-	public function __construct() {
-		if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
-			$this->adapter = new VIP_Enterprise_Search();
-		} else {
-			$this->adapter = new Generic();
-		}
-
-		// Add action hooks.
-		add_action( 'init', [ $this, 'action__init' ], 99 );
-	}
 
 	/**
 	 * A callback for the init action hook. Invokes a custom hook for this
@@ -157,5 +144,35 @@ class Controller {
 		return isset( $this->adapter )
 			? $this->adapter->get_aggregations()
 			: [];
+	}
+
+	/**
+	 * Registers action and/or filter hooks with WordPress.
+	 */
+	public function hook(): void {
+		add_action( 'init', [ $this, 'action__init' ], 99 );
+	}
+
+	/**
+	 * Loads an adapter, either using the given adapter, or dynamically based
+	 * on environment settings.
+	 *
+	 * @param ?Adapter $adapter Optional. The adapter to load. Defaults to dynamic load.
+	 */
+	public function load_adapter( ?Adapter $adapter = null ): void {
+		if ( ! is_null( $adapter ) ) {
+			$this->adapter = $adapter;
+		} elseif ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
+			$this->adapter = Factory::vip_enterprise_search_adapter();
+		} else {
+			$this->adapter = Factory::generic_adapter();
+		}
+	}
+
+	/**
+	 * Unregisters action and/or filter hooks with WordPress.
+	 */
+	public function unhook(): void {
+		remove_action( 'init', [ $this, 'action__init' ], 99 );
 	}
 }
