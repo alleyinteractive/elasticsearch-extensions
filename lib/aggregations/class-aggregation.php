@@ -174,4 +174,39 @@ abstract class Aggregation {
 	 * @return array DSL fragment.
 	 */
 	abstract public function request(): array;
+
+	/**
+	 * Outputs a select control for all buckets in the aggregation.
+	 *
+	 * @param string $container_classes Optional. Classnames to apply to the container.
+	 * @param string $select_classes    Optional. Classnames to apply to the select element.
+	 */
+	public function select( string $container_classes = '', string $select_classes = '' ) {
+		?>
+		<div
+			<?php if ( ! empty( $container_classes ) ) : ?>
+				class="<?php echo esc_attr( $container_classes ); ?>"
+			<?php endif; ?>
+		>
+			<label>
+				<span><?php echo esc_html( $this->get_label() ); ?></span>
+				<select
+					<?php if ( ! empty( $select_classes ) ) : ?>
+						class="<?php echo esc_attr( $select_classes ); ?>"
+					<?php endif; ?>
+					name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
+				>
+					<?php foreach ( $this->buckets as $bucket ) : ?>
+						<option
+							<?php selected( $bucket->selected ); ?>
+							value="<?php echo esc_attr( $bucket->key ); ?>"
+						>
+							<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</label>
+		</div>
+		<?php
+	}
 }
