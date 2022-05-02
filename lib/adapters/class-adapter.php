@@ -88,17 +88,32 @@ abstract class Adapter {
 	}
 
 	/**
-	 * Get an aggregation by a field key and value.
+	 * Get an aggregation by its label.
 	 *
-	 * @param string $field Field key.
-	 * @param string $value Field value.
+	 * @param string $label Aggregation label.
 	 *
-	 * @return Aggregation|null
+	 * @return Aggregation|null The aggregation, if found, or null if not.
 	 */
-	public function get_aggregation_by( string $field = '', string $value = '' ): ?Aggregation {
+	public function get_aggregation_by_label( string $label ): ?Aggregation {
 		foreach ( $this->aggregations as $aggregation ) {
-			/** Type hinting. @var Aggregation $aggregation */
-			if ( isset( $aggregation->$field ) && $value === $aggregation->$field ) {
+			if ( $label === $aggregation->get_label() ) {
+				return $aggregation;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get an aggregation by its query var.
+	 *
+	 * @param string $query_var Aggregation query var.
+	 *
+	 * @return Aggregation|null The aggregation, if found, or null if not.
+	 */
+	public function get_aggregation_by_query_var( string $query_var ): ?Aggregation {
+		foreach ( $this->aggregations as $aggregation ) {
+			if ( $query_var === $aggregation->get_query_var() ) {
 				return $aggregation;
 			}
 		}

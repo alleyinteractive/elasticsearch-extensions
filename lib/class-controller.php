@@ -131,7 +131,7 @@ class Controller {
 	 */
 	public function get_aggregation_by_label( string $label = '' ): ?Aggregation {
 		return isset( $this->adapter )
-			? $this->adapter->get_aggregation_by( 'label', $label )
+			? $this->adapter->get_aggregation_by_label( $label )
 			: null;
 	}
 
@@ -144,7 +144,7 @@ class Controller {
 	 */
 	public function get_aggregation_by_query_var( string $query_var = '' ): ?Aggregation {
 		return isset( $this->adapter )
-			? $this->adapter->get_aggregation_by( 'query_var', $query_var )
+			? $this->adapter->get_aggregation_by_query_var( $query_var )
 			: null;
 	}
 
