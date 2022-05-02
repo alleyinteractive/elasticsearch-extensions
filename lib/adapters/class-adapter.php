@@ -142,10 +142,9 @@ abstract class Adapter {
 	 * @param array $aggregations Aggregations from the Elasticsearch response.
 	 */
 	protected function parse_aggregations( array $aggregations ): void {
-		foreach ( $aggregations as $aggregation ) {
-			/** Type hinting. @var Aggregation $aggregation */
-			if ( isset( $this->aggregations[ $aggregation->get_query_var() ] ) ) {
-				$this->aggregations[ $aggregation->get_query_var() ]->parse( $aggregation );
+		foreach ( $aggregations as $aggregation_key => $aggregation ) {
+			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
+				$this->aggregations[ $aggregation_key ]->parse( $aggregation );
 			}
 		}
 	}
