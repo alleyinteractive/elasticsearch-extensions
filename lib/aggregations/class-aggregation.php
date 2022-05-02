@@ -73,33 +73,24 @@ abstract class Aggregation {
 
 	/**
 	 * Outputs checkboxes for all buckets in the aggregation.
-	 *
-	 * @param string $container_classes Optional. Classnames to apply to the container.
-	 * @param string $input_classes     Optional. Classnames to apply to the input element.
 	 */
-	public function checkboxes( string $container_classes = '', string $input_classes = '' ) {
-		foreach ( $this->buckets as $bucket ) {
-			?>
-			<div
-				<?php if ( ! empty( $container_classes ) ) : ?>
-					class="<?php echo esc_attr( $container_classes ); ?>"
-				<?php endif; ?>
-			>
+	public function checkboxes() {
+		?>
+		<fieldset class="elasticsearch-extensions__checkbox-group">
+			<legend><?php echo esc_html( $this->get_label() ); ?></legend>
+			<?php foreach ( $this->buckets as $bucket ) : ?>
 				<label>
 					<input
 						<?php checked( $bucket->selected ); ?>
-						<?php if ( ! empty( $input_classes ) ) : ?>
-							class="<?php echo esc_attr( $input_classes ); ?>"
-						<?php endif; ?>
 						name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
 						type="checkbox"
 						value="<?php echo esc_attr( $bucket->key ); ?>"
 					/>
 					<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
 				</label>
-			</div>
-			<?php
-		}
+			<?php endforeach; ?>
+		</fieldset>
+		<?php
 	}
 
 	/**
@@ -177,35 +168,29 @@ abstract class Aggregation {
 
 	/**
 	 * Outputs a select control for all buckets in the aggregation.
-	 *
-	 * @param string $container_classes Optional. Classnames to apply to the container.
-	 * @param string $select_classes    Optional. Classnames to apply to the select element.
 	 */
-	public function select( string $container_classes = '', string $select_classes = '' ) {
+	public function select() {
 		?>
-		<div
-			<?php if ( ! empty( $container_classes ) ) : ?>
-				class="<?php echo esc_attr( $container_classes ); ?>"
-			<?php endif; ?>
-		>
-			<label>
-				<span><?php echo esc_html( $this->get_label() ); ?></span>
-				<select
-					<?php if ( ! empty( $select_classes ) ) : ?>
-						class="<?php echo esc_attr( $select_classes ); ?>"
-					<?php endif; ?>
-					name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
-				>
-					<?php foreach ( $this->buckets as $bucket ) : ?>
-						<option
-							<?php selected( $bucket->selected ); ?>
-							value="<?php echo esc_attr( $bucket->key ); ?>"
-						>
-							<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
-						</option>
-					<?php endforeach; ?>
-				</select>
+		<div class="elasticsearch-extensions__select-control">
+			<label for="<?php echo esc_attr( $this->get_query_var() ); ?>">
+				<?php echo esc_html( $this->get_label() ); ?>
 			</label>
+			<select
+				id="<?php echo esc_attr( $this->get_query_var() ); ?>"
+				name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
+			>
+				<option value="">
+					<?php esc_html_e( 'All', 'elasticsearch-extensions' ); ?>
+				</option>
+				<?php foreach ( $this->buckets as $bucket ) : ?>
+					<option
+						<?php selected( $bucket->selected ); ?>
+						value="<?php echo esc_attr( $bucket->key ); ?>"
+					>
+						<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
+					</option>
+				<?php endforeach; ?>
+			</select>
 		</div>
 		<?php
 	}
