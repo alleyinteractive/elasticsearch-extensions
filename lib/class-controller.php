@@ -49,6 +49,19 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enable support for Co-Authors Plus. Registers a taxonomy handler for
+	 * the "author" taxonomy and adds some special logic to the author
+	 * taxonomy aggregation to get the display names for the authors.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_cap_support(): Controller {
+		$this->adapter->add_cap_author_aggregation();
+
+		return $this;
+	}
+
+	/**
 	 * Enable empty search query strings.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.

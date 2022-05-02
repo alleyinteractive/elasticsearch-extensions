@@ -25,7 +25,7 @@ class Taxonomy extends Aggregation {
 	protected WP_Taxonomy $taxonomy;
 
 	/**
-	 * Configure the Post Type aggregation.
+	 * Configure the Taxonomy aggregation.
 	 *
 	 * @param DSL   $dsl  The DSL object, initialized with the map from the adapter.
 	 * @param array $args Optional. Additional arguments to pass to the aggregation.
