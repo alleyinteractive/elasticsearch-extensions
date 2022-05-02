@@ -7,6 +7,7 @@
 
 namespace Elasticsearch_Extensions\Aggregations;
 
+use Elasticsearch_Extensions\Aggregations\Bucket;
 use Elasticsearch_Extensions\DSL;
 
 /**
@@ -19,7 +20,7 @@ abstract class Aggregation {
 	/**
 	 * Results for this aggregation from Elasticsearch. An array of Bucket objects.
 	 *
-	 * @var array
+	 * @var Bucket[]
 	 */
 	protected array $buckets = [];
 
@@ -47,7 +48,7 @@ abstract class Aggregation {
 	/**
 	 * The values for the query var for this aggregation.
 	 *
-	 * @var array
+	 * @var string[]
 	 */
 	protected array $query_values = [];
 
@@ -82,7 +83,7 @@ abstract class Aggregation {
 	/**
 	 * Gets a list of results for this aggregation.
 	 *
-	 * @return array An array of Bucket objects.
+	 * @return Bucket[] An array of Bucket objects.
 	 */
 	public function get_buckets(): array {
 		return $this->buckets;

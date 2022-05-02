@@ -24,7 +24,7 @@ abstract class Adapter {
 	/**
 	 * Stores aggregation data from the Elasticsearch response.
 	 *
-	 * @var array
+	 * @var Aggregation[]
 	 */
 	protected array $aggregations = [];
 
@@ -144,7 +144,7 @@ abstract class Adapter {
 	protected function parse_aggregations( array $aggregations ): void {
 		foreach ( $aggregations as $aggregation_key => $aggregation ) {
 			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
-				$this->aggregations[ $aggregation_key ]->parse( $aggregation );
+				$this->aggregations[ $aggregation_key ]->parse_buckets( $aggregation );
 			}
 		}
 	}
