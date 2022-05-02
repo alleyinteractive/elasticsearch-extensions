@@ -8,7 +8,6 @@
 namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\Aggregations\Aggregation;
-use Elasticsearch_Extensions\DSL;
 
 /**
  * An adapter for WordPress VIP Enterprise Search.
@@ -16,6 +15,20 @@ use Elasticsearch_Extensions\DSL;
  * @package Elasticsearch_Extensions
  */
 class VIP_Enterprise_Search extends Adapter {
+
+	/**
+	 * Constructor. Sets up action and filter hooks.
+	 */
+	public function __construct() {
+		// Register action hooks.
+		add_action( 'ep_valid_response', [ $this, 'action__ep_valid_response' ] );
+
+		// Register filter hooks.
+		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
+		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
+
+		parent::__construct();
+	}
 
 	/**
 	 * A callback for the ep_valid_response action hook. Parses aggregations
@@ -171,21 +184,5 @@ class VIP_Enterprise_Search extends Adapter {
 			'term_slug'                     => 'terms.%s.slug',
 			'term_tt_id'                    => 'terms.%s.term_taxonomy_id',
 		];
-	}
-
-	/**
-	 * Sets up the singleton by registering action and filter hooks and loading
-	 * the DSL class with the field map.
-	 */
-	public function setup(): void {
-		// Create an instance of the DSL class and inject this adapter's field map into it.
-		$this->dsl = new DSL( $this->get_field_map() );
-
-		// Register action hooks.
-		add_action( 'ep_valid_response', [ $this, 'action__ep_valid_response' ] );
-
-		// Register filter hooks.
-		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
-		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
 	}
 }

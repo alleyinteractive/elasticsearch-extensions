@@ -44,11 +44,11 @@ abstract class Adapter {
 	protected DSL $dsl;
 
 	/**
-	 * Holds a reference to the singleton instance.
-	 *
-	 * @var Adapter
+	 * Constructor. Sets up the DSL object with this adapter's field map.
 	 */
-	private static Adapter $instance;
+	public function __construct() {
+		$this->dsl = new DSL( $this->get_field_map() );
+	}
 
 	/**
 	 * Adds an Aggregation to the list of active aggregations.
@@ -129,25 +129,11 @@ abstract class Adapter {
 	 * path used in the mapping of the Elasticsearch plugin that is in use.
 	 * Implementing classes need to provide this map, as it will be different
 	 * between each plugin's Elasticsearch implementation, and use the result
-	 * of this function when initializing the DSL class in the setup method.
+	 * of this function when initializing the DSL class in the constructor.
 	 *
 	 * @return array The field map.
 	 */
 	abstract protected function get_field_map(): array;
-
-	/**
-	 * Get an instance of the class.
-	 *
-	 * @return Adapter
-	 */
-	public static function instance(): Adapter {
-		$class_name = get_called_class();
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new $class_name();
-			self::$instance->setup();
-		}
-		return self::$instance;
-	}
 
 	/**
 	 * Parses aggregations from an aggregations object in an Elasticsearch
@@ -172,10 +158,4 @@ abstract class Adapter {
 	public function set_allow_empty_search( bool $allow_empty_search ): void {
 		$this->allow_empty_search = $allow_empty_search;
 	}
-
-	/**
-	 * Sets up the singleton by registering action and filter hooks and loading
-	 * the DSL class with the field map.
-	 */
-	abstract public function setup(): void;
 }

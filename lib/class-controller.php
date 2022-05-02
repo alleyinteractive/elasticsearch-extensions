@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
+use Elasticsearch_Extensions\Adapters\Generic;
 use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 use Elasticsearch_Extensions\Aggregations\Aggregation;
 
@@ -27,11 +28,27 @@ class Controller {
 	private Adapter $adapter;
 
 	/**
-	 * Holds a reference to the singleton instance.
-	 *
-	 * @var Controller
+	 * Constructor. Dynamically loads an Adapter based on environment settings.
 	 */
-	private static Controller $instance;
+	public function __construct() {
+		if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
+			$this->adapter = new VIP_Enterprise_Search();
+		} else {
+			$this->adapter = new Generic();
+		}
+
+		// Add action hooks.
+		add_action( 'after_setup_theme', [ $this, 'action__after_setup_theme' ] );
+	}
+
+	/**
+	 * A callback for the after_setup_theme action hook. Invokes a custom hook
+	 * for this plugin to make it easier to configure within other themes and
+	 * plugins.
+	 */
+	public function action__after_setup_theme(): void {
+		do_action( 'elasticsearch_extensions_config', $this );
+	}
 
 	/**
 	 * Disable empty search query strings.
@@ -138,26 +155,5 @@ class Controller {
 		return isset( $this->adapter )
 			? $this->adapter->get_aggregations()
 			: [];
-	}
-
-	/**
-	 * Get an instance of the class.
-	 *
-	 * @return Controller
-	 */
-	public static function instance(): Controller {
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new self();
-		}
-		return self::$instance;
-	}
-
-	/**
-	 * Dynamically loads an instance of an Adapter based on environment settings.
-	 */
-	public function load_adapter(): void {
-		if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
-			$this->adapter = VIP_Enterprise_Search::instance();
-		}
 	}
 }

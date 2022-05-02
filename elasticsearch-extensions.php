@@ -16,14 +16,18 @@ use Elasticsearch_Extensions\Controller;
 
 require_once __DIR__ . '/lib/autoload.php';
 
-// Dynamically load the adapter based on environment settings.
-Controller::instance()->load_adapter();
-
 /**
  * A helper function for getting the instance of the controller class.
  *
  * @return Controller
  */
 function elasticsearch_extensions(): Controller {
-	return Controller::instance();
+	static $elasticsearch_extensions;
+	if ( ! isset( $elasticsearch_extensions ) ) {
+		$elasticsearch_extensions = new Controller();
+	}
+	return $elasticsearch_extensions;
 }
+
+// Bootstrap the plugin.
+elasticsearch_extensions();
