@@ -131,8 +131,8 @@ class Relative_Date extends Aggregation {
 
 		// If a custom date was requested, add it as well.
 		if ( $this->custom && in_array( 'custom', $this->get_query_values(), true ) ) {
-			$from = $this->extract_query_values( $this->get_query_var() . '_from' );
-			$to   = $this->extract_query_values( $this->get_query_var() . '_to' );
+			$from = $this->extract_query_values( $this->get_query_var() . '_from' )[0] ?? '';
+			$to   = $this->extract_query_values( $this->get_query_var() . '_to' )[0] ?? '';
 			if ( ! empty( $from ) && ! empty( $to ) ) {
 				$intervals[] = [
 					'key'  => 'custom',

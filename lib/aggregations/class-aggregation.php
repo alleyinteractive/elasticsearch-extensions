@@ -123,7 +123,7 @@ abstract class Aggregation {
 	 * @return string[] The values for the given key.
 	 */
 	protected function extract_query_values( string $key = '' ): array {
-		return array_values( array_filter( (array) $_GET['fs'][ $key ?: $this->get_query_var() ] ?? [] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+		return array_values( array_filter( (array) ( $_GET['fs'][ $key ?: $this->get_query_var() ] ?? [] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
