@@ -155,6 +155,21 @@ abstract class Aggregation {
 	}
 
 	/**
+	 * Filters the buckets assigned to this aggregation before they are used.
+	 */
+	protected function filter_buckets(): void {
+		/**
+		 * Allows the buckets to be filtered before they are displayed, which
+		 * can allow for removing certain items, or changing labels, or changing
+		 * the sort order of buckets.
+		 *
+		 * @param Bucket[]    $buckets     The array of buckets to filter.
+		 * @param Aggregation $aggregation The aggregation that the buckets are associated with.
+		 */
+		$this->buckets = apply_filters( 'elasticsearch_extensions_buckets', $this->buckets, $this );
+	}
+
+	/**
 	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
 	 * Bucket objects and saves them in this object.
 	 *

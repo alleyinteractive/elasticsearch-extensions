@@ -72,6 +72,9 @@ class Post_Date extends Aggregation {
 				$this->is_selected( $bucket['key'] ),
 			);
 		}
+
+		// Allow the buckets to be filtered.
+		$this->filter_buckets();
 	}
 
 	/**

@@ -23,6 +23,7 @@ class CAP_Author extends Taxonomy {
 	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
 	public function __construct( DSL $dsl, array $args ) {
+		$args['label']    = __( 'Author', 'elasticsearch-extensions' );
 		$args['taxonomy'] = 'author';
 
 		parent::__construct( $dsl, $args );
@@ -55,5 +56,8 @@ class CAP_Author extends Taxonomy {
 				);
 			}
 		}
+
+		// Allow the buckets to be filtered.
+		$this->filter_buckets();
 	}
 }

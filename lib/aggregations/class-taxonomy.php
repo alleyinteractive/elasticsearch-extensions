@@ -96,6 +96,9 @@ class Taxonomy extends Aggregation {
 				);
 			}
 		}
+
+		// Allow the buckets to be filtered.
+		$this->filter_buckets();
 	}
 
 	/**
