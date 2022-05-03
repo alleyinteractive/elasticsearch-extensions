@@ -38,6 +38,22 @@ abstract class Aggregation {
 	protected string $label = '';
 
 	/**
+	 * The order to apply to the results. One of 'ASC', 'DESC'.
+	 * Defaults to 'DESC'.
+	 *
+	 * @var string
+	 */
+	protected $order = 'DESC';
+
+	/**
+	 * The field to sort results by. Defaults to 'count'. Can also be 'key' or
+	 * 'label' or a field specific to an implementing class.
+	 *
+	 * @var string
+	 */
+	protected $orderby = 'count';
+
+	/**
 	 * The query var this aggregation should use.
 	 *
 	 * @var string
@@ -155,23 +171,8 @@ abstract class Aggregation {
 	}
 
 	/**
-	 * Filters the buckets assigned to this aggregation before they are used.
-	 */
-	protected function filter_buckets(): void {
-		/**
-		 * Allows the buckets to be filtered before they are displayed, which
-		 * can allow for removing certain items, or changing labels, or changing
-		 * the sort order of buckets.
-		 *
-		 * @param Bucket[]    $buckets     The array of buckets to filter.
-		 * @param Aggregation $aggregation The aggregation that the buckets are associated with.
-		 */
-		$this->buckets = apply_filters( 'elasticsearch_extensions_buckets', $this->buckets, $this );
-	}
-
-	/**
 	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
-	 * Bucket objects and saves them in this object.
+	 * Bucket objects and passes them to save_buckets for finalization.
 	 *
 	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
 	 */
@@ -218,5 +219,65 @@ abstract class Aggregation {
 			</select>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Performs post-processing on buckets before saving them to the object.
+	 *
+	 * @param Bucket[] $buckets The buckets to save.
+	 */
+	protected function set_buckets( array $buckets ): void {
+		/**
+		 * Allows the buckets to be filtered before they are displayed, which
+		 * can allow for removing certain items, or changing labels, or changing
+		 * the sort order of buckets.
+		 *
+		 * @param Bucket[]    $buckets     The array of buckets to filter.
+		 * @param Aggregation $aggregation The aggregation that the buckets are associated with.
+		 */
+		$this->buckets = apply_filters( 'elasticsearch_extensions_buckets', $this->sort_buckets( $buckets ), $this );
+	}
+
+	/**
+	 * Apply default sorting rules based on count, key, and label. Can be
+	 * overridden by implementing classes to allow for custom sort logic.
+	 *
+	 * @param Bucket[] $buckets Buckets to be sorted.
+	 *
+	 * @return Bucket[] The sorted bucket array.
+	 */
+	protected function sort_buckets( array $buckets ): array {
+
+		// If the sort is one of the standard keys, apply it.
+		if ( in_array( $this->orderby, [ 'count', 'key', 'label' ], true ) ) {
+			usort(
+				$buckets,
+				/**
+				 * Compares two buckets to determine which should come first.
+				 *
+				 * @param Bucket $a The first bucket to compare.
+				 * @param Bucket $b The second bucket to compare.
+				 *
+				 * @return int Less than one if a is before b, more than one if b is before a, or zero if they are equal.
+				 */
+				function ( Bucket $a, Bucket $b ): int {
+					switch ( $this->orderby ) {
+						case 'key':
+							return strcasecmp( $a->key, $b->key );
+						case 'label':
+							return strcasecmp( $a->label, $b->label );
+						default:
+							return $a->count - $b->count;
+					}
+				}
+			);
+		}
+
+		// If the sort order is descending, flip the order.
+		if ( 'DESC' === $this->order ) {
+			$buckets = array_reverse( $buckets );
+		}
+
+		return $buckets;
 	}
 }

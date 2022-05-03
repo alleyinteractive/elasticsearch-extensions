@@ -54,20 +54,18 @@ class Post_Type extends Aggregation {
 		 *
 		 * @param string $label The slug of the label to use. See get_post_type_labels() for a full list of options.
 		 */
-		$label = apply_filters( 'elasticsearch_extensions_aggregation_post_type_label', 'singular_name' );
-
+		$label          = apply_filters( 'elasticsearch_extensions_aggregation_post_type_label', 'singular_name' );
+		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
-			$post_type       = get_post_type_object( $bucket['key'] );
-			$this->buckets[] = new Bucket(
+			$post_type        = get_post_type_object( $bucket['key'] );
+			$bucket_objects[] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
 				$post_type->labels->$label,
 				$this->is_selected( $bucket['key'] ),
 			);
 		}
-
-		// Allow the buckets to be filtered.
-		$this->filter_buckets();
+		$this->set_buckets( $bucket_objects );
 	}
 
 	/**

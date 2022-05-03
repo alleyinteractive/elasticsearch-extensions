@@ -57,6 +57,7 @@ class Post_Date extends Aggregation {
 	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
 	 */
 	public function parse_buckets( array $buckets ): void {
+		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
 			/**
 			 * Allows the label for a date aggregation to be filtered. For
@@ -64,17 +65,15 @@ class Post_Date extends Aggregation {
 			 *
 			 * @param string $label The label to use.
 			 */
-			$label           = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $bucket['key'] );
-			$this->buckets[] = new Bucket(
+			$label            = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $bucket['key'] );
+			$bucket_objects[] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
 				$label,
 				$this->is_selected( $bucket['key'] ),
 			);
 		}
-
-		// Allow the buckets to be filtered.
-		$this->filter_buckets();
+		$this->set_buckets( $bucket_objects );
 	}
 
 	/**

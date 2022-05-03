@@ -85,10 +85,11 @@ class Taxonomy extends Aggregation {
 	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
 	 */
 	public function parse_buckets( array $buckets ): void {
+		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
 			$term = get_term_by( 'slug', $bucket['key'], $this->taxonomy->name );
 			if ( ! empty( $term ) ) {
-				$this->buckets[] = new Bucket(
+				$bucket_objects[] = new Bucket(
 					$bucket['key'],
 					$bucket['doc_count'],
 					$term->name,
@@ -96,9 +97,7 @@ class Taxonomy extends Aggregation {
 				);
 			}
 		}
-
-		// Allow the buckets to be filtered.
-		$this->filter_buckets();
+		$this->set_buckets( $bucket_objects );
 	}
 
 	/**
