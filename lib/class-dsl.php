@@ -83,6 +83,24 @@ class DSL {
 	}
 
 	/**
+	 * Returns DSL for a date_range aggregation on a given field key at a series
+	 * of given intervals and with or without a custom range.
+	 *
+	 * @param string $mapped_field The mapped field to use for the date aggregation.
+	 * @param array  $intervals    An array of arrays specifying the from and to dates.
+	 *
+	 * @return array DSL fragment.
+	 */
+	public function aggregate_date_range( string $mapped_field, array $intervals ): array {
+		return [
+			'date_range' => [
+				'field'  => $mapped_field,
+				'ranges' => $intervals,
+			],
+		];
+	}
+
+	/**
 	 * Returns DSL for a terms aggregation on a given field key.
 	 *
 	 * @param string $aggregation  The aggregation slug to use for grouping.

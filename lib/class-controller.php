@@ -99,6 +99,19 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables an aggregation based on relative dates.
+	 *
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_relative_date_aggregation( array $args = [] ): Controller {
+		$this->adapter->add_relative_date_aggregation( $args );
+
+		return $this;
+	}
+
+	/**
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.

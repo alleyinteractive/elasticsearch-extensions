@@ -11,6 +11,7 @@ use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\Aggregations\CAP_Author;
 use Elasticsearch_Extensions\Aggregations\Post_Date;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
+use Elasticsearch_Extensions\Aggregations\Relative_Date;
 use Elasticsearch_Extensions\Aggregations\Taxonomy;
 use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Interfaces\Hookable;
@@ -100,6 +101,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function add_post_type_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Post_Type( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new relative date aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_relative_date_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Relative_Date( $this->dsl, $args ) );
 	}
 
 	/**
