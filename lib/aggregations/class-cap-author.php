@@ -35,14 +35,22 @@ class CAP_Author extends Taxonomy {
 	 * @param array $buckets The raw aggregation buckets from Elasticsearch.
 	 */
 	public function parse_buckets( array $buckets ): void {
-		// TODO: Update this to get the CAP author name.
+
+		// Check for the existence of the global coauthors_plus object.
+		global $coauthors_plus;
+		if ( empty( $coauthors_plus ) ) {
+			return;
+		}
+
+		// Loop over each term and map it to the CAP display name.
 		foreach ( $buckets as $bucket ) {
-			$term = get_term_by( 'slug', $bucket['key'], $this->taxonomy->name );
-			if ( ! empty( $term ) ) {
+			$coauthor_slug = preg_replace( '#^cap-#', '', $bucket['key'] );
+			$coauthor      = $coauthors_plus->get_coauthor_by( 'user_nicename', $coauthor_slug );
+			if ( ! empty( $coauthor ) ) {
 				$this->buckets[] = new Bucket(
 					$bucket['key'],
 					$bucket['doc_count'],
-					$term->name,
+					$coauthor->display_name ?: $coauthor->user_login,
 					$this->is_selected( $bucket['key'] ),
 				);
 			}
