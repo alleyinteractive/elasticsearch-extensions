@@ -49,14 +49,14 @@ class Controller implements Hookable {
 	}
 
 	/**
-	 * Enable support for Co-Authors Plus. Registers a taxonomy handler for
-	 * the "author" taxonomy and adds some special logic to the author
-	 * taxonomy aggregation to get the display names for the authors.
+	 * Enables an aggregation for Co-Authors Plus authors.
+	 *
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_cap_support(): Controller {
-		$this->adapter->add_cap_author_aggregation();
+	public function enable_cap_author_aggregation( array $args = [] ): Controller {
+		$this->adapter->add_cap_author_aggregation( $args );
 
 		return $this;
 	}
