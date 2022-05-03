@@ -131,10 +131,9 @@ class Relative_Date extends Aggregation {
 
 		// If a custom date was requested, add it as well.
 		if ( $this->custom && in_array( 'custom', $this->get_query_values(), true ) ) {
-			/* phpcs:disable WordPress.Security.NonceVerification.Recommended */
-			$from = isset( $_GET[ $this->get_query_var() . '_from' ] ) ? sanitize_text_field( $_GET[ $this->get_query_var() . '_from' ] ) : '';
-			$to   = isset( $_GET[ $this->get_query_var() . '_to' ] ) ? sanitize_text_field( $_GET[ $this->get_query_var() . '_to' ] ) : '';
-			/* phpcs:enable WordPress.Security.NonceVerification.Recommended */
+			$fs   = get_query_var( 'fs' );
+			$from = $fs[ $this->get_query_var() . '_from' ] ?? '';
+			$to   = $fs[ $this->get_query_var() . '_to' ] ?? '';
 			if ( ! empty( $from ) && ! empty( $to ) ) {
 				$intervals[] = [
 					'key'  => 'custom',
