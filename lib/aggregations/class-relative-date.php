@@ -94,7 +94,7 @@ class Relative_Date extends Aggregation {
 	public function parse_buckets( array $buckets ): void {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
-			$label            = 'custom' === $bucket['key']
+			$label = 'custom' === $bucket['key']
 				? __( 'Custom range', 'elasticsearch-extensions' )
 				: sprintf(
 					// translators: number of days.
@@ -131,9 +131,8 @@ class Relative_Date extends Aggregation {
 
 		// If a custom date was requested, add it as well.
 		if ( $this->custom && in_array( 'custom', $this->get_query_values(), true ) ) {
-			$fs   = get_query_var( 'fs' );
-			$from = $fs[ $this->get_query_var() . '_from' ] ?? '';
-			$to   = $fs[ $this->get_query_var() . '_to' ] ?? '';
+			$from = $this->extract_query_values( $this->get_query_var() . '_from' );
+			$to   = $this->extract_query_values( $this->get_query_var() . '_to' );
 			if ( ! empty( $from ) && ! empty( $to ) ) {
 				$intervals[] = [
 					'key'  => 'custom',

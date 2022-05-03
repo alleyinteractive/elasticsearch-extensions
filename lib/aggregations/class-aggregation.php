@@ -82,9 +82,7 @@ abstract class Aggregation {
 		}
 
 		// Extract selected values from the query var.
-		$fs                 = get_query_var( 'fs' );
-		$selected           = $fs[ $this->query_var ] ?? [];
-		$this->query_values = array_values( array_filter( $selected ) );
+		$this->query_values = $this->extract_query_values();
 	}
 
 	/**
@@ -112,6 +110,29 @@ abstract class Aggregation {
 			<?php endforeach; ?>
 		</fieldset>
 		<?php
+	}
+
+	/**
+	 * A helper function for getting query values for the current query var or
+	 * for an arbitrary query var. We can't use get_query_var() here because
+	 * custom query var registration happens too late for our purposes, so we
+	 * need to do it manually.
+	 *
+	 * @param string $key Optional. The key to look up. Defaults to the current query var.
+	 *
+	 * @return mixed|null The value if found, or null if not.
+	 */
+	protected function extract_query_values( string $key = '' ) {
+		$fs         = $_GET['fs'] ?? []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+		$key_actual = $key ?: $this->get_query_var();
+		$value      = $fs[ $key_actual ] ?: null;
+
+		// If this is an array, remove any empty values first.
+		if ( is_array( $value ) ) {
+			return array_values( array_filter( $value ) );
+		}
+
+		return $value;
 	}
 
 	/**

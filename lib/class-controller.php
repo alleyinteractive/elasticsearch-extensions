@@ -126,22 +126,6 @@ class Controller implements Hookable {
 	}
 
 	/**
-	 * A callback for the query_vars filter hook. Adds the custom 'fs' query var
-	 * to the list.
-	 *
-	 * @param string[] $query_vars An array of query vars to augment.
-	 *
-	 * @return string[] The augmented list of query vars.
-	 */
-	public function filter__query_vars( $query_vars ) {
-		if ( ! in_array( 'fs', $query_vars, true ) ) {
-			$query_vars[] = 'fs';
-		}
-
-		return $query_vars;
-	}
-
-	/**
 	 * Get a specific aggregation from the adapter by its label.
 	 *
 	 * @param string $label Label for the aggregation.
@@ -177,7 +161,6 @@ class Controller implements Hookable {
 	 */
 	public function hook(): void {
 		add_action( 'init', [ $this, 'action__init' ], 1000 );
-		add_filter( 'query_vars', [ $this, 'filter__query_vars' ] );
 	}
 
 	/**
@@ -227,6 +210,5 @@ class Controller implements Hookable {
 	 */
 	public function unhook(): void {
 		remove_action( 'init', [ $this, 'action__init' ], 99 );
-		remove_filter( 'query_vars', [ $this, 'filter__query_vars' ] );
 	}
 }
