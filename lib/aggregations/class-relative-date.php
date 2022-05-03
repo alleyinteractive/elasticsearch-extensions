@@ -70,9 +70,9 @@ class Relative_Date extends Aggregation {
 	private function get_relative_date( int $offset ) : array {
 		try {
 			$date = new DateTime( 'tomorrow', wp_timezone() );
-			$to   = $date->format( DATE_W3C );
+			$to   = $date->format( 'Y-m-d H:i:s' );
 			$date->sub( new DateInterval( 'P' . ( $offset + 1 ) . 'D' ) );
-			$from = $date->format( DATE_W3C );
+			$from = $date->format( 'Y-m-d H:i:s' );
 			return [
 				'from' => $from,
 				'to'   => $to,
@@ -94,13 +94,13 @@ class Relative_Date extends Aggregation {
 	public function parse_buckets( array $buckets ): void {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
-			/**
-			 * Allows the label for a date aggregation to be filtered. For
-			 * example, can be used to convert "2022-04" to "April 2022".
-			 *
-			 * @param string $label The label to use.
-			 */
-			$label            = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $bucket['key'] );
+			$label            = 'custom' === $bucket['key']
+				? __( 'Custom range', 'elasticsearch-extensions' )
+				: sprintf(
+					// translators: number of days.
+					__( 'Past %s days', 'elasticsearch-extensions' ),
+					$bucket['key']
+				);
 			$bucket_objects[] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
@@ -124,13 +124,7 @@ class Relative_Date extends Aggregation {
 		$intervals = [];
 		foreach ( $this->intervals as $interval ) {
 			$intervals[] = array_merge(
-				[
-					'key' => sprintf(
-						// translators: number of days.
-						__( 'Past %d days', 'elasticsearch-extensions' ),
-						$interval
-					),
-				],
+				[ 'key' => $interval ],
 				$this->get_relative_date( $interval )
 			);
 		}
@@ -143,7 +137,7 @@ class Relative_Date extends Aggregation {
 			/* phpcs:enable WordPress.Security.NonceVerification.Recommended */
 			if ( ! empty( $from ) && ! empty( $to ) ) {
 				$intervals[] = [
-					'key'  => __( 'Custom range', 'elasticsearch-extensions' ),
+					'key'  => 'custom',
 					'from' => $from,
 					'to'   => $to,
 				];

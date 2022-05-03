@@ -93,11 +93,9 @@ class DSL {
 	 */
 	public function aggregate_date_range( string $mapped_field, array $intervals ): array {
 		return [
-			'range' => [
-				'date_range' => [
-					'field'  => $mapped_field,
-					'ranges' => $intervals,
-				],
+			'date_range' => [
+				'field'  => $mapped_field,
+				'ranges' => $intervals,
 			],
 		];
 	}
