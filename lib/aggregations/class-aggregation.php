@@ -120,19 +120,10 @@ abstract class Aggregation {
 	 *
 	 * @param string $key Optional. The key to look up. Defaults to the current query var.
 	 *
-	 * @return mixed|null The value if found, or null if not.
+	 * @return string[] The values for the given key.
 	 */
-	protected function extract_query_values( string $key = '' ) {
-		$fs         = $_GET['fs'] ?? []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
-		$key_actual = $key ?: $this->get_query_var();
-		$value      = $fs[ $key_actual ] ?: null;
-
-		// If this is an array, remove any empty values first.
-		if ( is_array( $value ) ) {
-			return array_values( array_filter( $value ) );
-		}
-
-		return $value;
+	protected function extract_query_values( string $key = '' ): array {
+		return array_values( array_filter( (array) $_GET['fs'][ $key ?: $this->get_query_var() ] ?? [] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
