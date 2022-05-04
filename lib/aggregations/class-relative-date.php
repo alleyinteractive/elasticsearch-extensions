@@ -20,20 +20,13 @@ use Exception;
 class Relative_Date extends Aggregation {
 
 	/**
-	 * Whether to enable the use of a custom range or not. Defaults to false.
-	 *
-	 * @var bool
-	 */
-	protected bool $custom = false;
-
-	/**
 	 * The intervals that the relative date aggregation should use in whole
-	 * numbers of days. Defaults to past 7, 30, and 365 days (week, month,
-	 * year).
+	 * numbers of days. Defaults to past 7, 30, and 90 days (week, month,
+	 * quarter).
 	 *
 	 * @var int[]
 	 */
-	protected array $intervals = [ 7, 30, 365 ];
+	protected array $intervals = [ 7, 30, 90 ];
 
 	/**
 	 * Configure the Relative Date aggregation.
@@ -55,8 +48,11 @@ class Relative_Date extends Aggregation {
 	 * @return array|null DSL fragment or null if no filters to apply.
 	 */
 	public function filter(): ?array {
-		// TODO.
-		return null;
+		return ! empty( $this->query_values[0] )
+			? $this->dsl->range(
+				'post_date',
+				$this->get_relative_date( (int) $this->query_values[0] )
+			) : null;
 	}
 
 	/**
@@ -94,17 +90,14 @@ class Relative_Date extends Aggregation {
 	public function parse_buckets( array $buckets ): void {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
-			$label = 'custom' === $bucket['key']
-				? __( 'Custom range', 'elasticsearch-extensions' )
-				: sprintf(
-					// translators: number of days.
-					__( 'Past %s days', 'elasticsearch-extensions' ),
-					$bucket['key']
-				);
 			$bucket_objects[] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
-				$label,
+				sprintf(
+					// translators: number of days.
+					__( 'Past %s days', 'elasticsearch-extensions' ),
+					$bucket['key']
+				),
 				$this->is_selected( $bucket['key'] ),
 			);
 		}
@@ -127,19 +120,6 @@ class Relative_Date extends Aggregation {
 				[ 'key' => $interval ],
 				$this->get_relative_date( $interval )
 			);
-		}
-
-		// If a custom date was requested, add it as well.
-		if ( $this->custom && in_array( 'custom', $this->get_query_values(), true ) ) {
-			$from = $this->extract_query_values( $this->get_query_var() . '_from' )[0] ?? '';
-			$to   = $this->extract_query_values( $this->get_query_var() . '_to' )[0] ?? '';
-			if ( ! empty( $from ) && ! empty( $to ) ) {
-				$intervals[] = [
-					'key'  => 'custom',
-					'from' => $from,
-					'to'   => $to,
-				];
-			}
 		}
 
 		return $this->dsl->aggregate_date_range(
