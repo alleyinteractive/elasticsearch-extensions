@@ -34,6 +34,12 @@ class Controller implements Hookable {
 	 * action runs, since it depends on registrations being done already.
 	 */
 	public function action__init(): void {
+		/**
+		 * An action hook that fires after this plugin is initialized and is
+		 * ready for configuration.
+		 *
+		 * @param Controller $controller The Elasticsearch Extensions controller class.
+		 */
 		do_action( 'elasticsearch_extensions_config', $this );
 	}
 
