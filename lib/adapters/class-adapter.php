@@ -7,7 +7,14 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\Facet;
+use Elasticsearch_Extensions\Aggregations\Aggregation;
+use Elasticsearch_Extensions\Aggregations\CAP_Author;
+use Elasticsearch_Extensions\Aggregations\Post_Date;
+use Elasticsearch_Extensions\Aggregations\Post_Type;
+use Elasticsearch_Extensions\Aggregations\Relative_Date;
+use Elasticsearch_Extensions\Aggregations\Taxonomy;
+use Elasticsearch_Extensions\DSL;
+use Elasticsearch_Extensions\Interfaces\Hookable;
 
 /**
  * An abstract class that establishes base functionality and sets requirements
@@ -15,593 +22,225 @@ use Elasticsearch_Extensions\Facet;
  *
  * @package Elasticsearch_Extensions
  */
-abstract class Adapter {
-
-	/**
-	 * Whether WP Category aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_categories = false;
-
-	/**
-	 * Whether WP Tag aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_tags = false;
-
-	/**
-	 * Whether post date aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_post_dates = false;
-
-	/**
-	 * Whether post type aggregations are active or not.
-	 *
-	 * @var bool
-	 */
-	private bool $aggregate_post_types = false;
-
-	/**
-	 * Stores an array of taxonomy slugs that should be added to aggregations.
-	 *
-	 * @var array
-	 */
-	private array $aggregate_taxonomies = [];
+abstract class Adapter implements Hookable {
 
 	/**
 	 * Stores aggregation data from the Elasticsearch response.
 	 *
-	 * @var array
+	 * @var Aggregation[]
 	 */
 	private array $aggregations = [];
 
 	/**
-	 * Enable faceting on empty searches
+	 * Whether to allow empty searches (no keyword set).
 	 *
 	 * @var bool
 	 */
-	protected bool $empty_search_faceting = false;
+	private bool $allow_empty_search = false;
 
 	/**
-	 * Facets.
+	 * Holds an instance of the DSL class with the field map from this adapter
+	 * injected into it.
 	 *
-	 * @var array
+	 * @var DSL
 	 */
-	public array $facets = [];
+	protected DSL $dsl;
 
 	/**
-	 * Facets.
+	 * An optional array of post types to restrict search to.
 	 *
-	 * @var array
+	 * @var string[]
 	 */
-	public array $facets_config = [];
+	private array $restricted_post_types = [];
 
 	/**
-	 * HTTP Response from last query.
+	 * An optional array of taxonomies to restrict search to.
 	 *
-	 * @var array HTTP Response.
+	 * @var string[]
 	 */
-	public array $results;
+	private array $restricted_taxonomies = [];
 
 	/**
-	 * Holds a reference to the singleton instance.
-	 *
-	 * @var Adapter
+	 * Constructor. Sets up the DSL object with this adapter's field map.
 	 */
-	private static Adapter $instance;
-
-	/**
-	 * Map core fields to the ES index.
-	 *
-	 * @var array|string[]
-	 */
-	protected array $field_map = [
-		'post_meta'              => 'post_meta.%s',
-		'post_meta.analyzed'     => 'post_meta.%s.analyzed',
-		'post_meta.long'         => 'post_meta.%s.long',
-		'post_meta.double'       => 'post_meta.%s.double',
-		'post_meta.binary'       => 'post_meta.%s.boolean',
-		'post_meta.date'         => 'post_meta.%s.date',
-		'post_meta.datetime'     => 'post_meta.%s.datetime',
-		'post_meta.time'         => 'post_meta.%s.time',
-		'post_meta.signed'       => 'post_meta.%s.signed',
-		'post_meta.unsigned'     => 'post_meta.%s.unsigned',
-		'term_id'                => 'terms.%s.term_id',
-		'term_slug'              => 'terms.%s.slug',
-		'term_name'              => 'terms.%s.name',
-		'term_name.analyzed'     => 'terms.%s.name.analyzed',
-		'term_tt_id'             => 'terms.%s.term_taxonomy_id',
-		'category_id'            => 'terms.category.term_id',
-		'category_slug'          => 'terms.category.slug',
-		'category_name'          => 'terms.category.name',
-		'category_name.analyzed' => 'terms.category.name.analyzed',
-		'category_tt_id'         => 'terms.category.term_taxonomy_id',
-		'tag_id'                 => 'terms.post_tag.term_id',
-		'tag_slug'               => 'terms.post_tag.slug',
-		'tag_name'               => 'terms.post_tag.name',
-		'tag_name.analyzed'      => 'terms.post_tag.name.analyzed',
-		'tag_tt_id'              => 'terms.post_tag.term_taxonomy_id',
-	];
-
-	/**
-	 * Configures facets.
-	 *
-	 * TODO Add param DocBloc with full set of possible array keys.
-	 *
-	 * @param array $facet_config Array configuration for a facet.
-	 * @return void
-	 */
-	public function add_facet_config( array $facet_config ) {
-		$config = [];
-		$label  = $facet_config['type'];
-		if (
-			'taxonomy' === $facet_config['type']
-			&& ! empty( $facet_config['taxonomy'] )
-			&& 'taxonomy_' !== substr( $facet_config['taxonomy'], 0, 9 )
-		) {
-			$label = "taxonomy_{$facet_config['taxonomy']}";
-		}
-
-		$config[ $label ]    = $facet_config;
-		$this->facets_config = array_merge( $this->facets_config, $config );
+	public function __construct() {
+		$this->dsl = new DSL( $this->get_field_map() );
 	}
 
 	/**
-	 * Get the configured facets.
+	 * Adds an Aggregation to the list of active aggregations.
 	 *
-	 * @return array
+	 * @param Aggregation $aggregation The aggregation to add.
 	 */
-	public function get_facet_config(): array {
-		return $this->facets_config;
+	private function add_aggregation( Aggregation $aggregation ): void {
+		$this->aggregations[ $aggregation->get_query_var() ] = $aggregation;
 	}
 
 	/**
-	 * Parse the raw facet data from Elasticsearch into a constructive format.
+	 * Adds a new Co-Authors Plus author aggregation to the list of active aggregations.
 	 *
-	 * Specifically:
-	 *
-	 *     array(
-	 *         'Label' => array(
-	 *             'type'     => [type requested],
-	 *             'count'    => [count requested],
-	 *             'taxonomy' => [taxonomy requested, if applicable],
-	 *             'interval' => [interval requested, if applicable],
-	 *             'field'    => [field requested, if applicable],
-	 *             'items'    => array(
-	 *                 array(
-	 *                     'query_vars' => array( [query_var] => [value] ),
-	 *                     'name' => [formatted string for this facet],
-	 *                     'count' => [number of results in this facet],
-	 *                 )
-	 *             )
-	 *         )
-	 *     )
-	 *
-	 * The returning array is mostly the data as requested in the WP args, with
-	 * the addition of the 'items' key. This is an array of arrays, each one
-	 * being a term in the facet response. The 'query_vars' can be used to
-	 * generate links/form fields. The name is suitable for display, and the
-	 * count is useful for your facet UI.
-	 *
-	 * @param array $options {
-	 *     Optional. Options for getting facet data.
-	 *
-	 *     @type boolean $exclude_current If true, excludes the currently-selected
-	 *                                    facets in the list. This is most helpful
-	 *                                    when outputting a list of links, but
-	 *                                    should probably be disabled if outputting
-	 *                                    a list of checkboxes. Defaults to true.
-	 * }
-	 * @return array|Facet[] See above for further details.
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
-	public function get_facet_data( array $options = [] ): array {
-		if ( empty( $this->facets ) ) {
-			return [];
-		}
-
-		$facets = $this->results['aggregations'];
-
-		if ( empty( $facets ) ) {
-			return [];
-		}
-
-		$options = wp_parse_args(
-			$options,
-			[
-				'exclude_current'     => true,
-				'join_existing_terms' => true,
-				'join_terms_logic'    => [],
-			]
-		);
-
-		$facet_data = [];
-
-		foreach ( $facets as $label => $facet ) {
-			// At this point, $this->facets is an array of Facet objects...
-			if ( empty( $this->facets[ $label ] ) ) {
-				continue;
-			}
-
-			$facet_data[ $label ]        = $this->facets[ $label ];
-			$facet_data[ $label ]->items = [];
-
-			/*
-			 * All taxonomy terms are going to have the same query_var, so run
-			 * this before the loop.
-			 */
-			if ( 'taxonomy' === $this->facets[ $label ]->type ) {
-				$tax_query_var = $this->get_taxonomy_query_var( $this->facets[ $label ]->query_var );
-
-				if ( ! $tax_query_var ) {
-					continue;
-				}
-
-				$existing_term_slugs = ( get_query_var( $tax_query_var ) ) ? explode( ',', get_query_var( $tax_query_var ) ) : [];
-			}
-
-			$items = [];
-			if ( ! empty( $facet['buckets'] ) ) {
-				$items = (array) $facet['buckets'];
-			}
-
-			// Some facet types like date_histogram don't support the max results parameter.
-			// TODO Refactor this. The `count` attribute doesn't exist at this point.
-			if ( count( $items ) > $this->facets[ $label ]->count ) {
-				$items = array_slice( $items, 0, $this->facets[ $label ]->count );
-			}
-
-			foreach ( $items as $item ) {
-				$datum = apply_filters( 'elasticsearch_extensions_facet_datum', false, $item, $this->facets );
-				if ( false === $datum ) {
-					$query_vars = [];
-					$selected   = false;
-
-					switch ( $this->facets[ $label ]->type ) {
-						case 'taxonomy':
-							$term = get_term_by( 'slug', $item['key'], $this->facets[ $label ]->query_var );
-
-							if ( ! $term ) {
-								continue 2; // switch() is considered a looping structure.
-							}
-
-							// Don't allow refinement on a term we're already refining on.
-							$selected = in_array( $term->slug, $existing_term_slugs, true );
-							if ( $options['exclude_current'] && $selected ) {
-								continue 2;
-							}
-
-							$slugs = [ $term->slug ];
-							if ( $options['join_existing_terms'] ) {
-								$slugs = array_merge( $existing_term_slugs, $slugs );
-							}
-
-							$join_logic = ',';
-							if (
-								isset( $options['join_terms_logic'][ $this->facets[ $label ]->query_var ] )
-								&& '+' === $options['join_terms_logic'][ $this->facets[ $label ]->query_var ]
-							) {
-								$join_logic = '+';
-							}
-
-							// TODO Refactor to handle this better?
-							// TODO Adapter::get_taxonomy_query_var() sets tags query vars as 'tag', which, without this edit, gives rise to a mismatch between the query var set in Facet::parse_type().
-							if ( 'tag' === $tax_query_var ) {
-								$query_vars = [
-									'post_tag' => implode( $join_logic, $slugs ),
-								];
-							} else {
-								$query_vars = [
-									$tax_query_var => implode( $join_logic, $slugs ),
-								];
-							}
-							$name = $term->name;
-
-							break;
-
-						case 'post_type':
-							$post_type = get_post_type_object( $item['key'] );
-
-							if ( ! $post_type || $post_type->exclude_from_search ) {
-								continue 2;  // switch() is considered a looping structure.
-							}
-
-							$query_vars = [ 'post_type' => $item['key'] ];
-							$name       = $post_type->labels->singular_name;
-
-							break;
-
-						case 'author':
-							$user = get_user_by( 'login', $item['key'] );
-
-							if ( ! $user ) {
-								continue 2;
-							}
-
-							$name       = $user->display_name;
-							$query_vars = [ 'author' => $user->ID ];
-
-							break;
-
-						case 'post_date':
-							$timestamp = $item['key'] / 1000;
-
-							switch ( $this->facets[ $label ]->config['calendar_interval'] ) {
-								case 'year':
-									$query_vars = [
-										'year' => gmdate( 'Y', $timestamp ),
-									];
-									$name       = gmdate( 'Y', $timestamp );
-									break;
-
-								case 'month':
-									$query_vars = [
-										'year'     => gmdate( 'Y', $timestamp ),
-										'monthnum' => gmdate( 'n', $timestamp ),
-									];
-									$name       = gmdate( 'F Y', $timestamp );
-									break;
-
-								case 'day':
-									$query_vars = [
-										'year'     => gmdate( 'Y', $timestamp ),
-										'monthnum' => gmdate( 'n', $timestamp ),
-										'day'      => gmdate( 'j', $timestamp ),
-									];
-									$name       = gmdate( 'F j, Y', $timestamp );
-									break;
-
-								default:
-									continue 3; // switch() is considered a looping structure.
-							}
-
-							break;
-
-						default:
-							// continue 2; // switch() is considered a looping structure.
-					}
-
-					$datum = [
-						'query_vars' => $query_vars,
-						'name'       => $name,
-						'count'      => $item['doc_count'],
-						'selected'   => $selected,
-					];
-				}
-
-				$facet_data[ $label ]->items[] = $datum;
-			}
-		}
-
-		return apply_filters( 'elasticsearch_extensions_facet_data', $facet_data );
+	public function add_cap_author_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new CAP_Author( $this->dsl, $args ) );
 	}
 
 	/**
-	 * Get Facet by field
+	 * Adds a new post date aggregation to the list of active aggregations.
 	 *
-	 * @param string $field Facet field. See get_facet_data for acceptable values.
-	 * @param string $value Value corresponding to the field.
-	 * @return Facet|null
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
-	public function get_facet_data_by( string $field = '', string $value = '' ) {
-		$facet_data = $this->get_facet_data();
-		foreach ( $facet_data as $facet ) {
-			if ( isset( $facet[ $field ] ) && $value === $facet[ $field ] ) {
-				return $facet;
+	public function add_post_date_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Post_Date( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new post type aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_post_type_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Post_Type( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new relative date aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_relative_date_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Relative_Date( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new taxonomy aggregation to the list of active aggregations.
+	 *
+	 * @param string $taxonomy The taxonomy slug to add (e.g., category, post_tag).
+	 * @param array  $args     Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_taxonomy_aggregation( string $taxonomy, array $args = [] ): void {
+		$this->add_aggregation( new Taxonomy( $this->dsl, wp_parse_args( $args, [ 'taxonomy' => $taxonomy ] ) ) );
+	}
+
+	/**
+	 * Get an aggregation by its label.
+	 *
+	 * @param string $label Aggregation label.
+	 *
+	 * @return ?Aggregation The aggregation, if found, or null if not.
+	 */
+	public function get_aggregation_by_label( string $label ): ?Aggregation {
+		foreach ( $this->aggregations as $aggregation ) {
+			if ( $label === $aggregation->get_label() ) {
+				return $aggregation;
 			}
 		}
+
 		return null;
 	}
 
 	/**
-	 * Get the query var for a given taxonomy name.
+	 * Get an aggregation by its query var.
 	 *
-	 * @access protected
+	 * @param string $query_var Aggregation query var.
 	 *
-	 * @param  string $taxonomy_name A valid taxonomy.
-	 * @return string The query var for the given taxonomy.
+	 * @return ?Aggregation The aggregation, if found, or null if not.
 	 */
-	protected function get_taxonomy_query_var( string $taxonomy_name ) {
-		$taxonomy = get_taxonomy( $taxonomy_name );
-
-		if ( ! $taxonomy || is_wp_error( $taxonomy ) ) {
-			return false;
+	public function get_aggregation_by_query_var( string $query_var ): ?Aggregation {
+		foreach ( $this->aggregations as $aggregation ) {
+			if ( $query_var === $aggregation->get_query_var() ) {
+				return $aggregation;
+			}
 		}
 
-		return $taxonomy->query_var;
+		return null;
 	}
 
 	/**
-	 * Enables an aggregation based on WP Category.
-	 */
-	public function enable_category_aggregation(): void {
-		$this->aggregate_categories = true;
-	}
-
-	/**
-	 * Enables faceting on empty search query strings.
-	 */
-	public function enable_empty_search_faceting(): void {
-		$this->empty_search_faceting = true;
-	}
-
-	/**
-	 * Enables an aggregation based on post type.
-	 */
-	public function enable_post_date_aggregation(): void {
-		$this->aggregate_post_dates = true;
-	}
-
-	/**
-	 * Enables an aggregation based on post type.
-	 */
-	public function enable_post_type_aggregation(): void {
-		$this->aggregate_post_types = true;
-	}
-
-	/**
-	 * Enables an aggregation based on WP Tags.
-	 */
-	public function enable_tag_aggregation(): void {
-		$this->aggregate_tags = true;
-	}
-
-	/**
-	 * A function to enable an aggregation for a specific taxonomy.
+	 * Get the aggregation configuration.
 	 *
-	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 */
-	public function enable_taxonomy_aggregation( string $taxonomy ): void {
-		$this->aggregate_taxonomies[] = $taxonomy;
-	}
-
-	/**
-	 * Gets the flag for whether post types should be aggregated or not.
-	 *
-	 * @return bool Whether post types should be aggregated or not.
-	 */
-	protected function get_aggregate_post_types(): bool {
-		return $this->aggregate_post_types;
-	}
-
-	/**
-	 * Gets the flag for whether post dates should be aggregated or not.
-	 *
-	 * @return bool Whether post dates should be aggregated or not.
-	 */
-	protected function get_aggregate_post_dates(): bool {
-		return $this->aggregate_post_dates;
-	}
-
-	/**
-	 * Gets the flag for whether WP Categories should be aggregated or not.
-	 *
-	 * @return bool Whether WP Categories should be aggregated or not.
-	 */
-	protected function get_aggregate_categories(): bool {
-		return $this->aggregate_categories;
-	}
-
-	/**
-	 * Gets the flag for whether WP Tags should be aggregated or not.
-	 *
-	 * @return bool Whether WP Tags should be aggregated or not.
-	 */
-	protected function get_aggregate_tags(): bool {
-		return $this->aggregate_tags;
-	}
-
-	/**
-	 * Gets the list of custom taxonomies to be aggregated.
-	 *
-	 * @return array The list of taxonomy slugs to be aggregated.
-	 */
-	protected function get_aggregate_taxonomies(): array {
-		return $this->aggregate_taxonomies;
-	}
-
-	/**
-	 * Gets aggregation results.
-	 *
-	 * @return array The aggregation results.
+	 * @return Aggregation[]
 	 */
 	public function get_aggregations(): array {
 		return $this->aggregations;
 	}
 
 	/**
-	 * Get an instance of the class.
+	 * Gets the value for allow_empty_search.
 	 *
-	 * @return Adapter
+	 * @return bool Whether to allow empty search or not.
 	 */
-	public static function instance(): Adapter {
-		$class_name = get_called_class();
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new $class_name();
-			self::$instance->setup();
-		}
-		return self::$instance;
+	public function get_allow_empty_search(): bool {
+		return $this->allow_empty_search;
 	}
 
 	/**
-	 * Map a core field to the indexed counterpart in Elasticsearch.
+	 * Returns a map of generic field names and types to the specific field
+	 * path used in the mapping of the Elasticsearch plugin that is in use.
+	 * Implementing classes need to provide this map, as it will be different
+	 * between each plugin's Elasticsearch implementation, and use the result
+	 * of this function when initializing the DSL class in the constructor.
 	 *
-	 * @param  string $field The core field to map.
-	 * @return string The mapped field reference.
+	 * @return array The field map.
 	 */
-	public function map_field( string $field ): string {
-		if ( ! empty( $this->field_map[ $field ] ) ) {
-			return $this->field_map[ $field ];
-		} else {
-			return $field;
-		}
+	abstract protected function get_field_map(): array;
+
+	/**
+	 * Gets the list of restricted post types.
+	 *
+	 * @return string[] The list of restricted post type slugs.
+	 */
+	protected function get_restricted_post_types(): array {
+		return $this->restricted_post_types;
 	}
 
 	/**
-	 * Map a meta field. This will swap in the data type.
+	 * Gets the list of restricted taxonomies.
 	 *
-	 * @param  string $meta_key Meta key to map.
-	 * @param  string $type Data type to map.
-	 * @return string The mapped field.
+	 * @return string[] The list of restricted taxonomy slugs.
 	 */
-	public function map_meta_field( string $meta_key, string $type = '' ): string {
-		if ( ! empty( $type ) ) {
-			return sprintf( $this->map_field( 'post_meta.' . $type ), $meta_key );
-		} else {
-			return sprintf( $this->map_field( 'post_meta' ), $meta_key );
-		}
+	protected function get_restricted_taxonomies(): array {
+		return $this->restricted_taxonomies;
 	}
 
 	/**
-	 * Map a taxonomy field. This will swap in the taxonomy name.
+	 * Parses aggregations from an aggregations object in an Elasticsearch
+	 * response into the loaded aggregations.
 	 *
-	 * @param  string $taxonomy Taxonomy to map.
-	 * @param  string $field Field to map.
-	 * @return string The mapped field.
+	 * @param array $aggregations Aggregations from the Elasticsearch response.
 	 */
-	public function map_tax_field( string $taxonomy, string $field ): string {
-		if ( 'post_tag' === $taxonomy ) {
-			$field = str_replace( 'term_', 'tag_', $field );
-		} elseif ( 'category' === $taxonomy ) {
-			$field = str_replace( 'term_', 'category_', $field );
-		}
-		return sprintf( $this->map_field( $field ), $taxonomy );
-	}
-
-	/**
-	 * Pull the facets out of the ES response.
-	 * Filters `ep_valid_response`.
-	 *
-	 * @see \ElasticPress\Elasticsearch
-	 */
-	public function parse_facets() {
-		$this->facets = apply_filters( 'elasticsearch_extensions_parse_facets', [] );
-		if ( empty( $this->facets ) ) {
-			if ( ! empty( $this->results['aggregations'] ) ) {
-				foreach ( $this->results['aggregations'] as $label => $buckets ) {
-					if ( empty( $buckets['buckets'] ) ) {
-						continue;
-					}
-					$this->facets[ $label ] = new Facet( $label, $buckets['buckets'], $this->facets_config[ $label ] );
-				}
+	protected function parse_aggregations( array $aggregations ): void {
+		foreach ( $aggregations as $aggregation_key => $aggregation ) {
+			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
+				$this->aggregations[ $aggregation_key ]->parse_buckets( $aggregation['buckets'] ?? [] );
 			}
 		}
 	}
 
 	/**
-	 * Sets aggregation results.
+	 * Restricts searchable post types to the provided list.
 	 *
-	 * @param array $aggregations An array of aggregation results to be stored.
+	 * @param string[] $post_types The array of post types to restrict search to.
 	 */
-	protected function set_aggregations( array $aggregations ): void {
-		$this->aggregations = $aggregations;
+	public function restrict_post_types( array $post_types ): void {
+		$this->restricted_post_types = $post_types;
 	}
 
 	/**
-	 * Sets up the singleton by registering action and filter hooks.
+	 * Restricts searchable taxonomies to the provided list.
+	 *
+	 * @param string[] $taxonomies The array of taxonomies to restrict search to.
 	 */
-	abstract public function setup(): void;
+	public function restrict_taxonomies( array $taxonomies ): void {
+		$this->restricted_taxonomies = $taxonomies;
+	}
+
+	/**
+	 * Sets the value for allow_empty_search.
+	 *
+	 * @param bool $allow_empty_search Whether to allow empty search or not.
+	 */
+	public function set_allow_empty_search( bool $allow_empty_search ): void {
+		$this->allow_empty_search = $allow_empty_search;
+	}
 }

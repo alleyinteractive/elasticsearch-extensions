@@ -13,17 +13,9 @@
  */
 
 use Elasticsearch_Extensions\Controller;
-use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
+use Elasticsearch_Extensions\Registry;
 
 require_once __DIR__ . '/lib/autoload.php';
-
-// Inject Controller into DSL class.
-Elasticsearch_Extensions\DSL::set_es_controller( Controller::instance() );
-
-// Load adapter automatically based on environment settings.
-if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
-	Controller::instance()->load_adapter( VIP_Enterprise_Search::instance() );
-}
 
 /**
  * A helper function for getting the instance of the controller class.
@@ -31,5 +23,8 @@ if ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
  * @return Controller
  */
 function elasticsearch_extensions(): Controller {
-	return Controller::instance();
+	return Registry::controller();
 }
+
+// Bootstrap the plugin.
+elasticsearch_extensions()->load_adapter();

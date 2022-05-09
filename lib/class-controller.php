@@ -8,6 +8,8 @@
 namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
+use Elasticsearch_Extensions\Aggregations\Aggregation;
+use Elasticsearch_Extensions\Interfaces\Hookable;
 
 /**
  * The controller class, which is responsible for loading adapters and
@@ -15,7 +17,7 @@ use Elasticsearch_Extensions\Adapters\Adapter;
  *
  * @package Elasticsearch_Extensions
  */
-class Controller {
+class Controller implements Hookable {
 
 	/**
 	 * The active adapter.
@@ -25,89 +27,66 @@ class Controller {
 	private Adapter $adapter;
 
 	/**
-	 * Holds a reference to the singleton instance.
-	 *
-	 * @var Controller
+	 * A callback for the init action hook. Invokes a custom hook for this
+	 * plugin to make it easier to configure within other themes and plugins.
+	 * Runs at a later priority to ensure that other actions that are run as
+	 * part of init (especially taxonomy registration) are complete before this
+	 * action runs, since it depends on registrations being done already.
 	 */
-	private static Controller $instance;
+	public function action__init(): void {
+		/**
+		 * An action hook that fires after this plugin is initialized and is
+		 * ready for configuration.
+		 *
+		 * @param Controller $controller The Elasticsearch Extensions controller class.
+		 */
+		do_action( 'elasticsearch_extensions_config', $this );
+	}
 
 	/**
-	 * Enable aggregations based on WP Categories.
+	 * Disable empty search query strings.
 	 *
-	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_category_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_category_aggregation();
-			$defaults = [
-				'count'     => 1000,
-				'name'      => 'Categories',
-				'startOpen' => false,
-				'type'      => 'category',
-			];
+	public function disable_empty_search(): Controller {
+		$this->adapter->set_allow_empty_search( false );
 
-			$args = wp_parse_args( $args, $defaults );
-			$this->adapter->add_facet_config( $args );
-		}
 		return $this;
 	}
 
 	/**
-	 * Enable faceting on empty search query strings.
+	 * Enables an aggregation for Co-Authors Plus authors.
+	 *
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_empty_search_faceting(): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_empty_search_faceting();
-		}
+	public function enable_cap_author_aggregation( array $args = [] ): Controller {
+		$this->adapter->add_cap_author_aggregation( $args );
+
 		return $this;
 	}
 
 	/**
-	 * Enable aggregations based on WP Tags.
+	 * Enable empty search query strings.
 	 *
-	 * @param array $args Arguments to pass to the adapter's facet configuration.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function enable_tag_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_tag_aggregation();
-			$defaults = [
-				'count'     => 1000,
-				'name'      => 'Tags',
-				'startOpen' => false,
-				'taxonomy'  => 'post_tag',
-				'type'      => 'taxonomy',
-			];
+	public function enable_empty_search(): Controller {
+		$this->adapter->set_allow_empty_search( true );
 
-			$args = wp_parse_args( $args, $defaults );
-			$this->adapter->add_facet_config( $args );
-		}
 		return $this;
 	}
 
 	/**
 	 * Enables an aggregation based on post dates.
 	 *
-	 * @param array $args Arguments to pass to the adapter's facet configuration.
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_post_date_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_date_aggregation();
-			$defaults = [
-				'count'             => 1000,
-				'calendar_interval' => 'month',
-				'name'              => 'Publish Date',
-				'startOpen'         => false,
-				'type'              => 'post_date',
-			];
-
-			$args = wp_parse_args( $args, $defaults );
-			$this->adapter->add_facet_config( $args );
-		}
+		$this->adapter->add_post_date_aggregation( $args );
 
 		return $this;
 	}
@@ -115,22 +94,25 @@ class Controller {
 	/**
 	 * Enables an aggregation based on post type.
 	 *
-	 * @param array $args Arguments to pass to the adapter's facet configuration.
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_post_type_aggregation( array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_post_type_aggregation();
-			$defaults = [
-				'count'     => 1000,
-				'name'      => 'Post Type',
-				'startOpen' => false,
-				'type'      => 'post_type',
-			];
+		$this->adapter->add_post_type_aggregation( $args );
 
-			$args = wp_parse_args( $args, $defaults );
-			$this->adapter->add_facet_config( $args );
-		}
+		return $this;
+	}
+
+	/**
+	 * Enables an aggregation based on relative dates.
+	 *
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_relative_date_aggregation( array $args = [] ): Controller {
+		$this->adapter->add_relative_date_aggregation( $args );
 
 		return $this;
 	}
@@ -139,115 +121,100 @@ class Controller {
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 * @param array  $args     Arguments to pass to the adapter's facet configuration.
+	 * @param array  $args     Arguments to pass to the adapter's aggregation configuration.
+	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
-		if ( isset( $this->adapter ) ) {
-			$this->adapter->enable_taxonomy_aggregation( $taxonomy );
-			$defaults = [
-				'count'     => 1000,
-				'name'      => $taxonomy,
-				'startOpen' => false,
-				'taxonomy'  => $taxonomy,
-				'type'      => 'taxonomy',
-			];
-
-			$args = wp_parse_args( $args, $defaults );
-			$this->adapter->add_facet_config( $args );
-		}
+		$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
 
 		return $this;
 	}
 
 	/**
-	 * Get facet data from adapter.
+	 * Get a specific aggregation from the adapter by its label.
 	 *
-	 * @return array
+	 * @param string $label Label for the aggregation.
+	 *
+	 * @return ?Aggregation The matching aggregation, or null on failure.
 	 */
-	public function get_facet_config(): array {
-		return $this->adapter->get_facet_config();
+	public function get_aggregation_by_label( string $label = '' ): ?Aggregation {
+		return $this->adapter->get_aggregation_by_label( $label );
 	}
 
 	/**
-	 * Get facet data from adapter.
+	 * Get a specific aggregation from the adapter by its query var.
 	 *
-	 * @return array
+	 * @param string $query_var Query variable.
+	 *
+	 * @return ?Aggregation The matching aggregation, or null on failure.
 	 */
-	public function get_facet_data(): array {
-		return $this->adapter->get_facet_data();
+	public function get_aggregation_by_query_var( string $query_var = '' ): ?Aggregation {
+		return $this->adapter->get_aggregation_by_query_var( $query_var );
 	}
 
 	/**
-	 * Get facet data by from adapter.
+	 * Get all aggregations from the adapter.
 	 *
-	 * @param string $name Name of the facet.
-	 * @return Facet|null
+	 * @return array An array of aggregation data grouped by aggregation type.
 	 */
-	public function get_facet_data_by_name( string $name = '' ) {
-		return $this->adapter->get_facet_data_by( 'name', $name );
+	public function get_aggregations(): array {
+		return $this->adapter->get_aggregations();
 	}
 
 	/**
-	 * Get facet data by from adapter.
-	 *
-	 * @param string $query_var Query variable sting.
-	 * @return Facet|null
+	 * Registers action and/or filter hooks with WordPress.
 	 */
-	public function get_facet_data_by_query_var( string $query_var = '' ) {
-		return $this->adapter->get_facet_data_by( 'query_var', $query_var );
+	public function hook(): void {
+		add_action( 'init', [ $this, 'action__init' ], 1000 );
 	}
 
 	/**
-	 * Get an instance of the class.
+	 * Loads an adapter, either using the given adapter, or dynamically based
+	 * on environment settings.
 	 *
-	 * @return Controller
+	 * @param ?Adapter $adapter Optional. The adapter to load. Defaults to dynamic load.
 	 */
-	public static function instance(): Controller {
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new self();
+	public function load_adapter( ?Adapter $adapter = null ): void {
+		if ( ! is_null( $adapter ) ) {
+			$this->adapter = $adapter;
+		} elseif ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
+			$this->adapter = Factory::vip_enterprise_search_adapter();
+		} else {
+			$this->adapter = Factory::generic_adapter();
 		}
-		return self::$instance;
 	}
 
 	/**
-	 * Loads an instance of an Adapter into the controller.
+	 * Restricts searchable post types to the provided list.
 	 *
-	 * @param Adapter $adapter The adapter to load.
+	 * @param string[] $post_types The array of post types to restrict search to.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function load_adapter( Adapter $adapter ): void {
-		$this->adapter = $adapter;
+	public function restrict_post_types( array $post_types ): Controller {
+		$this->adapter->restrict_post_types( $post_types );
+
+		return $this;
 	}
 
 	/**
-	 * Map a given field to the Elasticsearch index.
+	 * Restricts searchable taxonomies to the provided list.
 	 *
-	 * @param  string $field The field to map.
-	 * @return string The mapped field.
+	 * @param string[] $taxonomies The array of taxonomies to restrict search to.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function map_field( $field ) {
-		return $this->adapter->map_field( $field );
+	public function restrict_taxonomies( array $taxonomies ): Controller {
+		$this->adapter->restrict_taxonomies( $taxonomies );
+
+		return $this;
 	}
 
 	/**
-	 * Map a meta field. This will swap in the data type.
-	 *
-	 * @param  string $meta_key Meta key to map.
-	 * @param  string $type Data type to map.
-	 * @return string The mapped field.
+	 * Unregisters action and/or filter hooks with WordPress.
 	 */
-	public function map_meta_field( string $meta_key, string $type = '' ): string {
-		return $this->adapter->map_meta_field( $meta_key, $type );
-	}
-
-	/**
-	 * Map a taxonomy field. This will swap in the taxonomy name.
-	 *
-	 * @param  string $taxonomy Taxonomy to map.
-	 * @param  string $field Field to map.
-	 * @return string The mapped field.
-	 */
-	public function map_tax_field( string $taxonomy, string $field ): string {
-		return $this->adapter->map_tax_field( $taxonomy, $field );
+	public function unhook(): void {
+		remove_action( 'init', [ $this, 'action__init' ], 99 );
 	}
 }
