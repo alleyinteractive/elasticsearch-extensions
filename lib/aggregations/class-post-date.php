@@ -49,9 +49,9 @@ class Post_Date extends Aggregation {
 	 *
 	 * @param string $queried_date The queried date value.
 	 *
-	 * @return array|null An array containing timestamps for from and to. Null if no query is present.
+	 * @return array An array containing timestamps for from and to. Null if no query is present.
 	 */
-	private function get_date_range( string $queried_date ) : ?array {
+	private function get_date_range( string $queried_date ) : array {
 		switch ( $this->interval ) {
 			case 'year':
 				// Since we want all the months in a single year, set interval to months and offset by eleven months.
