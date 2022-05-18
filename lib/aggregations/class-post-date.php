@@ -47,15 +47,17 @@ class Post_Date extends Aggregation {
 	 * Since a post cannot be published at multiple DateTimes, only one (the first)
 	 * queried post_date value is applied to the DSL.
 	 *
+	 * @param string $queried_date The queried date value.
+	 *
 	 * @return array|null An array containing timestamps for from and to. Null if no query is present.
 	 */
 	private function get_date_range( string $queried_date ) : ?array {
 		switch ( $this->interval ) {
 			case 'year':
 				// Since we want all the months in a single year, set interval to months and offset by eleven months.
-				$interval         = 'M';
-				$offset           = 11;
-				$to_unformatted   = $queried_date . '-12-01 00:00:00';
+				$interval       = 'M';
+				$offset         = 11;
+				$to_unformatted = $queried_date . '-12-01 00:00:00';
 				break;
 			case 'quarter':
 				// TODO Write calculation logic for defining quarterly periods.
