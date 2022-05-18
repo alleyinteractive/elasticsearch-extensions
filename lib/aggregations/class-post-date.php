@@ -7,7 +7,10 @@
 
 namespace Elasticsearch_Extensions\Aggregations;
 
+use DateInterval;
+use DateTime;
 use Elasticsearch_Extensions\DSL;
+use Exception;
 
 /**
  * Post date aggregation class. Responsible for building the DSL and requests
@@ -40,14 +43,80 @@ class Post_Date extends Aggregation {
 	}
 
 	/**
+	 * Get the date range for a queried date based on the interval.
+	 * Since a post cannot be published at multiple DateTimes, only one (the first)
+	 * queried post_date value is applied to the DSL.
+	 *
+	 * @return array|null An array containing timestamps for from and to. Null if no query is present.
+	 */
+	private function get_date_range( string $queried_date ) : ?array {
+		switch ( $this->interval ) {
+			case 'year':
+				// Since we want all the months in a single year, set interval to months and offset by eleven months.
+				$interval         = 'M';
+				$offset           = 11;
+				$to_unformatted   = $queried_date . '-12-01 00:00:00';
+				break;
+			case 'quarter':
+				// TODO Write calculation logic for defining quarterly periods.
+				break;
+			case 'month':
+				// TODO Define monthly period config.
+				break;
+			case 'week':
+				// TODO Define weekly period config.
+				break;
+			case 'day':
+				// TODO Define daily period config.
+				break;
+			case 'hour':
+				// TODO Define hourly period config.
+				break;
+			case 'minute':
+				// TODO Define "minute-ly" period config.
+				break;
+			default:
+				break;
+		}
+
+		// If any required vars aren't set by the switch, bail.
+		if ( ! isset( $interval, $offset, $to_unformatted ) ) {
+			return [
+				'from' => '',
+				'to'   => '',
+			];
+		}
+
+		// Calculate date range using DateTime and DateInterval.
+		try {
+			$date = new DateTime( $to_unformatted, wp_timezone() );
+			$to   = $date->format( 'Y-m-d H:i:s' );
+			$date->sub( new DateInterval( 'P' . $offset . $interval ) );
+			$from = $date->format( 'Y-m-d H:i:s' );
+			return [
+				'from' => $from,
+				'to'   => $to,
+			];
+		} catch ( Exception $e ) {
+			return [
+				'from' => '',
+				'to'   => '',
+			];
+		}
+	}
+
+	/**
 	 * Get DSL for filters that should be applied in the DSL in order to match
 	 * the requested values.
 	 *
 	 * @return array|null DSL fragment or null if no filters to apply.
 	 */
 	public function filter(): ?array {
-		// TODO.
-		return null;
+		return ! empty( $this->query_values[0] )
+			? $this->dsl->range(
+				'post_date',
+				$this->get_date_range( (int) $this->query_values[0] )
+			) : null;
 	}
 
 	/**
@@ -59,15 +128,25 @@ class Post_Date extends Aggregation {
 	public function parse_buckets( array $buckets ): void {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
+			/*
+			 *  Elasticsearch returns the key for date_histograms as a 64 bit number
+			 * representing a timestamp in ms. To standardize this key and label to
+			 * something more familiar to users, use Elasticsearch's "key_as_string",
+			 * which represents the key as a formatted date string that adheres to the
+			 * "format" key passed to the Elasticsearch query.
+			 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html#datehistogram-aggregation-keys
+			*/
+			$key = $bucket['key_as_string'] ?? $bucket['key'];
+
 			/**
 			 * Allows the label for a date aggregation to be filtered. For
 			 * example, can be used to convert "2022-04" to "April 2022".
 			 *
 			 * @param string $label The label to use.
 			 */
-			$label            = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $bucket['key'] );
+			$label            = apply_filters( 'elasticsearch_extensions_aggregation_date_label', $key );
 			$bucket_objects[] = new Bucket(
-				$bucket['key'],
+				$key,
 				$bucket['doc_count'],
 				$label,
 				$this->is_selected( $bucket['key'] ),
