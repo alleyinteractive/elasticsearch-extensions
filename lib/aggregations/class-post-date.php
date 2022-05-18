@@ -57,7 +57,8 @@ class Post_Date extends Aggregation {
 				// Since we want all the months in a single year, set interval to months and offset by eleven months.
 				$interval       = 'M';
 				$offset         = 11;
-				$to_unformatted = $queried_date . '-12-01 00:00:00';
+				// TODO ensure that the offset date is 01-01 00:00:00, rather than 01-01-31 23:59:59.
+				$to_unformatted = $queried_date . '-12-31 23:59:59';
 				break;
 			case 'quarter':
 				// TODO Write calculation logic for defining quarterly periods.
