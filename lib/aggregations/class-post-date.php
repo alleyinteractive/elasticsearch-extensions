@@ -54,57 +54,90 @@ class Post_Date extends Aggregation {
 	private function get_date_range( string $queried_date ) : array {
 		switch ( $this->interval ) {
 			case 'year':
-				// Since we want all the months in a single year, set interval to months and offset by eleven months.
-				$interval = 'M';
-				$offset   = 11;
-				// TODO ensure that the offset date is 01-01 00:00:00, rather than 01-31 23:59:59.
-				$to_unformatted = $queried_date . '-12-31 23:59:59';
+				// $queried_date format: 'Y'. e.g. 1970
+				$from = $this->format_date( $queried_date . '-01-01 00:00:00' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P1Y' );
 				break;
 			case 'quarter':
-				// TODO Write calculation logic for defining quarterly periods.
+				// Queried quarter starts on first month of the quarter.
+				// $queried_date format: 'Y-m'. e.g. 1970-11
+				$from = $this->format_date( $queried_date . '-01 00:00:00' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P4M' );
 				break;
 			case 'month':
-				// TODO Define monthly period config.
+				// $queried_date format: 'Y-m'. e.g. 1970-11
+				$from = $this->format_date( $queried_date . '-01 00:00:00' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P1M' );
 				break;
 			case 'week':
-				// TODO Define weekly period config.
+				// Queried week starts on Monday of first full week in the year.
+				// $queried_date format: 'Y-m-d'.
+				$from = $this->format_date( $queried_date . ' 00:00:00' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P6D' );
 				break;
 			case 'day':
-				// TODO Define daily period config.
+				// Queried day.
+				// $queried_date format: 'Y-m-d'.
+				$from = $this->format_date( $queried_date . ' 00:00:00' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P1D' );
 				break;
 			case 'hour':
-				// TODO Define hourly period config.
+				// Queried hour.
+				// $queried_date format: 'Y-m-d H:i:s'.
+				$from = $this->format_date( $queried_date );
+				$to   = $this->get_formatted_interval_to_date( $from, 'PT1H' );
 				break;
 			case 'minute':
-				// TODO Define "minute-ly" period config.
+				// Queried minute.
+				// $queried_date format: 'Y-m-d H:i:s'.
+				$from = $this->format_date( $queried_date );
+				$to   = $this->get_formatted_interval_to_date( $from, 'PT1M' );
 				break;
 			default:
 				break;
 		}
 
-		// If any required vars aren't set by the switch, bail.
-		if ( ! isset( $interval, $offset, $to_unformatted ) ) {
-			return [
-				'from' => '',
-				'to'   => '',
-			];
+		// If any required vars aren't properly configured by the switch, return empty.
+		if ( empty( $from ) || empty( $to ) ) {
+			$from = $to = '';
 		}
 
-		// Calculate date range using DateTime and DateInterval.
+		return [
+			'from' => $from,
+			'to'   => $to,
+		];
+	}
+
+	/**
+	 * Format date string.
+	 *
+	 * @param string $date_str
+	 * @return string
+	 */
+	protected function format_date( string $date_str ): string {
 		try {
-			$date = new DateTime( $to_unformatted, wp_timezone() );
-			$to   = $date->format( 'Y-m-d H:i:s' );
-			$date->sub( new DateInterval( 'P' . $offset . $interval ) );
-			$from = $date->format( 'Y-m-d H:i:s' );
-			return [
-				'from' => $from,
-				'to'   => $to,
-			];
+			$date = new DateTime( $date_str, wp_timezone() );
+
+			return $date->format( 'Y-m-d H:i:s' );
 		} catch ( Exception $e ) {
-			return [
-				'from' => '',
-				'to'   => '',
-			];
+			return '';
+		}
+	}
+
+	/**
+	 * Get formatted "to date".
+	 *
+	 * @param string $from_date_str Formatted "from" datetime string.
+	 * @param string $add_duration  Full "Duration" string value to add to the "from" date. Typically +1 interval.
+	 * @param string $sub_duration  Full "Duration" string value to subtract from the "add_duration". Defaults to 1 second: 'PT1S'.
+	 * @return string Formatted "to" date based on interval from "from" date.
+	 */
+	protected function get_formatted_interval_to_date( string $from_date_str, string $add_duration, string $sub_duration = 'PT1S' ): string {
+		try {
+			$to = new DateTime( $from_date_str, wp_timezone() );
+			return $to->add( new DateInterval( $add_duration ) )->sub( new DateInterval( $sub_duration ) )->format( 'Y-m-d H:i:s' );
+		}catch ( Exception $e ) {
+			return '';
 		}
 	}
 
@@ -118,7 +151,7 @@ class Post_Date extends Aggregation {
 		return ! empty( $this->query_values[0] )
 			? $this->dsl->range(
 				'post_date',
-				$this->get_date_range( (int) $this->query_values[0] )
+				$this->get_date_range( (string) $this->query_values[0] )
 			) : null;
 	}
 
