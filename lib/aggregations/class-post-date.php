@@ -55,43 +55,43 @@ class Post_Date extends Aggregation {
 		switch ( $this->interval ) {
 			case 'year':
 				// Queried year.
-				// $queried_date format: 'Y'. e.g. 1970
+				// $queried_date format: 'Y'. e.g. 1970.
 				$from = $this->format_date( $queried_date . '-01-01 00:00:00' );
 				$to   = $this->get_formatted_to_date( $from, 'P1Y' );
 				break;
 			case 'quarter':
 				// Queried quarter. Starts on first month of the quarter: 01, 04, 07, 10.
-				// $queried_date format: 'Y-m'. e.g. 1970-11
+				// $queried_date format: 'Y-m'. e.g. 1970-11.
 				$from = $this->format_date( $queried_date . '-01 00:00:00' );
 				$to   = $this->get_formatted_to_date( $from, 'P3M' );
 				break;
 			case 'month':
 				// Queried month.
-				// $queried_date format: 'Y-m'. e.g. 1970-11
+				// $queried_date format: 'Y-m'. e.g. 1970-11.
 				$from = $this->format_date( $queried_date . '-01 00:00:00' );
 				$to   = $this->get_formatted_to_date( $from, 'P1M' );
 				break;
 			case 'week':
 				// Queried week. Starts on Monday of first full week in the year.
-				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25
+				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25.
 				$from = $this->format_date( $queried_date . ' 00:00:00' );
 				$to   = $this->get_formatted_to_date( $from, 'P6D' );
 				break;
 			case 'day':
 				// Queried day.
-				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25
+				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25.
 				$from = $this->format_date( $queried_date . ' 00:00:00' );
 				$to   = $this->get_formatted_to_date( $from, 'P1D' );
 				break;
 			case 'hour':
 				// Queried hour.
-				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45
+				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45.
 				$from = $this->format_date( $queried_date );
 				$to   = $this->get_formatted_to_date( $from, 'PT1H' );
 				break;
 			case 'minute':
 				// Queried minute.
-				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45
+				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45.
 				$from = $this->format_date( $queried_date );
 				$to   = $this->get_formatted_to_date( $from, 'PT1M' );
 				break;
@@ -101,7 +101,8 @@ class Post_Date extends Aggregation {
 
 		// If any required vars aren't properly configured by the switch, return empty.
 		if ( empty( $from ) || empty( $to ) ) {
-			$from = $to = '';
+			$from = '';
+			$to   = '';
 		}
 
 		return [
@@ -113,7 +114,7 @@ class Post_Date extends Aggregation {
 	/**
 	 * Format date string.
 	 *
-	 * @param string $date_str
+	 * @param string $date_str Date string.
 	 * @return string
 	 */
 	protected function format_date( string $date_str ): string {
@@ -137,8 +138,9 @@ class Post_Date extends Aggregation {
 	protected function get_formatted_to_date( string $from_date_str, string $add_duration, string $sub_duration = 'PT1S' ): string {
 		try {
 			$to = new DateTime( $from_date_str, wp_timezone() );
+
 			return $to->add( new DateInterval( $add_duration ) )->sub( new DateInterval( $sub_duration ) )->format( 'Y-m-d H:i:s' );
-		}catch ( Exception $e ) {
+		} catch ( Exception $e ) {
 			return '';
 		}
 	}
