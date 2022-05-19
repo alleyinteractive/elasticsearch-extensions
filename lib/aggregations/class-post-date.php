@@ -54,42 +54,44 @@ class Post_Date extends Aggregation {
 	private function get_date_range( string $queried_date ) : array {
 		switch ( $this->interval ) {
 			case 'year':
+				// Queried year.
 				// $queried_date format: 'Y'. e.g. 1970
 				$from = $this->format_date( $queried_date . '-01-01 00:00:00' );
 				$to   = $this->get_formatted_interval_to_date( $from, 'P1Y' );
 				break;
 			case 'quarter':
-				// Queried quarter starts on first month of the quarter.
+				// Queried quarter. Starts on first month of the quarter: 01, 04, 07, 10.
 				// $queried_date format: 'Y-m'. e.g. 1970-11
 				$from = $this->format_date( $queried_date . '-01 00:00:00' );
-				$to   = $this->get_formatted_interval_to_date( $from, 'P4M' );
+				$to   = $this->get_formatted_interval_to_date( $from, 'P3M' );
 				break;
 			case 'month':
+				// Queried month.
 				// $queried_date format: 'Y-m'. e.g. 1970-11
 				$from = $this->format_date( $queried_date . '-01 00:00:00' );
 				$to   = $this->get_formatted_interval_to_date( $from, 'P1M' );
 				break;
 			case 'week':
-				// Queried week starts on Monday of first full week in the year.
-				// $queried_date format: 'Y-m-d'.
+				// Queried week. Starts on Monday of first full week in the year.
+				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25
 				$from = $this->format_date( $queried_date . ' 00:00:00' );
 				$to   = $this->get_formatted_interval_to_date( $from, 'P6D' );
 				break;
 			case 'day':
 				// Queried day.
-				// $queried_date format: 'Y-m-d'.
+				// $queried_date format: 'Y-m-d'. e.g. 1970-11-25
 				$from = $this->format_date( $queried_date . ' 00:00:00' );
 				$to   = $this->get_formatted_interval_to_date( $from, 'P1D' );
 				break;
 			case 'hour':
 				// Queried hour.
-				// $queried_date format: 'Y-m-d H:i:s'.
+				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45
 				$from = $this->format_date( $queried_date );
 				$to   = $this->get_formatted_interval_to_date( $from, 'PT1H' );
 				break;
 			case 'minute':
 				// Queried minute.
-				// $queried_date format: 'Y-m-d H:i:s'.
+				// $queried_date format: 'Y-m-d H:i:s'. e.g. 1970-11-25 22:45:45
 				$from = $this->format_date( $queried_date );
 				$to   = $this->get_formatted_interval_to_date( $from, 'PT1M' );
 				break;
