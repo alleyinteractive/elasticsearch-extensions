@@ -140,8 +140,8 @@ class Post_Date extends Aggregation {
 			$to = new DateTime( $from_date_str, wp_timezone() );
 
 			return $to->add( new DateInterval( $add_duration ) )
-					  ->sub( new DateInterval( $sub_duration ) )
-					  ->format( 'Y-m-d H:i:s' );
+					->sub( new DateInterval( $sub_duration ) )
+					->format( 'Y-m-d H:i:s' );
 		} catch ( Exception $e ) {
 			return '';
 		}
