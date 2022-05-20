@@ -139,7 +139,9 @@ class Post_Date extends Aggregation {
 		try {
 			$to = new DateTime( $from_date_str, wp_timezone() );
 
-			return $to->add( new DateInterval( $add_duration ) )->sub( new DateInterval( $sub_duration ) )->format( 'Y-m-d H:i:s' );
+			return $to->add( new DateInterval( $add_duration ) )
+					  ->sub( new DateInterval( $sub_duration ) )
+					  ->format( 'Y-m-d H:i:s' );
 		} catch ( Exception $e ) {
 			return '';
 		}
@@ -169,7 +171,7 @@ class Post_Date extends Aggregation {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
 			/*
-			 *  Elasticsearch returns the key for date_histograms as a 64 bit number
+			 * Elasticsearch returns the key for date_histograms as a 64-bit number
 			 * representing a timestamp in ms. To standardize this key and label to
 			 * something more familiar to users, use Elasticsearch's "key_as_string",
 			 * which represents the key as a formatted date string that adheres to the
