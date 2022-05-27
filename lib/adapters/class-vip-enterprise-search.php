@@ -122,7 +122,10 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Add our aggregations.
 		foreach ( $this->get_aggregations() as $aggregation ) {
-			$dsl['aggs'][ $aggregation->get_query_var() ] = $aggregation->request();
+			$request = $aggregation->request();
+			if ( ! empty( $request ) ) {
+				$dsl['aggs'][ $aggregation->get_query_var() ] = $request;
+			}
 		}
 
 		// Re-encode the body into the request args.
