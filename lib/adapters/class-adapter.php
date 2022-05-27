@@ -9,6 +9,7 @@ namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\Aggregations\CAP_Author;
+use Elasticsearch_Extensions\Aggregations\Custom_Date_Range;
 use Elasticsearch_Extensions\Aggregations\Post_Date;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
 use Elasticsearch_Extensions\Aggregations\Relative_Date;
@@ -83,6 +84,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function add_cap_author_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new CAP_Author( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new custom date range aggregation to the list of active aggregations.
+	 *
+	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_custom_date_range_aggregation( array $args = [] ): void {
+		$this->add_aggregation( new Custom_Date_Range( $this->dsl, $args ) );
 	}
 
 	/**
