@@ -7,7 +7,6 @@
 
 namespace Elasticsearch_Extensions\Aggregations;
 
-use DateInterval;
 use DateTime;
 use Elasticsearch_Extensions\DSL;
 use Exception;
