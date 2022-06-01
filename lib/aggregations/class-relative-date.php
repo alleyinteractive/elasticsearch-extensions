@@ -110,7 +110,7 @@ class Relative_Date extends Aggregation {
 		$intervals = [];
 		foreach ( $this->intervals as $interval ) {
 			$intervals[] = array_merge(
-				[ 'key' => $interval ],
+				[ 'key' => (string) $interval ],
 				$this->get_relative_date( $interval )
 			);
 		}
