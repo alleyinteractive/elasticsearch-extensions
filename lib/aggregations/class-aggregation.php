@@ -123,7 +123,19 @@ abstract class Aggregation {
 	 * @return string[] The values for the given key.
 	 */
 	protected function extract_query_values( string $key = '' ): array {
-		return array_values( array_filter( (array) ( $_GET['fs'][ $key ?: $this->get_query_var() ] ?? [] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+		$query_var = $key ?: $this->get_query_var();
+
+		/**
+		 * Filters extracted query values for a given query var.
+		 *
+		 * @param array  $query_values The array of extracted query values.
+		 * @param string $query_var    The query var being extracted.
+		 */
+		return apply_filters(
+			'elasticsearch_extensions_query_values',
+			array_values( array_filter( (array) ( $_GET['fs'][ $query_var ] ?? [] ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+			$query_var
+		);
 	}
 
 	/**

@@ -68,6 +68,19 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables a custom date range aggregation.
+	 *
+	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_custom_date_range_aggregation( array $args = [] ): Controller {
+		$this->adapter->add_custom_date_range_aggregation( $args );
+
+		return $this;
+	}
+
+	/**
 	 * Enable empty search query strings.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.

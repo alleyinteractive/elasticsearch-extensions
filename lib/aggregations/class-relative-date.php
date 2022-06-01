@@ -65,19 +65,12 @@ class Relative_Date extends Aggregation {
 	 */
 	private function get_relative_date( int $offset ) : array {
 		try {
-			$date = new DateTime( 'tomorrow', wp_timezone() );
-			$to   = $date->format( 'Y-m-d H:i:s' );
-			$date->sub( new DateInterval( 'P' . ( $offset + 1 ) . 'D' ) );
-			$from = $date->format( 'Y-m-d H:i:s' );
-			return [
-				'from' => $from,
-				'to'   => $to,
-			];
+			$to   = new DateTime( 'tomorrow', wp_timezone() );
+			$from = new DateTime( 'tomorrow', wp_timezone() );
+			$from->sub( new DateInterval( 'P' . ( $offset + 1 ) . 'D' ) );
+			return $this->dsl->build_range( $from, $to );
 		} catch ( Exception $e ) {
-			return [
-				'from' => '',
-				'to'   => '',
-			];
+			return [];
 		}
 	}
 

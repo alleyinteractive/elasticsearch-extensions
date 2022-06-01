@@ -7,6 +7,8 @@
 
 namespace Elasticsearch_Extensions;
 
+use DateTime;
+
 /**
  * Handles DSL creation and modification for Elasticsearch queries.
  */
@@ -152,6 +154,22 @@ class DSL {
 			'bool' => [
 				'filter' => $queries,
 			],
+		];
+	}
+
+	/**
+	 * Given DateTime objects for the from and to components of a range query,
+	 * builds the from/to components of the range query and returns it.
+	 *
+	 * @param DateTime $from The start date.
+	 * @param DateTime $to   The end date.
+	 *
+	 * @return array An array containing a from and to key, usable in a range query.
+	 */
+	public function build_range( DateTime $from, DateTime $to ): array {
+		return [
+			'from' => $from->format( 'Y-m-d H:i:s' ),
+			'to'   => $to->format( 'Y-m-d H:i:s' ),
 		];
 	}
 
