@@ -104,17 +104,35 @@ class VIP_Enterprise_Search extends Adapter {
 		foreach ( $this->get_aggregations() as $aggregation ) {
 			$filter = $aggregation->filter();
 			if ( ! empty( $filter ) ) {
-				// Determine where to add the filter.
 				if ( $use_filter ) {
+					// If we aren't using a search term, just use a basic query filter.
 					$formatted_args['query']['bool']['filter'] = array_merge(
 						$formatted_args['query']['bool']['filter'],
 						$filter
 					);
-				} else {
-					$formatted_args['query']['function_score']['query']['bool']['must'] = array_merge(
-						$formatted_args['query']['function_score']['query']['bool']['must'] ?? [],
-						$filter
-					);
+				} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool']['should'] )
+					&& is_array( $formatted_args['query']['function_score']['query']['bool']['should'] )
+				) {
+					/*
+					 * ElasticPress produces a pretty gnarly function_score
+					 * query that is broken down by post type, so we have to
+					 * loop through all the post types in the query and add our
+					 * aggregation restrictions to each of the filter clauses.
+					 * We're doing quite a bit of "look before you leap" here in
+					 * case the structure of the query changes in a future
+					 * version, so the worst that happens is the filter no
+					 * longer applies properly, and we don't break the query.
+					 */
+					foreach ( $formatted_args['query']['function_score']['query']['bool']['should'] as &$should ) {
+						if ( ! empty( $should['bool']['filter'] )
+							&& is_array( $should['bool']['filter'] )
+						) {
+							$should['bool']['filter'] = array_merge(
+								$should['bool']['filter'],
+								$filter
+							);
+						}
+					}
 				}
 			}
 		}
