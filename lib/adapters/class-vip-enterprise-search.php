@@ -89,11 +89,6 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @return array The modified Elasticsearch query arguments.
 	 */
 	public function filter__ep_post_formatted_args( $formatted_args, $args ) {
-		// Enable empty search, if requested.
-		if ( $this->get_allow_empty_search() && ! empty( $args['s'] ) ) {
-			unset( $formatted_args['query']['match_all'] );
-		}
-
 		// Add requested aggregations.
 		foreach ( $this->get_aggregations() as $aggregation ) {
 			$filter = $aggregation->filter();
