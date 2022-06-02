@@ -89,11 +89,33 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @return array The modified Elasticsearch query arguments.
 	 */
 	public function filter__ep_post_formatted_args( $formatted_args, $args ) {
+		/*
+		 * ElasticPress uses post_filter to filter results after search, but
+		 * this only works if an actual search term is used. If a search term
+		 * is not being used, we need to copy this configuration over and
+		 * apply it as a filter in the query itself.
+		 */
+		if ( empty( $formatted_args['query'] ) && ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
+			$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+		}
+
 		// Add requested aggregations.
+		$use_filter = ! empty( $formatted_args['query']['bool']['filter'] );
 		foreach ( $this->get_aggregations() as $aggregation ) {
 			$filter = $aggregation->filter();
 			if ( ! empty( $filter ) ) {
-				$formatted_args['query']['function_score']['query']['bool']['must'][] = $filter;
+				// Determine where to add the filter.
+				if ( $use_filter ) {
+					$formatted_args['query']['bool']['filter'] = array_merge(
+						$formatted_args['query']['bool']['filter'],
+						$filter
+					);
+				} else {
+					$formatted_args['query']['function_score']['query']['bool']['must'] = array_merge(
+						$formatted_args['query']['function_score']['query']['bool']['must'] ?? [],
+						$filter
+					);
+				}
 			}
 		}
 

@@ -18,6 +18,16 @@ use WP_Taxonomy;
 class Taxonomy extends Aggregation {
 
 	/**
+	 * The mode by which comparisons are made in filtering. If set to AND, all
+	 * specified terms must match. If set to OR, only one of the specified
+	 * terms needs to match. Defaults to AND so that selecting additional terms
+	 * makes the result set smaller, not larger.
+	 *
+	 * @var string
+	 */
+	protected string $compare = 'AND';
+
+	/**
 	 * A reference to the taxonomy this aggregation is associated with.
 	 *
 	 * @var WP_Taxonomy
@@ -54,11 +64,22 @@ class Taxonomy extends Aggregation {
 	 * @return array|null DSL fragment or null if no filters to apply.
 	 */
 	public function filter(): ?array {
-		return ! empty( $this->query_values )
-			? $this->dsl->terms(
-				$this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() ),
-				$this->query_values
-			) : null;
+		if ( empty( $this->query_values ) ) {
+			return null;
+		}
+
+		// Fork for AND vs. OR logic.
+		$filters = [];
+		$field   = $this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() );
+		if ( 'OR' === $this->compare ) {
+			$filters[] = $this->dsl->terms( $field, $this->query_values );
+		} else {
+			foreach ( $this->query_values as $query_value ) {
+				$filters[] = $this->dsl->terms( $field, $query_value );
+			}
+		}
+
+		return $filters;
 	}
 
 	/**
