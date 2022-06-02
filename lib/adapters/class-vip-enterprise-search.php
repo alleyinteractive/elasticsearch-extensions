@@ -103,6 +103,14 @@ class VIP_Enterprise_Search extends Adapter {
 		$use_filter = ! empty( $formatted_args['query']['bool']['filter'] );
 		foreach ( $this->get_aggregations() as $aggregation ) {
 			$filter = $aggregation->filter();
+
+			// Some filters return an indexed array (e.g. taxonomy, CAP), whereas some do not.
+			// This standardizes the shape of the filter.
+			if ( ! isset( $filter[0] ) ) {
+				$filter = [ $filter ];
+			}
+			$filter = array_filter( $filter );
+
 			if ( ! empty( $filter ) ) {
 				if ( $use_filter ) {
 					// If we aren't using a search term, just use a basic query filter.
