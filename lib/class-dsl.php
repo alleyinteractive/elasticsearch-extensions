@@ -133,14 +133,11 @@ class DSL {
 	/**
 	 * Build a "filter" bool fragment for an array of terms.
 	 *
-	 * @param string $taxonomy Taxonomy slug.
-	 * @param string $field    Taxonomy field to check against.
-	 * @param array  $values   Values to match.
-	 *
+	 * @param  string $field  ES field.
+	 * @param  array  $values Values to match.
 	 * @return array DSL fragment.
 	 */
-	public function all_terms( string $taxonomy, string $field, array $values ): array {
-		$field   = $this->map_tax_field( $taxonomy, $field );
+	public static function all_terms( string $field, array $values ): array {
 		$queries = [];
 		foreach ( $values as $value ) {
 			$queries[] = [
