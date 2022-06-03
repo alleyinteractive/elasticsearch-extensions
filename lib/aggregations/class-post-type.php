@@ -29,14 +29,14 @@ class Post_Type extends Aggregation {
 	}
 
 	/**
-	 * Get DSL for filters that should be applied in the DSL in order to match
-	 * the requested values.
+	 * Gets an array of DSL representing each filter for this aggregation that
+	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null DSL fragment or null if no filters to apply.
+	 * @return array|null Array of DSL fragments or null if no filters to apply.
 	 */
 	public function filter(): ?array {
 		return ! empty( $this->query_values )
-			? $this->dsl->terms( 'post_type', $this->query_values )
+			? [ $this->dsl->terms( 'post_type', $this->query_values ) ]
 			: null;
 	}
 
