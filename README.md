@@ -36,4 +36,4 @@ add_action(
 
 For detailed information on all configuration options, action and filter hooks,
 and how to integrate aggregation controls into the search template, see
-[the wiki](/alleyinteractive/elasticsearch-extensions/wiki).
+[the wiki](https://github.com/alleyinteractive/elasticsearch-extensions/wiki).
