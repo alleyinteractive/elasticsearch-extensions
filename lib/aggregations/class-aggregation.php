@@ -126,15 +126,15 @@ abstract class Aggregation {
 		$query_var = $key ?: $this->get_query_var();
 
 		/**
-		 * Filters extracted query values for a given query var.
+		 * Filters extracted query values for a given aggregation.
 		 *
-		 * @param array  $query_values The array of extracted query values.
-		 * @param string $query_var    The query var being extracted.
+		 * @param array       $query_values The array of extracted query values.
+		 * @param Aggregation $aggregation  The aggregation being processed.
 		 */
 		return apply_filters(
 			'elasticsearch_extensions_aggregation_query_values',
 			array_values( array_filter( (array) ( $_GET['fs'][ $query_var ] ?? [] ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
-			$query_var
+			$this
 		);
 	}
 
