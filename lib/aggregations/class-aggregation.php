@@ -132,7 +132,7 @@ abstract class Aggregation {
 		 * @param string $query_var    The query var being extracted.
 		 */
 		return apply_filters(
-			'elasticsearch_extensions_query_values',
+			'elasticsearch_extensions_aggregation_query_values',
 			array_values( array_filter( (array) ( $_GET['fs'][ $query_var ] ?? [] ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 			$query_var
 		);
@@ -259,7 +259,7 @@ abstract class Aggregation {
 		 * @param Bucket[]    $buckets     The array of buckets to filter.
 		 * @param Aggregation $aggregation The aggregation that the buckets are associated with.
 		 */
-		$this->buckets = apply_filters( 'elasticsearch_extensions_buckets', $this->sort_buckets( $buckets ), $this );
+		$this->buckets = apply_filters( 'elasticsearch_extensions_aggregation_buckets', $this->sort_buckets( $buckets ), $this );
 	}
 
 	/**
