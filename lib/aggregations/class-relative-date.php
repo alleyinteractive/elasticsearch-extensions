@@ -85,7 +85,7 @@ class Relative_Date extends Aggregation {
 	public function parse_buckets( array $buckets ): void {
 		$bucket_objects = [];
 		foreach ( $buckets as $bucket ) {
-			$bucket_objects[] = new Bucket(
+			$bucket_objects[ (int) $bucket['key'] ] = new Bucket(
 				$bucket['key'],
 				$bucket['doc_count'],
 				sprintf(
@@ -96,7 +96,8 @@ class Relative_Date extends Aggregation {
 				$this->is_selected( $bucket['key'] ),
 			);
 		}
-		$this->set_buckets( $bucket_objects );
+		ksort( $bucket_objects );
+		$this->set_buckets( array_values( $bucket_objects ) );
 	}
 
 	/**
