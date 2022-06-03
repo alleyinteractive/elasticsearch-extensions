@@ -142,9 +142,9 @@ abstract class Aggregation {
 	 * Gets an array of DSL representing each filter for this aggregation that
 	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null Array of DSL fragments or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	abstract public function filter(): ?array;
+	abstract public function filter(): array;
 
 	/**
 	 * Gets a list of results for this aggregation.

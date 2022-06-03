@@ -61,11 +61,11 @@ class Taxonomy extends Aggregation {
 	 * Gets an array of DSL representing each filter for this aggregation that
 	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null Array of DSL fragments or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	public function filter(): ?array {
+	public function filter(): array {
 		if ( empty( $this->query_values ) ) {
-			return null;
+			return [];
 		}
 
 		// Fork for AND vs. OR logic.

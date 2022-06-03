@@ -45,16 +45,16 @@ class Relative_Date extends Aggregation {
 	 * Gets an array of DSL representing each filter for this aggregation that
 	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null Array of DSL fragments or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	public function filter(): ?array {
+	public function filter(): array {
 		return ! empty( $this->query_values[0] )
 			? [
 				$this->dsl->range(
 					'post_date',
 					$this->get_relative_date( (int) $this->query_values[0] )
 				),
-			] : null;
+			] : [];
 	}
 
 	/**
