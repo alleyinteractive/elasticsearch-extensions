@@ -126,25 +126,25 @@ abstract class Aggregation {
 		$query_var = $key ?: $this->get_query_var();
 
 		/**
-		 * Filters extracted query values for a given query var.
+		 * Filters extracted query values for a given aggregation.
 		 *
-		 * @param array  $query_values The array of extracted query values.
-		 * @param string $query_var    The query var being extracted.
+		 * @param array       $query_values The array of extracted query values.
+		 * @param Aggregation $aggregation  The aggregation being processed.
 		 */
 		return apply_filters(
-			'elasticsearch_extensions_query_values',
+			'elasticsearch_extensions_aggregation_query_values',
 			array_values( array_filter( (array) ( $_GET['fs'][ $query_var ] ?? [] ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
-			$query_var
+			$this
 		);
 	}
 
 	/**
-	 * Get DSL for filters that should be applied in the DSL in order to match
-	 * the requested values.
+	 * Gets an array of DSL representing each filter for this aggregation that
+	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null DSL fragment or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	abstract public function filter(): ?array;
+	abstract public function filter(): array;
 
 	/**
 	 * Gets a list of results for this aggregation.
@@ -259,7 +259,7 @@ abstract class Aggregation {
 		 * @param Bucket[]    $buckets     The array of buckets to filter.
 		 * @param Aggregation $aggregation The aggregation that the buckets are associated with.
 		 */
-		$this->buckets = apply_filters( 'elasticsearch_extensions_buckets', $this->sort_buckets( $buckets ), $this );
+		$this->buckets = apply_filters( 'elasticsearch_extensions_aggregation_buckets', $this->sort_buckets( $buckets ), $this );
 	}
 
 	/**

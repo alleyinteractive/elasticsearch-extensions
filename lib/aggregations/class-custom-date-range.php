@@ -32,21 +32,23 @@ class Custom_Date_Range extends Aggregation {
 	}
 
 	/**
-	 * Get DSL for filters that should be applied in the DSL in order to match
-	 * the requested values.
+	 * Gets an array of DSL representing each filter for this aggregation that
+	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null DSL fragment or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	public function filter(): ?array {
+	public function filter(): array {
 		return ! empty( $this->query_values[0] )
 			&& ! empty( $this->query_values[1] )
 			&& is_string( $this->query_values[0] )
 			&& is_string( $this->query_values[1] )
 			&& count( $this->query_values ) === 2
-				? $this->dsl->range(
-					'post_date',
-					$this->get_date_range( $this->query_values[0], $this->query_values[1] )
-				) : null;
+				? [
+					$this->dsl->range(
+						'post_date',
+						$this->get_date_range( $this->query_values[0], $this->query_values[1] )
+					),
+				] : [];
 	}
 
 	/**

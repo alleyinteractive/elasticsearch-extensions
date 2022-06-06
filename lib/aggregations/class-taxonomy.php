@@ -18,6 +18,18 @@ use WP_Taxonomy;
 class Taxonomy extends Aggregation {
 
 	/**
+	 * The logical relationship between each selected term when there is more
+	 * than one. If set to AND, all specified terms must be present on a single
+	 * post in order for it to be included in the results. If set to OR, only
+	 * one of the specified terms needs to be present on a single post in order
+	 * for it to be included in the results. Defaults to AND so that selecting
+	 * additional terms makes the result set smaller, not larger.
+	 *
+	 * @var string
+	 */
+	protected string $relation = 'AND';
+
+	/**
 	 * A reference to the taxonomy this aggregation is associated with.
 	 *
 	 * @var WP_Taxonomy
@@ -48,17 +60,28 @@ class Taxonomy extends Aggregation {
 	}
 
 	/**
-	 * Get DSL for filters that should be applied in the DSL in order to match
-	 * the requested values.
+	 * Gets an array of DSL representing each filter for this aggregation that
+	 * should be applied in the query in order to match the requested values.
 	 *
-	 * @return array|null DSL fragment or null if no filters to apply.
+	 * @return array Array of DSL fragments to apply.
 	 */
-	public function filter(): ?array {
-		return ! empty( $this->query_values )
-			? $this->dsl->terms(
-				$this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() ),
-				$this->query_values
-			) : null;
+	public function filter(): array {
+		if ( empty( $this->query_values ) ) {
+			return [];
+		}
+
+		// Fork for AND vs. OR logic.
+		$filters = [];
+		$field   = $this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() );
+		if ( 'OR' === $this->relation ) {
+			$filters[] = $this->dsl->terms( $field, $this->query_values );
+		} else {
+			foreach ( $this->query_values as $query_value ) {
+				$filters[] = $this->dsl->terms( $field, $query_value );
+			}
+		}
+
+		return $filters;
 	}
 
 	/**
