@@ -1,7 +1,7 @@
 {
   "name": "alleyinteractive/elasticsearch-extensions",
   "description": "Elasticsearch Extensions",
-  "type": "project",
+  "type": "wordpress-plugin",
   "authors": [
     {
       "name": "Alley",
