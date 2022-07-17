@@ -36,6 +36,24 @@ function elasticsearch_extensions_manually_load_environment() {
 
 	// Load this plugin.
 	require_once dirname( __DIR__ ) . '/elasticsearch-extensions.php';
+
+	// Make sure ES is running and responding
+	$host  = 'http://localhost:9200';
+	$tries = 5;
+	$sleep = 3;
+	do {
+		$response = wp_remote_get( $host );
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( ! empty( $body['version']['number'] ) ) {
+				printf( "Elasticsearch is up and running, using version %s.\n", $body['version']['number'] );
+			}
+			break;
+		} else {
+			printf( "\nInvalid response from ES (%s), sleeping %d seconds and trying again...\n", wp_remote_retrieve_response_code( $response ), $sleep );
+			sleep( $sleep );
+		}
+	} while ( --$tries );
 }
 tests_add_filter( 'muplugins_loaded', 'elasticsearch_extensions_manually_load_environment' );
 
