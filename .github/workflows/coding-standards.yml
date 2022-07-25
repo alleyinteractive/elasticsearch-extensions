@@ -36,7 +36,7 @@ jobs:
           php --version
           composer --version
 
-      - name: Validate Composer
+      - name: Validate Composer package
         run: composer validate --strict
 
       - name: Install dependencies
