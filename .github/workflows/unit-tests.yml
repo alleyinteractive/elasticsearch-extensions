@@ -87,7 +87,7 @@ jobs:
           rm -rf "${WP_CORE_DIR}wp-content/plugins"
           mkdir -p "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
-          cd ${WP_CORE_DIR}wp-content/plugins/ && git clone git@github.com:alleyinteractive/searchpress.git
+          cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
 
       - name: Run tests
         run: |
