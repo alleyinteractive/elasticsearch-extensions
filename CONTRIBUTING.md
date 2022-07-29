@@ -36,7 +36,7 @@ If a related issue doesn't exist, you can
 
 #### Solve an Issue
 
-If you would like to help solve an existing issue navigate to the,
+If you would like to help solve an existing issue navigate to the
 [list of open issues](https://github.com/alleyinteractive/elasticsearch-extensions/issues)
 and choose one that interests you.
 
@@ -76,7 +76,7 @@ PR.
 - Enable the checkbox to
   [allow maintainer edits](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
   so the branch can be updated for a merge. Once you submit your PR, an Alley
-  team member will review your proposal. We may ask questions or request for
+  team member will review your proposal. We may ask questions or request
   additional information.
 - We may ask for changes to be made before a PR can be merged, either using
   [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request)

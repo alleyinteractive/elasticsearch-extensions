@@ -147,8 +147,7 @@ This project keeps a [changelog](CHANGELOG.md).
 ## Development Process
 
 See instructions above on installing from source. Pull requests are welcome from
-the community and will be considered for inclusion. For more information, see
-the Contributing section below.
+the community and will be considered for inclusion.
 
 ### Contributing
 
@@ -175,7 +174,7 @@ There is a [DSL class](lib/class-dsl.php) which should contain all DSL that the
 plugin needs to write. Specific DSL structures will differ based on which
 adapter is being used, so the adapters are each responsible for modifying the
 DSL that is written by the plugin in use in order to establish the same
-functionality for a developer or user irrespective of which adapter is in use.
+functionality for a developer or user irrespective of their chosen integration.
 
 This plugin uses a
 [factory pattern](https://en.wikipedia.org/wiki/Factory_(object-oriented_programming))
@@ -185,9 +184,9 @@ active.
 Controller methods are chainable, following a common practice in Laravel, by
 returning the current object at the end of a function call. See
 [the controller class](lib/class-controller.php) to see how this works. This
-design choice makes it possible to call `elasticsearch_extensions()` and call
-several configuration methods in a row without having to re-call the
-`elasticsearch_extensions` method.
+design choice makes it possible to call several configuration methods in a row
+without having to reference the object again (see the Use section above for
+an example of how this works in practice).
 
 
 ## Third-Party Dependencies
