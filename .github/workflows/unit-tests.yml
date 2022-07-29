@@ -14,15 +14,19 @@ jobs:
         multisite: [0]
         wp_version: ["latest"]
         include:
-          - php: '7.4'
+          - php: '8.0'
             es_version: '7.17.5'
             multisite: 0
             wp_version: '5.9.3'
             adapter: 'searchpress'
           - php: '7.4'
+            es_version: '7.17.5'
+            multisite: 0
+            wp_version: '5.9.3'
+            adapter: 'vip-search'
+          - php: '7.4'
             es_version: '6.8.23'
             multisite: 1
-            adapter: 'vip-search'
             wp_version: '5.9.3'
     env:
       CACHEDIR: /tmp/test-cache
@@ -30,6 +34,7 @@ jobs:
       WP_TESTS_DIR: /tmp/wordpress-tests-lib
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
+      ES_PLUGIN_DIR: /tmp/wordpress/wp-content/plugins/elasticsearch-extensions
     services:
       mysql:
         image: mysql:5.7
@@ -92,15 +97,19 @@ jobs:
           cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
 
       - name: Run all tests
-        run: composer phpunit
-        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
+        if: matrix.adapter == ''
+        run: |
+          cd ${ES_PLUGIN_DIR}
+          composer phpunit
 
       - name: Run SearchPress Adapter Tests
-        if: ${{ matrix.adapter == 'searchpress' }}
-        run: composer phpunit -- --testsuite=searchpress
-        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
+        if: matrix.adapter == 'searchpress'
+        run: |
+          cd ${ES_PLUGIN_DIR}
+          composer phpunit -- --testsuite=searchpress
 
       - name: Run VIP Search Adapter Tests
-        if: ${{ matrix.adapter == 'vip-search' }}
-        run: composer phpunit -- --testsuite=vip-search
-        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
+        if: matrix.adapter == 'vip-search'
+        run: |
+          cd ${ES_ES_PLUGIN_DIR}
+          composer phpunit -- --testsuite=vip-search
