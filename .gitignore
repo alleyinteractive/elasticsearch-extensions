@@ -15,4 +15,4 @@ Thumbs.db
 
 # Cache files
 .phpcs/*.json
-.phpunit.results.cache
+.phpunit.result.cache
