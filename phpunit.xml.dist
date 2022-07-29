@@ -7,11 +7,21 @@
         convertWarningsToExceptions="true"
 >
     <testsuites>
-        <testsuite name="Plugin Tests">
+		<testsuite name="searchpress">
+            <directory prefix="test-searchpress" suffix=".php">./tests/adapters/searchpress/</directory>
+        </testsuite>
+
+		<testsuite name="vip-search">
+            <directory prefix="test-vip-search" suffix=".php">./tests/adapters/vip-search/</directory>
+        </testsuite>
+
+		<testsuite name="plugin">
             <directory prefix="test-" suffix=".php">./tests/</directory>
+			<exclude>./tests/adapters/searchpress/</exclude>
+			<exclude>./tests/adapters/vip-search/</exclude>
         </testsuite>
     </testsuites>
-    <filter>
+	<filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./</directory>
             <exclude>
