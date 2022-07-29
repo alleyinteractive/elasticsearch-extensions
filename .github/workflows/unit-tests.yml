@@ -93,14 +93,14 @@ jobs:
 
       - name: Run all tests
         run: composer phpunit
-        working-directory: ${{ ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions }}
+        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
 
       - name: Run SearchPress Adapter Tests
         if: ${{ matrix.adapter == 'searchpress' }}
         run: composer phpunit -- --testsuite=searchpress
-        working-directory: ${{ ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions }}
+        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
 
       - name: Run VIP Search Adapter Tests
         if: ${{ matrix.adapter == 'vip-search' }}
         run: composer phpunit -- --testsuite=vip-search
-        working-directory: ${{ ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions }}
+        working-directory: ./tmp/wordpress/wp-content/plugins/elasticsearch-extensions
