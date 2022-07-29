@@ -1,17 +1,72 @@
 {
-  "name": "alleyinteractive/elasticsearch-extensions",
-  "description": "Elasticsearch Extensions",
-  "type": "wordpress-plugin",
   "authors": [
     {
       "name": "Alley",
-      "email": "noreply@alley.co"
+      "email": "info@alley.co"
     }
   ],
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "description": "Elasticsearch Extensions",
+  "extra": {
+    "installer-paths": {
+      "../../mu-plugins": [
+        "automattic/vip-go-mu-plugins"
+      ],
+      "../{$name}": [
+        "type:wordpress-plugin"
+      ]
+    }
+  },
   "license": "GPL-3.0-or-later",
+  "name": "alleyinteractive/elasticsearch-extensions",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*"
+      ]
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "automattic/vip-go-mu-plugins",
+        "version": "dev-master",
+        "type": "wordpress-plugin",
+        "source": {
+          "url": "https://github.com/automattic/vip-go-mu-plugins-built",
+          "type": "git",
+          "reference": "master"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "alleyinteractive/searchpress",
+        "version": "0.4.1",
+        "type": "wordpress-plugin",
+        "source": {
+          "url": "https://github.com/alleyinteractive/searchpress",
+          "type": "git",
+          "reference": "v0.4.1"
+        }
+      }
+    }
+  ],
   "require-dev": {
     "alleyinteractive/alley-coding-standards": "^0.3.0",
+    "alleyinteractive/searchpress": "^0.4.1",
+    "automattic/vip-go-mu-plugins": "dev-master",
+    "composer/installers": "^1.0",
     "phpunit/phpunit": "7.5.*",
+    "wpackagist-plugin/elasticpress": "^4.2",
     "yoast/phpunit-polyfills": "^1.0"
   },
   "scripts": {
@@ -22,9 +77,5 @@
       "composer install"
     ]
   },
-  "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    }
-  }
+  "type": "wordpress-plugin"
 }
