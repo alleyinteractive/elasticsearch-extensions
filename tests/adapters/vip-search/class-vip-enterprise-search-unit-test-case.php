@@ -6,12 +6,6 @@
  * @subpackage Tests
  */
 
-// Bail early.
-// if ( false === class_exists( '\Automattic\VIP\Search\Search' ) ) {
-// 	echo "Add the VIP Enterprise Search plugin first before trying to test this adapter.\n";
-// 	exit( 1 );
-// }
-
 /**
  * VIP_Enterprise_Search_Adapter_UnitTestCase class.
  */

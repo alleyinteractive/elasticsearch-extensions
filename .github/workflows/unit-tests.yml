@@ -18,9 +18,11 @@ jobs:
             es_version: '7.17.5'
             multisite: 0
             wp_version: '5.9.3'
+            adapter: 'searchpress'
           - php: '7.4'
             es_version: '6.8.23'
             multisite: 1
+            adapter: 'vip-search'
             wp_version: '5.9.3'
     env:
       CACHEDIR: /tmp/test-cache
@@ -89,7 +91,16 @@ jobs:
           rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
 
-      - name: Run tests
-        run: |
-          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
-          composer phpunit
+      - name: Run all tests
+        run: composer phpunit
+        working-directory: ${{ WP_CORE_DIRwp-content/plugins/elasticsearch-extensions }}
+
+      - name: Run SearchPress Adapter Tests
+        if: ${{ matrix.adapter == 'searchpress' }}
+        run: composer phpunit -- --testsuite=searchpress
+        working-directory: ${{ WP_CORE_DIRwp-content/plugins/elasticsearch-extensions }}
+
+      - name: Run VIP Search Adapter Tests
+        if: ${{ matrix.adapter == 'vip-search' }}
+        run: composer phpunit -- --testsuite=vip-search
+        working-directory: ${{ ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions }}

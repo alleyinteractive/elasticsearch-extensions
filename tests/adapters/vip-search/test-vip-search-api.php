@@ -9,7 +9,7 @@
 /**
  * VIP_Enterprise_Search_Adapter_TestAPI class.
  *
- * @group searchpress
+ * @group vip-search
  */
 class VIP_Enterprise_Search_Adapter_TestAPI extends VIP_Enterprise_Search_Adapter_UnitTestCase {
 

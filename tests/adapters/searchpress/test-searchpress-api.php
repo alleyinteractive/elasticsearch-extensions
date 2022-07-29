@@ -28,7 +28,7 @@ class SearchPress_Adapter_TestAPI extends SearchPress_Adapter_UnitTestCase {
 	}
 
 	public function test_version() {
-		$this->assertRegExp( '/^\d+\.\d+\.\d+/', SP_API()->version() );
+		$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+/', SP_API()->version() );
 	}
 
 	public function test_api_get() {

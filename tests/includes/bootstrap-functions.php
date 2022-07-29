@@ -7,24 +7,6 @@
  */
 
 /**
- * Boot up adapters and wake Elasticsearch up.
- *
- * @param string $adapter Adapter.
- */
-function elasticsearch_bootup(): void {
-
-	// ES server.
-	$host = 'http://localhost:9200';
-
-	echo "----\n";
-
-	sp_setup( $host );
-	vip_setup( $host );
-
-	echo "----\n";
-}
-
-/**
  * Ping the Elasticsearch instance.
  *
  * @param string $host Host URL.
@@ -70,17 +52,12 @@ function ping_es( $host ): void {
 }
 
 /**
- * SearchPress setup.
- *
- * @param string $host Host url.
+ * Boot up adapters and wake Elasticsearch up.
  */
-function sp_setup( $host ): void {
+function elasticsearch_bootup(): void {
+	echo "----\n";
 
-	// Bail early.
-	if ( false === class_exists( 'SP_Config' ) ) {
-		echo "-- The SearchPress plugin IS NOT available! =(\n";
-		return;
-	}
+	$host = 'http://localhost:9200';
 
 	// Use $_ENV['SEARCHPRESS_HOST'], if set.
 	$sp_host = getenv( 'SEARCHPRESS_HOST' );
@@ -91,33 +68,27 @@ function sp_setup( $host ): void {
 	// Ping ES.
 	ping_es( $host );
 
-	// Set up SearchPress.
-	searchpress_setup();
+	// SearchPress.
+	if ( true === class_exists( 'SP_Config' ) ) {
+		searchpress_setup();
 
-	echo "-- The SearchPress plugin is available! \o/\n";
-}
-
-/**
- * VIP Search setup.
- *
- * @param string $host Host url.
- */
-function vip_setup( $host ): void {
-
-	// Bail early.
-	if ( false === class_exists( '\Automattic\VIP\Search\Search' ) ) {
-		echo "-- The VIP Enterprise Search plugin IS NOT available! =(\n";
-		return;
+		echo "-- The SearchPress plugin is available! \o/\n";
+	} else {
+		echo "-- The SearchPress plugin IS NOT available! =(\n";
 	}
 
-	define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
-	define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ $host ] );
-	define( 'VIP_ELASTICSEARCH_USERNAME', 'vip-search' );
-	define( 'VIP_ELASTICSEARCH_PASSWORD', 'password' );
-	define( 'FILES_CLIENT_SITE_ID', 'test-project' );
+	// VIP Search.
+	if ( true === class_exists( '\Automattic\VIP\Search\Search' ) ) {
+		define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
+		define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ $host ] );
+		define( 'VIP_ELASTICSEARCH_USERNAME', 'vip-search' );
+		define( 'VIP_ELASTICSEARCH_PASSWORD', 'password' );
+		define( 'FILES_CLIENT_SITE_ID', 'test-project' );
 
-	// Ping ES.
-	ping_es( $host );
+		echo "-- The VIP Enterprise Search plugin is available! \o/\n";
+	} else {
+		echo "-- The VIP Enterprise Search plugin IS NOT available! =(\n";
+	}
 
-	echo "-- The VIP Enterprise Search plugin is available! \o/\n";
+	echo "----\n";
 }

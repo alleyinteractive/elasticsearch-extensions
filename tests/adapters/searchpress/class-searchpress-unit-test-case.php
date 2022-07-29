@@ -6,12 +6,6 @@
  * @subpackage Tests
  */
 
-// Bail early.
-if ( false === class_exists( 'SP_Config' ) ) {
-	echo "Add the SearchPress plugin first before trying to test this adapter.\n";
-	exit( 1 );
-}
-
 /**
  * SearchPress_Adapter_UnitTestCase class.
  */
