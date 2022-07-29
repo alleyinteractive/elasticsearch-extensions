@@ -65,7 +65,7 @@ require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/includes/searchpress-bootstr
 require $elasticsearch_extensions_tests_dir . '/includes/bootstrap.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
 
 echo "Loading Elasticsearch Extensions testcase...\n";
-require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/includes/class-unit-test-case.php';
+require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/includes/class-adapter-unit-test-case.php';
 
 echo "Loading Adapters testcases...\n";
 require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/adapters/searchpress/class-searchpress-unit-test-case.php';
