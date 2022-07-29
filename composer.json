@@ -12,7 +12,7 @@
     },
     "sort-packages": true
   },
-  "description": "Elasticsearch Extensions",
+  "description": "A WordPress plugin to make integrating sites with Elasticsearch easier.",
   "extra": {
     "installer-paths": {
       "../../mu-plugins": [
