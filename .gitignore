@@ -15,4 +15,5 @@ Thumbs.db
 
 # Cache files
 .phpcs/*.json
+composer.lock
 .phpunit.result.cache
