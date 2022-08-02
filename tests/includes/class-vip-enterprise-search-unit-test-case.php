@@ -22,14 +22,6 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		parent::tearDownAfterClass();
 	}
 
-	public function setUp(): void {
-		parent::setUp();
-	}
-
-	public function tearDown(): void {
-		parent::tearDown();
-	}
-
 	/**
 	 * Flush the index.
 	 *

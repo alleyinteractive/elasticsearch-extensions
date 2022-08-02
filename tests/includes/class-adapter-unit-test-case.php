@@ -9,7 +9,7 @@
 /**
  * Adapter_UnitTestCase class.
  */
-abstract class Adapter_UnitTestCase extends WP_UnitTestCase {
+abstract class Adapter_UnitTestCase extends \Mantle\Testkit\Test_Case {
 
 	/**
 	 * Flush the index.

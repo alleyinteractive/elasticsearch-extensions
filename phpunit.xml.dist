@@ -1,32 +1,32 @@
 <phpunit
-        bootstrap="tests/bootstrap.php"
-        backupGlobals="false"
-        colors="true"
-        convertErrorsToExceptions="true"
-        convertNoticesToExceptions="true"
-        convertWarningsToExceptions="true"
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
 >
-    <testsuites>
+	<testsuites>
 		<testsuite name="searchpress">
-            <directory prefix="test-searchpress" suffix=".php">./tests/adapters/searchpress/</directory>
-        </testsuite>
+			<directory prefix="test-searchpress" suffix=".php">./tests/adapters/searchpress/</directory>
+		</testsuite>
 
 		<testsuite name="vip-search">
-            <directory prefix="test-vip-search" suffix=".php">./tests/adapters/vip-search/</directory>
-        </testsuite>
+			<directory prefix="test-vip-search" suffix=".php">./tests/adapters/vip-search/</directory>
+		</testsuite>
 
 		<testsuite name="plugin">
-            <directory prefix="test-" suffix=".php">./tests/</directory>
+			<directory prefix="test-" suffix=".php">./tests/</directory>
 			<exclude>./tests/adapters/searchpress/</exclude>
 			<exclude>./tests/adapters/vip-search/</exclude>
-        </testsuite>
-    </testsuites>
+		</testsuite>
+	</testsuites>
 	<filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./</directory>
-            <exclude>
-                <directory suffix=".php">./tests/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+		<whitelist processUncoveredFilesFromWhitelist="true">
+			<directory suffix=".php">./</directory>
+			<exclude>
+				<directory suffix=".php">./tests/</directory>
+			</exclude>
+		</whitelist>
+	</filter>
 </phpunit>
