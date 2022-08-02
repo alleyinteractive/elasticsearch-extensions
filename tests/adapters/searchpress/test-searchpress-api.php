@@ -6,39 +6,23 @@
  * @subpackage Tests
  */
 
-/**
- * SearchPress_Adapter_TestAPI class.
- *
- * @group searchpress
- */
-class SearchPress_Adapter_TestAPI extends SearchPress_Adapter_UnitTestCase {
 
-	/**
-	 * Post ID.
-	 *
-	 * @var int
-	 */
-	protected static $post_id;
+it( 'should load the SP version', function () {
+	$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+/', SP_API()->version() );
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
+	var_dump( $this );
+} );
 
-		self::$post_id = self::factory()->post->create( array( 'post_title' => 'lorem-ipsum', 'post_date' => '2009-07-01 00:00:00' ) );
-		self::index( self::$post_id );
-	}
+// it( 'should test the get', function () {
+// 	$post_id = $this->factory->post->create( array( 'post_title' => 'lorem-ipsum', 'post_date' => '2009-07-01 00:00:00' ) );
+// 	$this::index( $post_id );
 
-	public function test_version() {
-		$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+/', SP_API()->version() );
-	}
+// 	$response = SP_API()->get( SP_API()->get_doc_type() . '/' . $post_id );
+// 	$this->assertEquals( 'GET', SP_API()->last_request['params']['method'] );
+// 	$this->assertEquals( '200', wp_remote_retrieve_response_code( SP_API()->last_request['response'] ) );
+// 	$this->assertEquals( $post_id, $response->_source->post_id );
 
-	public function test_api_get() {
-		$response = SP_API()->get( SP_API()->get_doc_type() . '/' . self::$post_id );
-		$this->assertEquals( 'GET', SP_API()->last_request['params']['method'] );
-		$this->assertEquals( '200', wp_remote_retrieve_response_code( SP_API()->last_request['response'] ) );
-		$this->assertEquals( self::$post_id, $response->_source->post_id );
-
-		SP_API()->get( SP_API()->get_doc_type() . "/foo" );
-		$this->assertEquals( 'GET', SP_API()->last_request['params']['method'] );
-		$this->assertEquals( '404', wp_remote_retrieve_response_code( SP_API()->last_request['response'] ) );
-	}
-}
+// 	SP_API()->get( SP_API()->get_doc_type() . "/foo" );
+// 	$this->assertEquals( 'GET', SP_API()->last_request['params']['method'] );
+// 	$this->assertEquals( '404', wp_remote_retrieve_response_code( SP_API()->last_request['response'] ) );
+// } );

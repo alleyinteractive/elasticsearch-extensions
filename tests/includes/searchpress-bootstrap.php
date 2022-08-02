@@ -15,7 +15,7 @@ function sp_remove_index() {
 
 	SP_Config()->flush();
 }
-tests_add_filter( 'shutdown', 'sp_remove_index' );
+\Mantle\Testing\tests_add_filter( 'shutdown', 'sp_remove_index' );
 
 function sp_index_flush_data() {
 

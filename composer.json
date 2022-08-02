@@ -13,12 +13,12 @@
     "php": "^7.4 || ^8.0",
     "alleyinteractive/alley-coding-standards": "^0.3.0",
     "yoast/phpunit-polyfills": "^1.0",
-    "alleyinteractive/pest-plugin-wordpress": "^0.3.0"
+    "alleyinteractive/pest-plugin-wordpress": "dev-main"
   },
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
-    "phpunit": "phpunit",
+    "phpunit": "pest",
     "setup": [
       "composer install"
     ]

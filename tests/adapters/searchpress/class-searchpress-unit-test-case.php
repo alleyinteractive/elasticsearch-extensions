@@ -32,7 +32,7 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	public static function tearDownAfterClass(): void {
 		SP_Sync_Meta()->reset( 'save' );
 		SP_Sync_Manager()->published_posts = false;
-		static::flush();
+		self::flush();
 
 		SP_Heartbeat()->record_pulse();
 		wp_clear_scheduled_hook( 'sp_reindex' );
