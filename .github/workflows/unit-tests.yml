@@ -31,10 +31,12 @@ jobs:
     env:
       CACHEDIR: /tmp/test-cache
       WP_CORE_DIR: /tmp/wordpress/
-      WP_TESTS_DIR: /tmp/wordpress-tests-lib
       ES_PLUGIN_DIR: /tmp/wordpress/wp-content/plugins/elasticsearch-extensions
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
+      WP_DB_HOST: 127.0.0.1
+      WP_DB_USER: root
+      WP_DB_PASSWORD: '""'
     services:
       mysql:
         image: mysql:5.7
@@ -76,17 +78,11 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        uses: ramsey/composer-install@v1
+        uses: nick-invision/retry@v2
         with:
-          composer-options: "--ignore-platform-reqs"
-
-      - name: Log information
-        run: |
-          echo "$GITHUB_REF"
-          echo "$GITHUB_EVENT_NAME"
-          git --version
-          php --version
-          composer --version
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer install
 
       - name: Set up WordPress
         run: cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
