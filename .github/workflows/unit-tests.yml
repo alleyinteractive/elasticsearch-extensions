@@ -89,12 +89,7 @@ jobs:
           composer --version
 
       - name: Set up WordPress
-        run: |
-          bash <(curl -s "https://raw.githubusercontent.com/wp-cli/sample-plugin/master/bin/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
-          rm -rf "${WP_CORE_DIR}wp-content/plugins"
-          mkdir -p "${ES_PLUGIN_DIR}"
-          rsync -a --exclude=.git . "${ES_PLUGIN_DIR}"
-          cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
+        run: cd ${WP_CORE_DIR}wp-content/plugins/ && git clone https://github.com/alleyinteractive/searchpress.git
 
       - name: Run all tests
         if: matrix.es_adapter == ''
