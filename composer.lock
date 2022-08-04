@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6cadb15a8d3c9650f228165271e1ba5",
+    "content-hash": "dad1fb074bc0deacc1e021e763bd7ebe",
     "packages": [],
     "packages-dev": [
         {
@@ -51,7 +51,7 @@
             "type": "wordpress-plugin"
         },
         {
-            "name": "automattic/vip-go-mu-plugins",
+            "name": "automattic/vip-go-mu-plugins-built",
             "version": "dev-master",
             "source": {
                 "type": "git",
@@ -2370,7 +2370,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "automattic/vip-go-mu-plugins": 20
+        "automattic/vip-go-mu-plugins-built": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
