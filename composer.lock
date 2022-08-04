@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6cadb15a8d3c9650f228165271e1ba5",
+    "content-hash": "d00a04be776031436e3abb04f2dbcba2",
     "packages": [],
     "packages-dev": [
         {
@@ -54,8 +54,8 @@
             "name": "automattic/vip-go-mu-plugins",
             "version": "dev-master",
             "source": {
-                "type": "git",
-                "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
+                "type": "zip",
+                "url": "https://github.com/Automattic/vip-go-mu-plugins-built/archive/refs/heads/master.zip",
                 "reference": "master"
             },
             "type": "wordpress-plugin"
