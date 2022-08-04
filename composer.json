@@ -16,7 +16,7 @@
   "extra": {
     "installer-paths": {
       "../../mu-plugins": [
-        "automattic/vip-go-mu-plugins"
+        "automattic/vip-go-mu-plugins-built"
       ],
       "../{$name}": [
         "type:wordpress-plugin"
@@ -36,12 +36,13 @@
     {
       "type": "package",
       "package": {
-        "name": "automattic/vip-go-mu-plugins",
+        "name": "automattic/vip-go-mu-plugins-built",
         "version": "dev-master",
         "type": "wordpress-plugin",
         "source": {
-          "url": "https://github.com/Automattic/vip-go-mu-plugins-built/archive/refs/heads/master.zip",
-          "type": "zip"
+          "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
+          "type": "git",
+          "reference": "master"
         }
       }
     },
@@ -62,7 +63,7 @@
   "require-dev": {
     "alleyinteractive/alley-coding-standards": "^0.3.0",
     "alleyinteractive/searchpress": "^0.4.1",
-    "automattic/vip-go-mu-plugins": "dev-master",
+    "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
     "phpunit/phpunit": "7.5.*",
     "wpackagist-plugin/elasticpress": "^4.2",
