@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f12c505a3355d9eec8800f318f45036",
+    "content-hash": "8122a6f20cf386341a2849a744a8e5ad",
     "packages": [],
     "packages-dev": [
         {
@@ -44,8 +44,8 @@
             "name": "alleyinteractive/searchpress",
             "version": "0.4.1",
             "source": {
-                "type": "git",
-                "url": "https://github.com/alleyinteractive/searchpress",
+                "type": "github",
+                "url": "https://github.com/alleyinteractive/searchpress.git",
                 "reference": "v0.4.1"
             },
             "type": "wordpress-plugin"
@@ -55,7 +55,7 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/automattic/vip-go-mu-plugins-built",
+                "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
                 "reference": "master"
             },
             "type": "wordpress-plugin"
