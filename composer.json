@@ -54,7 +54,7 @@
         "type": "wordpress-plugin",
         "source": {
           "url": "https://github.com/alleyinteractive/searchpress.git",
-          "type": "github",
+          "type": "git",
           "reference": "v0.4.1"
         }
       }
