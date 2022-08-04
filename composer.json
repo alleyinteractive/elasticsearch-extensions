@@ -40,7 +40,7 @@
         "version": "dev-master",
         "type": "wordpress-plugin",
         "source": {
-          "url": "https://github.com/automattic/vip-go-mu-plugins-built",
+          "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
           "type": "git",
           "reference": "master"
         }
@@ -53,7 +53,7 @@
         "version": "0.4.1",
         "type": "wordpress-plugin",
         "source": {
-          "url": "https://github.com/alleyinteractive/searchpress",
+          "url": "https://github.com/alleyinteractive/searchpress.git",
           "type": "git",
           "reference": "v0.4.1"
         }
