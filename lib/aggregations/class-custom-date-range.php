@@ -73,6 +73,59 @@ class Custom_Date_Range extends Aggregation {
 	}
 
 	/**
+	 * Overrides the default input function for aggregations to print a set of
+	 * two date input fields that allow users to set a start and end date for
+	 * this aggregation.
+	 */
+	public function input(): void {
+		$fields = [
+			[
+				'date_w3c' => '',
+				'date_ymd' => '',
+				'endtime'  => 'T00:00:00+00:00',
+				'label'    => __( 'Start Date', 'elasticsearch-extensions' ),
+			],
+			[
+				'date_w3c' => '',
+				'date_ymd' => '',
+				'endtime'  => 'T23:59:59+00:00',
+				'label'    => __( 'End Date', 'elasticsearch-extensions' ),
+			],
+		];
+		try {
+			foreach ( $fields as $index => &$config ) {
+				$datetime = DateTime::createFromFormat( DATE_W3C, $this->get_query_values()[ $index ] ?? '', wp_timezone() );
+				if ( $datetime ) {
+					$config['date_w3c'] = $datetime->format( DATE_W3C );
+					$config['date_ymd'] = $datetime->format( 'Y-m-d' );
+				}
+			}
+		} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			// Fail silently, since we already established default values above.
+		}
+		?>
+		<fieldset class="elasticsearch-extensions__custom-date-range-group">
+			<legend><?php echo esc_html( $this->get_label() ); ?></legend>
+			<?php foreach ( $fields as $field ) : ?>
+				<label>
+					<?php echo esc_html( $field['label'] ); ?>
+					<input
+						name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
+						type="hidden"
+						value="<?php echo esc_attr( $field['date_w3c'] ); ?>"
+					/>
+					<input
+						onchange='this.previousElementSibling.value = this.value ? this.value + <?php echo wp_json_encode( $field['endtime'] ); ?> : ""'
+						type="date"
+						value="<?php echo esc_attr( $field['date_ymd'] ); ?>"
+					/>
+				</label>
+			<?php endforeach; ?>
+		</fieldset>
+		<?php
+	}
+
+	/**
 	 * Since there are no aggregation parameters sent with the request, we do
 	 * not need to parse the buckets on the response.
 	 *
