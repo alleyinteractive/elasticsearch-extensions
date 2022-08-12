@@ -1,19 +1,75 @@
 {
-  "name": "alleyinteractive/elasticsearch-extensions",
-  "description": "Elasticsearch Extensions",
-  "type": "wordpress-plugin",
   "authors": [
     {
       "name": "Alley",
-      "email": "noreply@alley.co"
+      "email": "info@alley.co"
     }
   ],
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "alleyinteractive/composer-wordpress-autoloader": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "sort-packages": true
+  },
+  "description": "A WordPress plugin to make integrating sites with Elasticsearch easier.",
+  "extra": {
+    "installer-paths": {
+      "../../mu-plugins": [
+        "automattic/vip-go-mu-plugins-built"
+      ],
+      "../{$name}": [
+        "type:wordpress-plugin"
+      ]
+    }
+  },
   "license": "GPL-3.0-or-later",
+  "name": "alleyinteractive/elasticsearch-extensions",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*"
+      ]
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "automattic/vip-go-mu-plugins-built",
+        "version": "dev-master",
+        "type": "wordpress-plugin",
+        "source": {
+          "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
+          "type": "git",
+          "reference": "master"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "alleyinteractive/searchpress",
+        "version": "0.4.1",
+        "type": "wordpress-plugin",
+        "source": {
+          "url": "https://github.com/alleyinteractive/searchpress.git",
+          "type": "git",
+          "reference": "v0.4.1"
+        }
+      }
+    }
+  ],
   "require-dev": {
     "php": "^7.4 || ^8.0",
     "alleyinteractive/alley-coding-standards": "^0.3.0",
-    "yoast/phpunit-polyfills": "^1.0",
-    "mantle-framework/testkit": "^0.5.0"
+    "mantle-framework/testkit": "^0.5.0",
+    "alleyinteractive/searchpress": "^0.4.1",
+    "automattic/vip-go-mu-plugins-built": "dev-master",
+    "composer/installers": "^1.0",
+    "wpackagist-plugin/elasticpress": "^4.2",
+    "yoast/phpunit-polyfills": "^1.0"
   },
   "scripts": {
     "phpcbf": "phpcbf .",
@@ -23,10 +79,5 @@
       "composer install"
     ]
   },
-  "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true,
-      "alleyinteractive/composer-wordpress-autoloader": true
-    }
-  }
+  "type": "wordpress-plugin"
 }

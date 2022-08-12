@@ -77,6 +77,14 @@ class Relative_Date extends Aggregation {
 	}
 
 	/**
+	 * Overrides the default input function for aggregations to use a select
+	 * input for this aggregation.
+	 */
+	public function input(): void {
+		$this->select();
+	}
+
+	/**
 	 * Given a raw array of Elasticsearch aggregation buckets, parses it into
 	 * Bucket objects and saves them in this object.
 	 *
