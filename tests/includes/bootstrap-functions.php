@@ -53,8 +53,10 @@ function ping_es( $host ): void {
 
 /**
  * Boot up adapters and wake Elasticsearch up.
+ *
+ * @return null
  */
-function elasticsearch_bootup(): void {
+function elasticsearch_bootup() {
 	echo "----\n";
 
 	$host = 'http://localhost:9200';
@@ -91,4 +93,6 @@ function elasticsearch_bootup(): void {
 	}
 
 	echo "----\n";
+
+	return null;
 }

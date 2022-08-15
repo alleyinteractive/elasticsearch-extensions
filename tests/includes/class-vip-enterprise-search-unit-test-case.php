@@ -11,29 +11,20 @@
  */
 class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 		static::flush();
 	}
 
-	public static function tearDownAfterClass(): void {
+	public static function tear_down_after_class() {
 		static::flush();
-		parent::tearDownAfterClass();
-	}
-
-	public function setUp(): void {
-		parent::setUp();
-	}
-
-	public function tearDown(): void {
-		parent::tearDown();
+		parent::tear_down_after_class();
 	}
 
 	/**
 	 * Flush the index.
 	 *
-	 * @todo implement.
+	 * TODO implement.
 	 *
 	 * @see See Adapter_UnitTestCase::flush()
 	 */
@@ -44,7 +35,7 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 * Force Elasticsearch to refresh its index to make content changes
 	 * available to search.
 	 *
-	 * @todo implement
+	 * TODO implement
 	 *
 	 * @see See Adapter_UnitTestCase::refresh_index()
 	 */
@@ -54,12 +45,12 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	/**
 	 * Index one or more posts in Elasticsearch.
 	 *
-	 * @todo implement
+	 * TODO implement
 	 *
 	 * @see See Adapter_UnitTestCase::index()
 	 * @see See Adapter_UnitTestCase::index_content()
 	 *
-	 * @param mixed $posts Can be a post ID, WP_Post object, SP_Post object, or
+	 * @param mixed $posts Can be a post ID, WP_Post object, or
 	 *                     an array of any of the above.
 	 */
 	protected static function index_content( $posts ): void {

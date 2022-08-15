@@ -31,7 +31,7 @@ abstract class Adapter_UnitTestCase extends \Pest\PestPluginWordPress\FrameworkT
 	/**
 	 * Index one or more posts in Elasticsearch.
 	 *
-	 * @param mixed $posts Can be a post ID, WP_Post object, SP_Post object, or
+	 * @param mixed $posts Can be a post ID, WP_Post object, or
 	 *                     an array of any of the above.
 	 */
 	abstract protected static function index_content( $posts ): void;
@@ -39,7 +39,7 @@ abstract class Adapter_UnitTestCase extends \Pest\PestPluginWordPress\FrameworkT
 	/**
 	 * Index one or more posts in Elasticsearch and refresh the index.
 	 *
-	 * @param mixed $posts Can be a post ID, WP_Post object, SP_Post object, or
+	 * @param mixed $posts Can be a post ID, WP_Post object, or
 	 *                     an array of any of the above.
 	 */
 	protected static function index( $posts ): void {

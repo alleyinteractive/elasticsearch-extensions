@@ -183,6 +183,16 @@ abstract class Aggregation {
 	}
 
 	/**
+	 * Outputs the default form inputs for this aggregation. Defaults to
+	 * checkboxes, but can be overridden in individual aggregation classes if a
+	 * different input format makes more logical sense, or to create a totally
+	 * custom input fieldset.
+	 */
+	public function input(): void {
+		$this->checkboxes();
+	}
+
+	/**
 	 * Determines whether the specified key is selected in the query for this
 	 * aggregation.
 	 *
