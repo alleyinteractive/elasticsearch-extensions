@@ -74,7 +74,7 @@
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
-    "phpunit": "./vendor/bin/pest",
+    "phpunit": "pest",
     "setup": [
       "composer install"
     ]
