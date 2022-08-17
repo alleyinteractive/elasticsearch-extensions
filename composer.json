@@ -20,6 +20,9 @@
       "../../mu-plugins": [
         "automattic/vip-go-mu-plugins-built"
       ],
+      "../searchpress": [
+        "alleyinteractive/searchpress"
+      ],
       "../{$name}": [
         "type:wordpress-plugin"
       ]
@@ -66,6 +69,7 @@
     "php": "^7.4 || ^8.0",
     "alleyinteractive/alley-coding-standards": "^0.3.0",
     "alleyinteractive/pest-plugin-wordpress": "dev-main",
+    "alleyinteractive/searchpress": "^0.4.1",
     "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
     "wpackagist-plugin/elasticpress": "^4.2",
