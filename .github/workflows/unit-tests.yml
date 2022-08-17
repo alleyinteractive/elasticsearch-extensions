@@ -33,7 +33,6 @@ jobs:
       WP_CORE_DIR: /tmp/wordpress
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
-      ES_PLUGIN_DIR: /tmp/wordpress/wp-content/plugins/elasticsearch-extensions
       WP_DB_HOST: 127.0.0.1
       WP_DB_USER: root
       WP_DB_PASSWORD: '""'
@@ -84,20 +83,14 @@ jobs:
       - name: Run all tests
         if: matrix.es_adapter == ''
         shell: bash
-        run: |
-          cd ${ES_PLUGIN_DIR}
-          composer phpunit
+        run: composer phpunit
 
       - name: Run SearchPress Adapter Tests
         if: matrix.es_adapter == 'searchpress'
         shell: bash
-        run: |
-          cd ${ES_PLUGIN_DIR}
-          composer phpunit -- --testsuite=searchpress
+        run: composer phpunit -- --testsuite=searchpress
 
       - name: Run VIP Search Adapter Tests
         if: matrix.es_adapter == 'vip-search'
         shell: bash
-        run: |
-          cd ${ES_PLUGIN_DIR}
-          composer phpunit -- --testsuite=vip-search
+        run: composer phpunit -- --testsuite=vip-search
