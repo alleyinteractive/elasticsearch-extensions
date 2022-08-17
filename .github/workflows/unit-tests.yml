@@ -29,13 +29,11 @@ jobs:
             multisite: 1
             wp_version: '5.9.3'
     env:
+      WP_TESTS_DIR: /tmp/wordpress-tests-lib
       WP_DEVELOP_DIR: /tmp/wordpress
       WP_CORE_DIR: /tmp/wordpress
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
-      WP_DB_HOST: 127.0.0.1
-      WP_DB_USER: root
-      WP_DB_PASSWORD: '""'
     services:
       mysql:
         image: mysql:5.7
@@ -75,10 +73,18 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Set up WordPress and Install dependencies
+      - name: Set up WordPress
+        run: |
+          bash <(curl -s "https://raw.githubusercontent.com/wp-cli/sample-plugin/master/bin/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
+          rm -rf "${WP_CORE_DIR}wp-content/plugins"
+          mkdir -p "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
+          rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
+
+      - name: Install dependencies
         uses: ramsey/composer-install@v2
         with:
           composer-options: "--ignore-platform-reqs"
+          working-directory: "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
 
       - name: Run all tests
         if: matrix.es_adapter == ''
