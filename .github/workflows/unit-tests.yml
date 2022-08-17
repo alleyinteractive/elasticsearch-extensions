@@ -74,6 +74,9 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Install dependencies
+        uses: ramsey/composer-install@v2
+
       - name: Set up WordPress
         run: |
           bash <(curl -s "https://raw.githubusercontent.com/wp-cli/sample-plugin/master/bin/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
@@ -81,11 +84,6 @@ jobs:
           mkdir -p "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           wget https://raw.githubusercontent.com/alleyinteractive/mantle-framework/HEAD/src/mantle/testing/wp-tests-config-sample.php -O /tmp/wordpress/wp-tests-config.php
-
-      - name: Install dependencies
-        uses: ramsey/composer-install@v2
-        with:
-          working-directory: "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
 
       - name: Run all tests
         if: matrix.es_adapter == ''
