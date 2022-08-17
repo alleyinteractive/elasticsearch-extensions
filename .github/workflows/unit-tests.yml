@@ -86,7 +86,7 @@ jobs:
           wget https://raw.githubusercontent.com/alleyinteractive/mantle-framework/HEAD/src/mantle/testing/wp-tests-config-sample.php -O /tmp/wordpress/wp-tests-config.php
           cd "${WP_CORE_DIR}wp-content/plugins/" && git clone https://github.com/alleyinteractive/searchpress.git
           cd "${WP_CORE_DIR}wp-content/plugins/" && git clone https://github.com/alleyinteractive/wp-concurrent-remote-requests.git
-          cd "${WP_CORE_DIR}wp-content/" && git clone https://github.com/Automattic/vip-go-mu-plugins-built.gi mu-plugins
+          cd "${WP_CORE_DIR}wp-content/" && git clone https://github.com/Automattic/vip-go-mu-plugins-built.git mu-plugins
 
       - name: Run all tests
         if: matrix.es_adapter == ''
