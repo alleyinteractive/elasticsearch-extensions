@@ -78,7 +78,8 @@
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
-    "phpunit": "pest",
+    "phpunit": "@test",
+    "test": "pest",
     "setup": [
       "composer install"
     ]
