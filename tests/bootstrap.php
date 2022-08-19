@@ -21,8 +21,8 @@ Mantle\Testing\manager()
 		require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/includes/class-searchpress-unit-test-case.php';
 		require_once ELASTICSEARCH_EXTENSIONS_TESTS_DIR . '/includes/class-vip-enterprise-search-unit-test-case.php';
 
-		uses(\SearchPress_Adapter_UnitTestCase::class)->in('adapters/searchpress');
-		uses(\VIP_Enterprise_Search_Adapter_UnitTestCase::class)->in('adapters/vip-search');
+		uses( \SearchPress_Adapter_UnitTestCase::class)->in('adapters/searchpress' );
+		uses( \VIP_Enterprise_Search_Adapter_UnitTestCase::class)->in('adapters/vip-search' );
 	})
 	->after(
 		function() {
