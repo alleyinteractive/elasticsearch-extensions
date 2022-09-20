@@ -199,9 +199,9 @@ class Controller implements Hookable {
 	}
 
 	/**
-	 * Restricts searchable post types to the provided list.
+	 * Restricts indexable post types to the provided list.
 	 *
-	 * @param string[] $post_types The array of post types to restrict search to.
+	 * @param string[] $post_types The array of post types to restrict to.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */

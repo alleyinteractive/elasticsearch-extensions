@@ -170,6 +170,24 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * A callback for the ep_searchable_post_types filter hook. Filters the list
+	 * of post types that should be searched in ElasticPress based on a filter.
+	 * If no restrictions were specified via the filter, uses the default list
+	 * from ElasticPress, which includes all indexed post types.
+	 *
+	 * @param array $post_types An associative array of post type slugs.
+	 *
+	 * @return array The modified list of post types to include in searches.
+	 */
+	public function filter__ep_searchable_post_types( $post_types ) {
+		$restricted_post_types = $this->get_searchable_post_types();
+
+		return ! empty( $restricted_post_types )
+			? $restricted_post_types
+			: $post_types;
+	}
+
+	/**
 	 * A callback for the vip_search_post_taxonomies_allow_list filter hook.
 	 * Filters the list of taxonomies that should be indexed in ElasticPress
 	 * based on what was configured. If no restrictions were specified, uses the
@@ -284,6 +302,7 @@ class VIP_Enterprise_Search extends Adapter {
 		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
+		add_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 	}
 
@@ -300,6 +319,7 @@ class VIP_Enterprise_Search extends Adapter {
 		remove_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
 		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
+		remove_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
 		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 	}
 }
