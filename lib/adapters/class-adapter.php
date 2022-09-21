@@ -219,9 +219,11 @@ abstract class Adapter implements Hookable {
 	 * depending on the context (e.g., main search vs. custom search
 	 * interfaces).
 	 *
+	 * @param array $post_types The default list of post type slugs from the adapter.
+	 *
 	 * @return array An array of searchable post types, or an empty array for all post types.
 	 */
-	protected function get_searchable_post_types(): array {
+	protected function get_searchable_post_types( array $post_types ): array {
 		/**
 		 * Filters the list of searchable post types.
 		 *
@@ -232,7 +234,7 @@ abstract class Adapter implements Hookable {
 		 *
 		 * @param array $post_types The array of post type slugs to include in search, or an empty array to include all.
 		 */
-		return apply_filters( 'elasticsearch_extensions_searchable_post_types', [] );
+		return apply_filters( 'elasticsearch_extensions_searchable_post_types', $post_types );
 	}
 
 	/**

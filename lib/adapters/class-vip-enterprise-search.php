@@ -180,11 +180,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @return array The modified list of post types to include in searches.
 	 */
 	public function filter__ep_searchable_post_types( $post_types ) {
-		$restricted_post_types = $this->get_searchable_post_types();
-
-		return ! empty( $restricted_post_types )
-			? $restricted_post_types
-			: $post_types;
+		return $this->get_searchable_post_types( $post_types );
 	}
 
 	/**
