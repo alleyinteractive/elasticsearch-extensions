@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   tests:
-    name: "WP: ${{ matrix.wp_version }} - PHP: ${{ matrix.php }} - ES: ${{ matrix.es_version }} (MU: ${{ matrix.multisite }})"
+    name: "WP: ${{ matrix.wp_version }} - PHP: ${{ matrix.php }} - ES: ${{ matrix.es_version }} - Adapter: ${{ matrix.es_adapter || 'all' }} (MU: ${{ matrix.multisite }})"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false # do not fail fast, let all the failing tests fail.
@@ -14,20 +14,27 @@ jobs:
         multisite: [0]
         wp_version: ["latest"]
         include:
-          - php: '7.4'
+          - php: 8.0
             es_version: '7.17.5'
             multisite: 0
             wp_version: '5.9.3'
-          - php: '7.4'
+            es_adapter: 'searchpress'
+          - php: 7.4
+            es_version: '7.17.5'
+            multisite: 0
+            wp_version: '5.9.3'
+            es_adapter: 'vip-search'
+          - php: 7.4
             es_version: '6.8.23'
             multisite: 1
             wp_version: '5.9.3'
     env:
-      CACHEDIR: /tmp/test-cache
       WP_CORE_DIR: /tmp/wordpress/
-      WP_TESTS_DIR: /tmp/wordpress-tests-lib
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
+      WP_DB_HOST: 127.0.0.1
+      WP_DB_USER: root
+      WP_DB_PASSWORD: '""'
     services:
       mysql:
         image: mysql:5.7
@@ -45,7 +52,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure sysctl limits
         run: |
@@ -68,27 +75,31 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Install dependencies
-        uses: ramsey/composer-install@v1
-        with:
-          composer-options: "--ignore-platform-reqs"
-
-      - name: Log information
-        run: |
-          echo "$GITHUB_REF"
-          echo "$GITHUB_EVENT_NAME"
-          git --version
-          php --version
-          composer --version
-
       - name: Set up WordPress
         run: |
-          bash <(curl -s "https://raw.githubusercontent.com/wp-cli/sample-plugin/master/bin/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
+          bash <(curl -s "https://raw.githubusercontent.com/alleyinteractive/mantle-ci/HEAD/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
           rm -rf "${WP_CORE_DIR}wp-content/plugins"
           mkdir -p "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
+          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions && composer install
 
-      - name: Run tests
+      - name: Run all tests
+        if: matrix.es_adapter == ''
+        shell: bash
         run: |
           cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
           composer phpunit
+
+      - name: Run SearchPress Adapter Tests
+        if: matrix.es_adapter == 'searchpress'
+        shell: bash
+        run: |
+          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
+          composer phpunit -- --testsuite=searchpress
+
+      - name: Run VIP Search Adapter Tests
+        if: matrix.es_adapter == 'vip-search'
+        shell: bash
+        run: |
+          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
+          composer phpunit -- --testsuite=vip-search
