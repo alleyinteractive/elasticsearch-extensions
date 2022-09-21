@@ -15,9 +15,6 @@
 use Elasticsearch_Extensions\Controller;
 use Elasticsearch_Extensions\Registry;
 
-// Load Composer dependencies.
-require_once __DIR__ . '/vendor/wordpress-autoload.php';
-
 require_once __DIR__ . '/lib/autoload.php';
 
 /**
