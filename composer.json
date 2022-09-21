@@ -8,7 +8,9 @@
   "config": {
     "allow-plugins": {
       "composer/installers": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true
+      "alleyinteractive/composer-wordpress-autoloader": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "pestphp/pest-plugin": true
     },
     "sort-packages": true
   },
@@ -17,6 +19,9 @@
     "installer-paths": {
       "../../mu-plugins": [
         "automattic/vip-go-mu-plugins-built"
+      ],
+      "../searchpress": [
+        "alleyinteractive/searchpress"
       ],
       "../{$name}": [
         "type:wordpress-plugin"
@@ -61,18 +66,20 @@
     }
   ],
   "require-dev": {
+    "php": "^7.4 || ^8.0",
     "alleyinteractive/alley-coding-standards": "^0.3.0",
+    "alleyinteractive/pest-plugin-wordpress": "^0.4.0",
     "alleyinteractive/searchpress": "^0.4.1",
     "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
-    "phpunit/phpunit": "7.5.*",
     "wpackagist-plugin/elasticpress": "^4.2",
     "yoast/phpunit-polyfills": "^1.0"
   },
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
-    "phpunit": "phpunit",
+    "phpunit": "@test",
+    "test": "pest",
     "setup": [
       "composer install"
     ]

@@ -89,11 +89,14 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @return array The modified Elasticsearch query arguments.
 	 */
 	public function filter__ep_post_formatted_args( $formatted_args, $args ) {
-		/*
+		/**
 		 * ElasticPress uses post_filter to filter results after search, but
-		 * this only works if an actual search term is used. If a search term
-		 * is not being used, we need to copy this configuration over and
-		 * apply it as a filter in the query itself.
+		 * post_filter only applies to search hits, not aggregations. In order
+		 * to apply the filter to aggregations as well, we need to ensure that
+		 * there is a query with a filter clause, even if there is no search
+		 * term.
+		 *
+		 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html
 		 */
 		if ( empty( $formatted_args['query'] ) && ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
 			$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
@@ -110,31 +113,21 @@ class VIP_Enterprise_Search extends Adapter {
 						$formatted_args['query']['bool']['filter'],
 						$filter
 					);
-				} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool']['should'] )
-					&& is_array( $formatted_args['query']['function_score']['query']['bool']['should'] )
-				) {
-					/*
-					 * ElasticPress produces a pretty gnarly function_score
-					 * query that is broken down by post type, so we have to
-					 * loop through all the post types in the query and add our
-					 * aggregation restrictions to each of the filter clauses.
-					 * We're doing quite a bit of "look before you leap" here in
-					 * case the structure of the query changes in a future
-					 * version, so the worst that happens is the filter no
-					 * longer applies properly, and we don't break the query.
-					 */
-					foreach ( $formatted_args['query']['function_score']['query']['bool']['should'] as &$should ) {
-						if ( ! empty( $should['bool']['filter'] )
-							&& is_array( $should['bool']['filter'] )
-						) {
-							$should['bool']['filter'] = array_merge(
-								$should['bool']['filter'],
-								$filter
-							);
-						}
-					}
+				} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
+					$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
+						$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
+						$filter
+					);
 				}
 			}
+		}
+
+		// If we are searching for a keyword and applying filters, ensure both are required.
+		if ( ! empty( $formatted_args['query']['function_score']['query']['bool']['filter'] )
+			&& ! empty( $formatted_args['query']['function_score']['query']['bool']['should'] )
+			&& ! isset( $formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] )
+		) {
+			$formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] = 1;
 		}
 
 		return $formatted_args;

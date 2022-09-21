@@ -13,6 +13,7 @@ Thumbs.db
 # Composer dependencies
 /vendor
 
-# Cache
-.phpcs.json
+# Cache files
+.phpcs/*.json
 composer.lock
+.phpunit.result.cache
