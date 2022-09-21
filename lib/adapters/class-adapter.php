@@ -214,6 +214,29 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Returns a list of searchable post types. Defaults come from the filter
+	 * function used in the adapter. Allows for applying different logic
+	 * depending on the context (e.g., main search vs. custom search
+	 * interfaces).
+	 *
+	 * @param array $post_types The default list of post type slugs from the adapter.
+	 *
+	 * @return array An array of searchable post type slugs.
+	 */
+	protected function get_searchable_post_types( array $post_types ): array {
+		/**
+		 * Filters the list of searchable post types.
+		 *
+		 * Defaults to the list of searchable post type slugs from the adapter.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array $post_types The array of post type slugs to include in search.
+		 */
+		return apply_filters( 'elasticsearch_extensions_searchable_post_types', $post_types );
+	}
+
+	/**
 	 * Parses aggregations from an aggregations object in an Elasticsearch
 	 * response into the loaded aggregations.
 	 *
@@ -228,9 +251,9 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
-	 * Restricts searchable post types to the provided list.
+	 * Restricts indexable post types to the provided list.
 	 *
-	 * @param string[] $post_types The array of post types to restrict search to.
+	 * @param string[] $post_types The array of post types to restrict to.
 	 */
 	public function restrict_post_types( array $post_types ): void {
 		$this->restricted_post_types = $post_types;
