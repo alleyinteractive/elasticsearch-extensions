@@ -32,23 +32,54 @@ class Custom_Date_Range extends Aggregation {
 	}
 
 	/**
+	 * Overrides the extract_query_values function in the primary Aggregation
+	 * class to allow for additional processing on date query values.
+	 *
+	 * @param string $key Optional. The key to look up. Defaults to the current query var.
+	 *
+	 * @return string[] The values for the given key.
+	 */
+	protected function extract_query_values( string $key = '' ): array {
+		$query_var = $key ?: $this->get_query_var();
+
+		/*
+		 * Get the raw query values and replace whitespace with + characters.
+		 * When ISO-8601 dates are added to URLs, timezone offsets are added via
+		 * a + followed by the hours and minutes, which when URL-decoded results
+		 * in a space rather than a +. Rather than depending on the front-end to
+		 * always properly encode the +, we provide a fallback here to interpret
+		 * a space as a plus for the purposes of date encoding.
+		 */
+		$query_values = array_map(
+			function( $query_value ) {
+				return str_replace( ' ', '+', $query_value );
+			},
+			(array) ( $_GET['fs'][ $query_var ] ?? [] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+		);
+
+		// This filter is documented in class-aggregation.php.
+		return apply_filters(
+			'elasticsearch_extensions_aggregation_query_values',
+			array_values( array_filter( $query_values ) ),
+			$this
+		);
+	}
+
+	/**
 	 * Gets an array of DSL representing each filter for this aggregation that
 	 * should be applied in the query in order to match the requested values.
 	 *
 	 * @return array Array of DSL fragments to apply.
 	 */
 	public function filter(): array {
-		return ! empty( $this->query_values[0] )
-			&& ! empty( $this->query_values[1] )
-			&& is_string( $this->query_values[0] )
-			&& is_string( $this->query_values[1] )
-			&& count( $this->query_values ) === 2
-				? [
-					$this->dsl->range(
-						'post_date',
-						$this->get_date_range( $this->query_values[0], $this->query_values[1] )
-					),
-				] : [];
+		$date_range = $this->get_date_range(
+			$this->query_values[0] ?? '',
+			$this->query_values[1] ?? ''
+		);
+
+		return ! empty( $date_range )
+			? [ $this->dsl->range( 'post_date', $date_range ) ]
+			: [];
 	}
 
 	/**
