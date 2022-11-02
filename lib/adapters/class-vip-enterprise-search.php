@@ -98,8 +98,15 @@ class VIP_Enterprise_Search extends Adapter {
 		 *
 		 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html
 		 */
-		if ( empty( $formatted_args['query'] ) && ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
-			$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+		if ( ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
+			if ( empty( $formatted_args['query'] ) ) {
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+			} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
+				$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
+					$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
+					$formatted_args['post_filter']['bool']['must']
+				);
+			}
 		}
 
 		// Add requested aggregations.
