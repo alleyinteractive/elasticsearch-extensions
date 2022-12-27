@@ -40,6 +40,20 @@ abstract class Adapter implements Hookable {
 	private bool $allow_empty_search = false;
 
 	/**
+	 * Whether to index search suggestions.
+	 *
+	 * @var bool
+	 */
+	private bool $enable_search_suggestions = false;
+
+	/**
+	 * Whether to make search suggestions available over the REST API.
+	 *
+	 * @var bool
+	 */
+	private bool $show_search_suggestions_in_rest = true;
+
+	/**
 	 * Holds an instance of the DSL class with the field map from this adapter
 	 * injected into it.
 	 *
@@ -60,6 +74,13 @@ abstract class Adapter implements Hookable {
 	 * @var string[]
 	 */
 	private array $restricted_taxonomies = [];
+
+	/**
+	 * An optional array of post types to restrict search suggestions to.
+	 *
+	 * @var string[]
+	 */
+	private array $restricted_search_suggestions_post_types = [];
 
 	/**
 	 * Constructor. Sets up the DSL object with this adapter's field map.
@@ -185,6 +206,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Gets the value for enable_search_suggestions.
+	 *
+	 * @return bool Whether to allow empty search or not.
+	 */
+	public function get_enable_search_suggestions(): bool {
+		return $this->enable_search_suggestions;
+	}
+
+	/**
 	 * Returns a map of generic field names and types to the specific field
 	 * path used in the mapping of the Elasticsearch plugin that is in use.
 	 * Implementing classes need to provide this map, as it will be different
@@ -214,6 +244,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Gets the list of restricted post types for search suggestions.
+	 *
+	 * @return string[] The list of restricted post type slugs.
+	 */
+	protected function get_restricted_search_suggestions_post_types(): array {
+		return $this->restricted_search_suggestions_post_types;
+	}
+
+	/**
 	 * Returns a list of searchable post types. Defaults come from the filter
 	 * function used in the adapter. Allows for applying different logic
 	 * depending on the context (e.g., main search vs. custom search
@@ -237,6 +276,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Returns whether a REST API search handler for suggestions can be enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_show_search_suggestions_in_rest_enabled(): bool {
+		return $this->get_enable_search_suggestions() && $this->show_search_suggestions_in_rest;
+	}
+
+	/**
 	 * Parses aggregations from an aggregations object in an Elasticsearch
 	 * response into the loaded aggregations.
 	 *
@@ -248,6 +296,24 @@ abstract class Adapter implements Hookable {
 				$this->aggregations[ $aggregation_key ]->parse_buckets( $aggregation['buckets'] ?? [] );
 			}
 		}
+	}
+
+	/**
+	 * Suggest posts that match the given search term.
+	 *
+	 * @param string  $search   Search string
+	 * @param array   $args     {
+	 *     @type string[] $subtypes Limit suggestions to this subset of all post
+	 *                              types that support search suggestions.
+	 *     @type int      $page     Page of results.
+	 *     @type int      $per_page Results per page. Default 10.
+	 *     @type int[]    $include  Search within these post IDs.
+	 *     @type int[]    $exclude  Exclude these post IDs from results.
+	 * }
+	 * @return int[] Post IDs in this page of results and total number of results.
+	 */
+	public function query_post_suggestions( string $search, array $args = [] ): array {
+		return [ [], 0 ];
 	}
 
 	/**
@@ -269,11 +335,38 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Restricts post types indexed for search suggestions to the provided list.
+	 *
+	 * @param string[] $post_types The array of post types to restrict to.
+	 */
+	public function restrict_search_suggestions_post_types( array $post_types ): void {
+		$this->restricted_search_suggestions_post_types = $post_types;
+	}
+
+	/**
 	 * Sets the value for allow_empty_search.
 	 *
 	 * @param bool $allow_empty_search Whether to allow empty search or not.
 	 */
 	public function set_allow_empty_search( bool $allow_empty_search ): void {
 		$this->allow_empty_search = $allow_empty_search;
+	}
+
+	/**
+	 * Sets the value for enable_search_suggestions.
+	 *
+	 * @param bool $enable_search_suggestions Whether to enable search suggestions.
+	 */
+	public function set_enable_search_suggestions( bool $enable_search_suggestions ): void {
+		$this->enable_search_suggestions = $enable_search_suggestions;
+	}
+
+	/**
+	 * Sets the value for show_search_suggestions_in_rest.
+	 *
+	 * @param bool $show_in_rest Whether to make search suggestions available over the REST API.
+	 */
+	public function set_show_search_suggestions_in_rest( bool $show_in_rest ): void {
+		$this->show_search_suggestions_in_rest = $show_in_rest;
 	}
 }
