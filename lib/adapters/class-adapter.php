@@ -208,7 +208,7 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Gets the value for enable_search_suggestions.
 	 *
-	 * @return bool Whether to allow empty search or not.
+	 * @return bool Whether search suggestions are enabled.
 	 */
 	public function get_enable_search_suggestions(): bool {
 		return $this->enable_search_suggestions;
