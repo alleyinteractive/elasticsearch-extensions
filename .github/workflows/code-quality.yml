@@ -3,8 +3,8 @@ name: Code Quality
 on: pull_request
 
 jobs:
-  phpcs:
-    name: PHPCS
+  phpstan:
+    name: PHPStan
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
