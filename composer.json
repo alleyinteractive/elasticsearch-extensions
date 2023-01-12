@@ -10,7 +10,8 @@
       "composer/installers": true,
       "alleyinteractive/composer-wordpress-autoloader": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
-      "pestphp/pest-plugin": true
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
     },
     "sort-packages": true
   },
@@ -73,12 +74,16 @@
     "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
     "wpackagist-plugin/elasticpress": "^4.2",
-    "yoast/phpunit-polyfills": "^1.0"
+    "yoast/phpunit-polyfills": "^1.0",
+    "phpstan/extension-installer": "^1.1",
+    "phpstan/phpstan": "^1.8",
+    "szepeviktor/phpstan-wordpress": "^1.1.6"
   },
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
     "phpunit": "@test",
+    "phpstan": ["phpstan analyze --ansi --memory-limit=1G"],
     "test": "pest",
     "setup": [
       "composer install"
