@@ -54,30 +54,6 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
-	 * A callback for the ep_default_analyzer_filters filter hook. Filters the
-	 * default Elasticsearch analyzer's filters to remove the
-	 * 'ewp_word_delimiter' filter when search suggestions are enabled, as this
-	 * filter is not always compatible with the search-as-you-type field.
-	 *
-	 * @see https://github.com/10up/ElasticPress/pull/3237.
-	 *
-	 * @param string[] $filters Default list of filters.
-	 * @return string[] The modified list of filters.
-	 */
-	public function filter__ep_default_analyzer_filters( $filters ) {
-		if ( $this->get_enable_search_suggestions() ) {
-			$ewp_word_delimiter = array_search( 'ewp_word_delimiter', $filters, true );
-
-			if ( false !== $ewp_word_delimiter ) {
-				unset( $filters[ $ewp_word_delimiter ] );
-				$filters = array_values( $filters );
-			}
-		}
-
-		return $filters;
-	}
-
-	/**
 	 * A callback for the ep_indexable_post_types filter hook. Filters the list
 	 * of post types that should be indexed in ElasticPress based on what was
 	 * configured. If no restrictions were specified, uses the default list
@@ -115,6 +91,11 @@ class VIP_Enterprise_Search extends Adapter {
 		if ( $this->get_enable_search_suggestions() ) {
 			$mapping['mappings']['properties']['search_suggest'] = [
 				'type' => 'search_as_you_type',
+				/*
+				 * The 'ewp_word_delimiter' analyzer included by default in ElasticPress is not compatible with
+				 * this field type. See https://github.com/10up/ElasticPress/pull/3237.
+				 */
+				'analyzer' => 'standard',
 			];
 		}
 
@@ -503,7 +484,6 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Register filter hooks.
 		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
-		add_filter( 'ep_default_analyzer_filters', [ $this, 'filter__ep_default_analyzer_filters' ] );
 		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		add_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
 		add_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ], 10, 2 );
@@ -524,7 +504,6 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Unregister filter hooks.
 		remove_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ] );
-		remove_filter( 'ep_default_analyzer_filters', [ $this, 'filter__ep_default_analyzer_filters' ] );
 		remove_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		remove_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
 		remove_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ] );
