@@ -296,8 +296,8 @@ class VIP_Enterprise_Search extends Adapter {
 		// Register filter hooks.
 		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
 		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
-		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 3 );
-		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ], 10, 4 );
+		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 2 );
+		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		add_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 	}
