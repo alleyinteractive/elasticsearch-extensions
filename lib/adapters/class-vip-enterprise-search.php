@@ -338,7 +338,7 @@ class VIP_Enterprise_Search extends Adapter {
 				[
 					'terms' => [
 						'post_status' => (array) $args['status'],
-						'_name' => 'status',
+						'_name'       => 'status',
 					],
 				],
 			];
