@@ -47,7 +47,7 @@ class Post_Suggestion_Search_Handler extends WP_REST_Search_Handler {
 			'page'     => $request['page'],
 			'per_page' => $request['per_page'],
 			'include'  => $request['include'],
-			'exclude'  => $request['exclude'],
+			'exclude'  => $request['exclude'], // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 		];
 
 		if ( in_array( WP_REST_Search_Controller::TYPE_ANY, $args['subtypes'], true ) ) {

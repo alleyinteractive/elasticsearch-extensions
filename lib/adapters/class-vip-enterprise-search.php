@@ -301,7 +301,7 @@ class VIP_Enterprise_Search extends Adapter {
 				'subtypes' => [],
 				'page'     => 1,
 				'per_page' => 10,
-				'exclude'  => [],
+				'exclude'  => [], // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 				'include'  => [],
 				'status'   => [ 'publish' ],
 			],
