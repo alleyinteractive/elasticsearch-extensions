@@ -287,6 +287,10 @@ class VIP_Enterprise_Search extends Adapter {
 	public function query_post_suggestions( string $search, array $args = [] ): array {
 		$out = [ [], 0 ];
 
+		if ( ! $search && ! $this->get_allow_empty_search() ) {
+			return $out;
+		}
+
 		$args = wp_parse_args(
 			$args,
 			[

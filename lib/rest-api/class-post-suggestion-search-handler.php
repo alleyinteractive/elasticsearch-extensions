@@ -54,7 +54,7 @@ class Post_Suggestion_Search_Handler extends WP_REST_Search_Handler {
 			unset( $args['subtypes'] );
 		}
 
-		[ $ids, $total ] = $this->adapter->query_post_suggestions( $request['search'], $args );
+		[ $ids, $total ] = $this->adapter->query_post_suggestions( (string) $request['search'], $args );
 
 		return [
 			self::RESULT_IDS   => $ids,
