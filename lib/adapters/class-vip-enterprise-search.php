@@ -360,14 +360,12 @@ class VIP_Enterprise_Search extends Adapter {
 					}
 				}
 
-				if ( $subtypes ) {
-					$query_must[] = [
-						'terms' => [
-							'post_type.raw' => $subtypes,
-							'_name'         => 'subtypes',
-						],
-					];
-				}
+				$query_must[] = [
+					'terms' => [
+						'post_type.raw' => $subtypes,
+						'_name'         => 'subtypes',
+					],
+				];
 			}
 
 			if ( $include ) {
