@@ -31,6 +31,18 @@ class Post_Suggestion_Search_Handler extends WP_REST_Search_Handler {
 	public function __construct( Adapter $adapter ) {
 		$this->adapter = $adapter;
 		$this->type    = 'post-suggestion';
+
+		/*
+		 * Since adapters don't yet have a consistent way to supply the list of indexed post types,
+		 * allow any public type to be requested, even though the response might not include it.
+		 */
+		$this->subtypes = array_values(
+			get_post_types(
+				[
+					'public' => true,
+				],
+			),
+		);
 	}
 
 	/**
