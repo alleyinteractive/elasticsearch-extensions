@@ -134,6 +134,8 @@ class Controller implements Hookable {
 	 * Enables search-as-you-type suggestions.
 	 *
 	 * @param array $args {
+	 *     Optional. An array of arguments.
+	 *
 	 *     @type string[] $post_types   Limit suggestions to this subset of all
 	 *                                  indexed post types.
 	 *     @type bool     $show_in_rest Whether to register REST API search handlers

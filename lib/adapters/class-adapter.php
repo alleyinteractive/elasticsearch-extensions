@@ -301,8 +301,10 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Suggest posts that match the given search term.
 	 *
-	 * @param string  $search   Search string
-	 * @param array   $args     {
+	 * @param string $search Search string.
+	 * @param array  $args   {
+	 *     Optional. An array of arguments.
+	 *
 	 *     @type string[] $subtypes Limit suggestions to this subset of all post
 	 *                              types that support search suggestions.
 	 *     @type int      $page     Page of results.

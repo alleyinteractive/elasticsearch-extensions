@@ -90,7 +90,8 @@ class VIP_Enterprise_Search extends Adapter {
 	public function filter__ep_post_mapping( $mapping ) {
 		if ( $this->get_enable_search_suggestions() ) {
 			$mapping['mappings']['properties']['search_suggest'] = [
-				'type' => 'search_as_you_type',
+				'type'     => 'search_as_you_type',
+
 				/*
 				 * The 'ewp_word_delimiter' analyzer included by default in ElasticPress is not compatible with
 				 * this field type. See https://github.com/10up/ElasticPress/pull/3237.
@@ -259,22 +260,24 @@ class VIP_Enterprise_Search extends Adapter {
 	 * search-suggestions REST API handler in the list of allowed handlers if
 	 * search suggestions are made available over REST.
 	 *
-	 * @param $handlers
-	 * @return mixed
+	 * @param \WP_REST_Search_Handler[] $search_handlers List of search handlers to use in the controller.
+	 * @return \WP_REST_Search_Handler[] Updated list of handlers.
 	 */
-	public function filter__wp_rest_search_handlers( $handlers ) {
+	public function filter__wp_rest_search_handlers( $search_handlers ) {
 		if ( $this->is_show_search_suggestions_in_rest_enabled() ) {
-			$handlers[] = new Post_Suggestion_Search_Handler( $this );
+			$search_handlers[] = new Post_Suggestion_Search_Handler( $this );
 		}
 
-		return $handlers;
+		return $search_handlers;
 	}
 
 	/**
 	 * Suggest posts that match the given search term.
 	 *
-	 * @param string  $search   Search string
-	 * @param array   $args     {
+	 * @param string $search Search string.
+	 * @param array  $args   {
+	 *     Optional. An array of arguments.
+	 *
 	 *     @type string[] $subtypes Limit suggestions to this subset of all post
 	 *                              types that support search suggestions.
 	 *     @type int      $page     Page of results.
@@ -321,6 +324,7 @@ class VIP_Enterprise_Search extends Adapter {
 							'search_suggest._2gram',
 							'search_suggest._3gram',
 						],
+
 						/*
 						 * The purpose of using 'and' here is to assume that more terms in the search indicate
 						 * someone searching for something more specific, not someone trying to get more results.
@@ -337,7 +341,7 @@ class VIP_Enterprise_Search extends Adapter {
 					'terms' => [
 						'post_type.raw' => $subtypes,
 						'_name'         => 'subtypes',
-					]
+					],
 				];
 			}
 
