@@ -345,12 +345,29 @@ class VIP_Enterprise_Search extends Adapter {
 			$query_must_not = [];
 
 			if ( $subtypes ) {
-				$query_must[] = [
-					'terms' => [
-						'post_type.raw' => $subtypes,
-						'_name'         => 'subtypes',
-					],
-				];
+				$restrict = $this->get_restricted_search_suggestions_post_types();
+
+				/*
+				 * If search suggestions have been limited to a list of post types,
+				 * don't suggest posts from any other types, even if posts in other
+				 * types have suggestions indexed because they used to be allowed.
+				 */
+				if ( $restrict ) {
+					$subtypes = array_intersect( $subtypes, $restrict );
+
+					if ( ! $subtypes ) {
+						$subtypes = $restrict;
+					}
+				}
+
+				if ( $subtypes ) {
+					$query_must[] = [
+						'terms' => [
+							'post_type.raw' => $subtypes,
+							'_name'         => 'subtypes',
+						],
+					];
+				}
 			}
 
 			if ( $include ) {
