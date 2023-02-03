@@ -284,6 +284,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 *     @type int      $per_page Results per page. Default 10.
 	 *     @type int[]    $include  Search within these post IDs.
 	 *     @type int[]    $exclude  Exclude these post IDs from results.
+	 *     @type string[] $status   Post statuses to search. Default 'publish'.
 	 * }
 	 * @return int[] Post IDs in this page of results and total number of results.
 	 */
@@ -302,6 +303,7 @@ class VIP_Enterprise_Search extends Adapter {
 				'per_page' => 10,
 				'exclude'  => [],
 				'include'  => [],
+				'status'   => [ 'publish' ],
 			],
 		);
 
@@ -331,6 +333,12 @@ class VIP_Enterprise_Search extends Adapter {
 						 */
 						'operator' => 'and',
 						'_name'    => 'search',
+					],
+				],
+				[
+					'terms' => [
+						'post_status' => (array) $args['status'],
+						'_name' => 'status',
 					],
 				],
 			];
