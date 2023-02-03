@@ -105,7 +105,7 @@ abstract class Aggregation {
 						type="checkbox"
 						value="<?php echo esc_attr( $bucket->key ); ?>"
 					/>
-					<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
+					<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( (string) $bucket->count ); ?>)
 				</label>
 			<?php endforeach; ?>
 		</fieldset>
@@ -247,7 +247,7 @@ abstract class Aggregation {
 						<?php selected( $bucket->selected ); ?>
 						value="<?php echo esc_attr( $bucket->key ); ?>"
 					>
-						<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( $bucket->count ); ?>)
+						<?php echo esc_html( $bucket->label ); ?> (<?php echo esc_html( (string) $bucket->count ); ?>)
 					</option>
 				<?php endforeach; ?>
 			</select>
