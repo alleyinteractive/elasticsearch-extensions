@@ -276,7 +276,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 *
 	 * @param string $search Search string.
 	 * @param array  $args   {
-	 *     Optional. An array of arguments.
+	 *     Optional. An array of query arguments.
 	 *
 	 *     @type string[] $subtypes Limit suggestions to this subset of all post
 	 *                              types that support search suggestions.
@@ -306,6 +306,14 @@ class VIP_Enterprise_Search extends Adapter {
 				'status'   => [ 'publish' ],
 			],
 		);
+
+		/**
+		 * Filters the arguments used to build an Elasticsearch search for suggested posts.
+		 *
+		 * @param array  $args   An array of query arguments.
+		 * @param string $search Search string.
+		 */
+		$args = apply_filters( 'elasticsearch_extensions_query_post_suggestions_args', $args, $search );
 
 		$subtypes = (array) $args['subtypes'];
 		$page     = (int) $args['page'];
