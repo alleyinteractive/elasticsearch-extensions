@@ -321,6 +321,9 @@ class VIP_Enterprise_Search extends Adapter {
 		$exclude  = (array) $args['exclude'];
 		$include  = (array) $args['include'];
 
+		// Avoid returning stale data in the index.
+		$subtypes = array_filter( $subtypes, 'post_type_exists' );
+
 		if ( $search ) {
 			$query_from     = ( $page - 1 ) * $per_page;
 			$query_per_page = $per_page;
