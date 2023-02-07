@@ -276,7 +276,7 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
-	 * Returns whether a REST API search handler for suggestions can be enabled.
+	 * Returns whether support for a REST API search handler for suggestions is enabled.
 	 *
 	 * @return bool
 	 */
