@@ -7,6 +7,7 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
 use WP_Query;
 
 /**
@@ -77,6 +78,63 @@ class VIP_Enterprise_Search extends Adapter {
 		}
 
 		return $filtered_post_types;
+	}
+
+	/**
+	 * A callback for the ep_post_mapping filter. Adds the 'search_suggest'
+	 * field to the mapping if search suggestions are enabled.
+	 *
+	 * @param array $mapping Post mapping.
+	 * @return array Updated mapping.
+	 */
+	public function filter__ep_post_mapping( $mapping ) {
+		if ( $this->get_enable_search_suggestions() ) {
+			$mapping['mappings']['properties']['search_suggest'] = [
+				'type'     => 'search_as_you_type',
+
+				/*
+				 * The 'ewp_word_delimiter' analyzer included by default in ElasticPress is not compatible with
+				 * this field type. See https://github.com/10up/ElasticPress/pull/3237.
+				 */
+				'analyzer' => 'standard',
+			];
+		}
+
+		return $mapping;
+	}
+
+	/**
+	 * A callback for the ep_post_sync_args_post_prepare_meta filter. Indexes
+	 * text for the 'search_suggest' field.
+	 *
+	 * @param array $post_args Post data to be indexed.
+	 * @param int   $post_id   Post ID.
+	 * @return array Updated data to index.
+	 */
+	public function filter__ep_post_sync_args_post_prepare_meta( $post_args, $post_id ) {
+		if ( $this->get_enable_search_suggestions() ) {
+			$post = get_post( $post_id );
+
+			if ( $post ) {
+				$restrict = $this->get_restricted_search_suggestions_post_types();
+
+				if ( ! $restrict || in_array( $post->post_type, $restrict, true ) ) {
+					/**
+					 * Filters the text to be indexed in the search suggestions field for a post.
+					 *
+					 * @param string $text    Text to index. Default post title.
+					 * @param int    $post_id Post ID.
+					 */
+					$post_args['search_suggest'] = apply_filters(
+						'elasticsearch_extensions_post_search_suggestions_text',
+						$post->post_title,
+						$post_id,
+					);
+				}
+			}
+		}
+
+		return $post_args;
 	}
 
 	/**
@@ -198,6 +256,179 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * A callback for the wp_rest_search_handlers filter. Includes the
+	 * search-suggestions REST API handler in the list of allowed handlers if
+	 * search suggestions are made available over REST.
+	 *
+	 * @param \WP_REST_Search_Handler[] $search_handlers List of search handlers to use in the controller.
+	 * @return \WP_REST_Search_Handler[] Updated list of handlers.
+	 */
+	public function filter__wp_rest_search_handlers( $search_handlers ) {
+		if ( $this->is_show_search_suggestions_in_rest_enabled() ) {
+			$search_handlers[] = new Post_Suggestion_Search_Handler( $this );
+		}
+
+		return $search_handlers;
+	}
+
+	/**
+	 * Suggest posts that match the given search term.
+	 *
+	 * @param string $search Search string.
+	 * @param array  $args   {
+	 *     Optional. An array of query arguments.
+	 *
+	 *     @type string[] $subtypes Limit suggestions to this subset of all post
+	 *                              types that support search suggestions.
+	 *     @type int      $page     Page of results.
+	 *     @type int      $per_page Results per page. Default 10.
+	 *     @type int[]    $include  Search within these post IDs.
+	 *     @type int[]    $exclude  Exclude these post IDs from results.
+	 *     @type string[] $status   Post statuses to search. Default 'publish'.
+	 * }
+	 * @return int[] Post IDs in this page of results and total number of results.
+	 */
+	public function query_post_suggestions( string $search, array $args = [] ): array {
+		$out = [ [], 0 ];
+
+		if ( ! $search && ! $this->get_allow_empty_search() ) {
+			return $out;
+		}
+
+		$args = wp_parse_args(
+			$args,
+			[
+				'subtypes' => [],
+				'page'     => 1,
+				'per_page' => 10,
+				'exclude'  => [], // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+				'include'  => [],
+				'status'   => [ 'publish' ],
+			],
+		);
+
+		/**
+		 * Filters the arguments used to build an Elasticsearch search for suggested posts.
+		 *
+		 * @param array  $args   An array of query arguments.
+		 * @param string $search Search string.
+		 */
+		$args = apply_filters( 'elasticsearch_extensions_query_post_suggestions_args', $args, $search );
+
+		$subtypes = (array) $args['subtypes'];
+		$page     = (int) $args['page'];
+		$per_page = (int) $args['per_page'];
+		$exclude  = (array) $args['exclude'];
+		$include  = (array) $args['include'];
+
+		// Avoid returning stale data in the index.
+		$subtypes = array_filter( $subtypes, 'post_type_exists' );
+
+		if ( $search ) {
+			$query_from     = ( $page - 1 ) * $per_page;
+			$query_per_page = $per_page;
+			$query_must     = [
+				[
+					'multi_match' => [
+						'query'    => $search,
+						'type'     => 'bool_prefix',
+						'fields'   => [
+							'search_suggest',
+							'search_suggest._2gram',
+							'search_suggest._3gram',
+						],
+
+						/*
+						 * The purpose of using 'and' here is to assume that more terms in the search indicate
+						 * someone searching for something more specific, not someone trying to get more results.
+						 */
+						'operator' => 'and',
+						'_name'    => 'search',
+					],
+				],
+				[
+					'terms' => [
+						'post_status' => (array) $args['status'],
+						'_name'       => 'status',
+					],
+				],
+			];
+			$query_must_not = [];
+
+			if ( $subtypes ) {
+				$restrict = $this->get_restricted_search_suggestions_post_types();
+
+				/*
+				 * If search suggestions have been limited to a list of post types,
+				 * don't suggest posts from any other types, even if posts in other
+				 * types have suggestions indexed because they used to be allowed.
+				 */
+				if ( $restrict ) {
+					$subtypes = array_intersect( $subtypes, $restrict );
+
+					if ( ! $subtypes ) {
+						$subtypes = $restrict;
+					}
+				}
+
+				$query_must[] = [
+					'terms' => [
+						'post_type.raw' => $subtypes,
+						'_name'         => 'subtypes',
+					],
+				];
+			}
+
+			if ( $include ) {
+				$query_must[] = [
+					'terms' => [
+						'post_id' => $include,
+						'_name'   => 'include',
+					],
+				];
+			}
+
+			if ( $exclude ) {
+				$query_must_not[] = [
+					'terms' => [
+						'post_id' => $exclude,
+						'_name'   => 'exclude',
+					],
+				];
+			}
+
+			$query = [
+				'from'    => $query_from,
+				'size'    => $query_per_page,
+				'query'   => [
+					'bool' => [
+						'must'     => $query_must,
+						'must_not' => $query_must_not,
+					],
+				],
+				'_source' => [
+					'ID',
+				],
+			];
+
+			$result = \ElasticPress\Indexables::factory()->get( 'post' )->query_es( $query, [] );
+
+			if (
+				isset( $result['documents'] )
+				&& is_array( $result['documents'] )
+				&& isset( $result['found_documents']['value'] )
+			) {
+				$out = [
+					array_column( $result['documents'], 'ID' ),
+					$result['found_documents']['value'],
+				];
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Gets the field map for this adapter.
 	 *
 	 * @return array The field map.
@@ -296,10 +527,13 @@ class VIP_Enterprise_Search extends Adapter {
 		// Register filter hooks.
 		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
 		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
+		add_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
+		add_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ], 10, 2 );
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 2 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		add_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
+		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
 
 	/**
@@ -313,9 +547,12 @@ class VIP_Enterprise_Search extends Adapter {
 		// Unregister filter hooks.
 		remove_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ] );
 		remove_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
+		remove_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
+		remove_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ] );
 		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
 		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		remove_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
 		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
+		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
 }

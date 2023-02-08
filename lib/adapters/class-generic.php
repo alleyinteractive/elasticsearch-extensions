@@ -13,7 +13,6 @@ namespace Elasticsearch_Extensions\Adapters;
  * @package Elasticsearch_Extensions
  */
 class Generic extends Adapter {
-
 	/**
 	 * Gets the field map for this adapter.
 	 *

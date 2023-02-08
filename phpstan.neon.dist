@@ -3,3 +3,6 @@ parameters:
 	paths:
 		- elasticsearch-extensions.php
 		- lib/
+	scanDirectories:
+		- ../elasticpress/
+		- ../searchpress/

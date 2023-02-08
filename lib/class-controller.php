@@ -131,6 +131,37 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables search-as-you-type suggestions.
+	 *
+	 * @param array $args {
+	 *     Optional. An array of arguments.
+	 *
+	 *     @type string[] $post_types   Limit suggestions to this subset of all
+	 *                                  indexed post types.
+	 *     @type bool     $show_in_rest Whether to register REST API search handlers
+	 *                                  for querying suggestions. Default true.
+	 * }
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_search_suggestions( array $args = [] ): Controller {
+		$args = wp_parse_args(
+			$args,
+			[
+				'post_types'   => [],
+				'show_in_rest' => true,
+			]
+		);
+
+		$args['post_types'] = array_filter( (array) $args['post_types'] );
+
+		$this->adapter->set_enable_search_suggestions( true );
+		$this->adapter->set_show_search_suggestions_in_rest( (bool) $args['show_in_rest'] );
+		$this->adapter->restrict_search_suggestions_post_types( $args['post_types'] );
+
+		return $this;
+	}
+
+	/**
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
