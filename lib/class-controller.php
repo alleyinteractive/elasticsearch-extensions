@@ -259,6 +259,6 @@ class Controller implements Hookable {
 	 * Unregisters action and/or filter hooks with WordPress.
 	 */
 	public function unhook(): void {
-		remove_action( 'init', [ $this, 'action__init' ], 99 );
+		remove_action( 'init', [ $this, 'action__init' ], 1000 );
 	}
 }
