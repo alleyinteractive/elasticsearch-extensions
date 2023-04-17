@@ -29,7 +29,7 @@ jobs:
             multisite: 1
             wp_version: '6.1'
     env:
-      WP_CORE_DIR: /tmp/wordpress/
+      WP_CORE_DIR: /tmp/wordpress
       WP_VERSION: ${{ matrix.wp_version }}
       WP_MULTISITE: ${{ matrix.multisite }}
       WP_DB_HOST: 127.0.0.1
