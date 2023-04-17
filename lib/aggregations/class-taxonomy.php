@@ -85,6 +85,15 @@ class Taxonomy extends Aggregation {
 	}
 
 	/**
+	 * Gets the WP Taxonomy Object for this aggregation.
+	 *
+	 * @return \WP_Taxonomy The aggregation taxonomy object.
+	 */
+	public function get_taxonomy(): WP_Taxonomy {
+		return $this->taxonomy;
+	}
+
+	/**
 	 * Provides a central place for the term field to be filtered. Defaults to
 	 * 'term_slug' but can be modified via the filter to operate on term IDs,
 	 * names, etc.
