@@ -164,6 +164,14 @@ class VIP_Enterprise_Search extends Adapter {
 					$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
 					$formatted_args['post_filter']['bool']['must']
 				);
+			} elseif ( ! empty( $formatted_args['query']['match_all'] ) ) {
+				// This condition triggers on secondary queries that use ep_integrate.
+				// Adding filters to match_all queries requires converting it to a bool query with the match_all clause nested within.
+				$formatted_args['query']['bool']['must']['match_all'] = $formatted_args['query']['match_all'];
+				// Unset the original DSL, since this will use a bool query instead.
+				unset( $formatted_args['query']['match_all'] );
+				// Add bool query with filters.
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
 		}
 
