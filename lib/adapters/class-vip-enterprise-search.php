@@ -173,7 +173,6 @@ class VIP_Enterprise_Search extends Adapter {
 				// Add bool query with filters.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
-
 		}
 
 		// Add requested aggregations.
