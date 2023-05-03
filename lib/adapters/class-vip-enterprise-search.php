@@ -164,7 +164,13 @@ class VIP_Enterprise_Search extends Adapter {
 					$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
 					$formatted_args['post_filter']['bool']['must']
 				);
+			} elseif ( ! empty( $formatted_args['query']['match_all'] ) ) {
+				// Add filters to a match_all queries. This happens on secondary queries that use ep_integrate.
+				$formatted_args['query']['bool']['must']['match_all'] = $formatted_args['query']['match_all'];
+				unset( $formatted_args['query']['match_all'] );
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
+
 		}
 
 		// Add requested aggregations.
