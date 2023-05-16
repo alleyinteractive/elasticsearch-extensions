@@ -62,6 +62,13 @@ abstract class Adapter implements Hookable {
 	protected DSL $dsl;
 
 	/**
+	 * An optional array of meta fields to restrict search to.
+	 *
+	 * @var string[]
+	 */
+	private array $restricted_post_meta = [];
+
+	/**
 	 * An optional array of post types to restrict search to.
 	 *
 	 * @var string[]
@@ -316,6 +323,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function query_post_suggestions( string $search, array $args = [] ): array {
 		return [ [], 0 ];
+	}
+
+	/**
+	 * Restricts indexable post meta to the provided list.
+	 *
+	 * @param string[] $post_meta The array of meta fields to restrict to.
+	 */
+	public function restrict_post_meta( array $post_meta ): void {
+		$this->restricted_post_meta = $post_meta;
 	}
 
 	/**
