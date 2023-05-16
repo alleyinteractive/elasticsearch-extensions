@@ -252,8 +252,7 @@ class VIP_Enterprise_Search extends Adapter {
 	/**
 	 * A callback for the vip_search_post_meta_allow_list filter hook.
 	 * Filters the list of post meta fields that should be indexed in 
-	 * ElasticPress based on what was configured. If no restrictions were 
-	 * specified, uses the default list (all public taxonomies).
+	 * ElasticPress based on what was configured.
 	 *
 	 * @param array $meta A list of meta keys.
 	 *
