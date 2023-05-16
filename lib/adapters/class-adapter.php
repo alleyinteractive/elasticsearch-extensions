@@ -66,7 +66,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @var string[]
 	 */
-	private array $restricted_post_meta = [];
+	private array $restricted_meta = [];
 
 	/**
 	 * An optional array of post types to restrict search to.

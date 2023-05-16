@@ -554,7 +554,7 @@ class VIP_Enterprise_Search extends Adapter {
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 2 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		add_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
-		// add_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
+		add_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
@@ -575,7 +575,7 @@ class VIP_Enterprise_Search extends Adapter {
 		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
 		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		remove_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
-		// remove_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
+		remove_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
