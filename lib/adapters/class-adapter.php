@@ -66,7 +66,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @var string[]
 	 */
-	private array $restricted_meta = [];
+	private array $restricted_post_meta = [];
 
 	/**
 	 * An optional array of post types to restrict search to.
@@ -237,8 +237,8 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @return string[] The list of restricted meta slugs.
 	 */
-	protected function get_restricted_meta(): array {
-		return $this->restricted_meta;
+	protected function get_restricted_post_meta(): array {
+		return $this->restricted_post_meta;
 	}
 
 	/**
@@ -337,10 +337,10 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Restricts indexable post meta to the provided list.
 	 *
-	 * @param string[] $meta The array of meta fields to restrict to.
+	 * @param string[] $post_meta The array of meta fields to restrict to.
 	 */
-	public function restrict_meta( array $meta ): void {
-		$this->restricted_meta = $meta;
+	public function restrict_post_meta( array $post_meta ): void {
+		$this->restricted_post_meta = $post_meta;
 	}
 
 	/**

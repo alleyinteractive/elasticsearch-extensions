@@ -232,12 +232,12 @@ class Controller implements Hookable {
 	/**
 	 * Restricts indexable meta to the provided list.
 	 *
-	 * @param string[] $meta The array of meta fields to restrict to.
+	 * @param string[] $post_meta The array of meta fields to restrict to.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function restrict_meta( array $meta ): Controller {
-		$this->adapter->restrict_meta( $meta );
+	public function restrict_post_meta( array $post_meta ): Controller {
+		$this->adapter->restrict_post_meta( $post_meta );
 
 		return $this;
 	}
