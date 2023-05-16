@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial creation of the plugin
 - Add support for VIP Enterprise Search
-- Add support for restricting indexable post types and taxonomies
+- Add support for restricting indexable post meta, post types and taxonomies
 - Add support for aggregations (faceted search)
 - Add support for Co-Authors Plus
 - Add support for running empty (aggregations only) searches

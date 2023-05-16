@@ -250,6 +250,19 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * A callback for the vip_search_post_meta_allow_list filter hook.
+	 * Filters the list of post meta fields that should be indexed in 
+	 * ElasticPress based on what was configured.
+	 *
+	 * @param array $post_meta A list of meta keys.
+	 *
+	 * @return array The modified list of meta fields to index.
+	 */
+	public function filter__vip_search_post_meta_allow_list( $post_meta ) {
+		return $this->get_restricted_post_meta() ?: $post_meta;
+	}
+
+	/**
 	 * A callback for the vip_search_post_taxonomies_allow_list filter hook.
 	 * Filters the list of taxonomies that should be indexed in ElasticPress
 	 * based on what was configured. If no restrictions were specified, uses the
@@ -540,6 +553,7 @@ class VIP_Enterprise_Search extends Adapter {
 		add_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ], 10, 2 );
 		add_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		add_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
+		add_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
@@ -560,6 +574,7 @@ class VIP_Enterprise_Search extends Adapter {
 		remove_filter( 'ep_post_formatted_args', [ $this, 'filter__ep_post_formatted_args' ] );
 		remove_filter( 'ep_query_request_args', [ $this, 'filter__ep_query_request_args' ] );
 		remove_filter( 'ep_searchable_post_types', [ $this, 'filter__ep_searchable_post_types' ] );
+		remove_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
