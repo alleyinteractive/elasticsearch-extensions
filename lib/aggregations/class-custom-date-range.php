@@ -95,9 +95,8 @@ class Custom_Date_Range extends Aggregation {
 		try {
 			$from_datetime = DateTime::createFromFormat( DATE_W3C, $from );
 			$to_datetime   = DateTime::createFromFormat( DATE_W3C, $to );
-			return $from_datetime && $to_datetime
-				? $this->dsl->build_range( $from_datetime, $to_datetime )
-				: [];
+
+			return $this->dsl->build_range( $from_datetime ?: null, $to_datetime ?: null );
 		} catch ( Exception $e ) {
 			return [];
 		}
@@ -109,7 +108,8 @@ class Custom_Date_Range extends Aggregation {
 	 * this aggregation.
 	 */
 	public function input(): void {
-		$fields = [
+		$timezone = wp_timezone();
+		$fields   = [
 			[
 				'date_w3c' => '',
 				'date_ymd' => '',
@@ -125,7 +125,7 @@ class Custom_Date_Range extends Aggregation {
 		];
 		try {
 			foreach ( $fields as $index => &$config ) {
-				$datetime = DateTime::createFromFormat( DATE_W3C, $this->get_query_values()[ $index ] ?? '', wp_timezone() );
+				$datetime = DateTime::createFromFormat( DATE_W3C, $this->get_query_values()[ $index ] ?? '', $timezone );
 				if ( $datetime ) {
 					$config['date_w3c'] = $datetime->format( DATE_W3C );
 					$config['date_ymd'] = $datetime->format( 'Y-m-d' );

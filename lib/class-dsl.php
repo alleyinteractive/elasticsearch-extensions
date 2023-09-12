@@ -158,16 +158,23 @@ class DSL {
 	 * Given DateTime objects for the from and to components of a range query,
 	 * builds the from/to components of the range query and returns it.
 	 *
-	 * @param DateTime $from The start date.
-	 * @param DateTime $to   The end date.
+	 * @param DateTime|null $from The start date.
+	 * @param DateTime|null $to   The end date.
 	 *
 	 * @return array An array containing a from and to key, usable in a range query.
 	 */
-	public function build_range( DateTime $from, DateTime $to ): array {
-		return [
-			'from' => $from->format( 'Y-m-d H:i:s' ),
-			'to'   => $to->format( 'Y-m-d H:i:s' ),
-		];
+	public function build_range( ?DateTime $from, ?DateTime $to ): array {
+		$range = [];
+
+		if ( $from instanceof DateTime ) {
+			$range['from'] = $from->format( 'Y-m-d H:i:s' );
+		}
+
+		if ( $to instanceof DateTime ) {
+			$range['to'] = $to->format( 'Y-m-d H:i:s' );
+		}
+
+		return $range;
 	}
 
 	/**
