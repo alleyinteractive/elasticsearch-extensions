@@ -72,14 +72,48 @@ class Custom_Date_Range extends Aggregation {
 	 * @return array Array of DSL fragments to apply.
 	 */
 	public function filter(): array {
-		$date_range = $this->get_date_range(
-			$this->query_values[0] ?? '',
-			$this->query_values[1] ?? ''
-		);
+		$from = $this->query_values[0] ?? $this->get_default_date_range( 'from' );
+		$to   = $this->query_values[1] ?? $this->get_default_date_range( 'to' );
+
+		$date_range = $this->get_date_range( $from, $to );
 
 		return ! empty( $date_range )
 			? [ $this->dsl->range( 'post_date', $date_range ) ]
 			: [];
+	}
+
+	/**
+	 * Get the default date range.
+	 *
+	 * @param string $range The range to get the default date for.
+	 * @return string
+	 */
+	private function get_default_date_range( string $range ): string {
+		switch ( $range ) {
+			case 'from':
+				$datetime = gmdate( 'Y-m-d', 0 ); // Defaults to 1970-01-01.
+				break;
+			case 'to':
+				$datetime = gmdate( 'Y-m-d' );
+				break;
+			default:
+				$datetime = '';
+		}
+
+		if ( empty( $datetime ) ) {
+			return '';
+		}
+
+		try {
+			$default_date = DateTime::createFromFormat( DATE_W3C, $datetime, wp_timezone() );
+			if ( ! empty( $default_date ) ) {
+				return $default_date->format( DATE_W3C );
+			}
+
+			return '';
+		} catch ( Exception $e ) {
+			return '';
+		}
 	}
 
 	/**
@@ -109,6 +143,7 @@ class Custom_Date_Range extends Aggregation {
 	 * this aggregation.
 	 */
 	public function input(): void {
+		$timezone = wp_timezone();
 		$fields = [
 			[
 				'date_w3c' => '',
@@ -125,7 +160,7 @@ class Custom_Date_Range extends Aggregation {
 		];
 		try {
 			foreach ( $fields as $index => &$config ) {
-				$datetime = DateTime::createFromFormat( DATE_W3C, $this->get_query_values()[ $index ] ?? '', wp_timezone() );
+				$datetime = DateTime::createFromFormat( DATE_W3C, $this->get_query_values()[ $index ] ?? '', $timezone );
 				if ( $datetime ) {
 					$config['date_w3c'] = $datetime->format( DATE_W3C );
 					$config['date_ymd'] = $datetime->format( 'Y-m-d' );
