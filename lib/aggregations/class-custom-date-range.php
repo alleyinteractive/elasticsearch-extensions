@@ -96,10 +96,6 @@ class Custom_Date_Range extends Aggregation {
 			$from_datetime = DateTime::createFromFormat( DATE_W3C, $from );
 			$to_datetime   = DateTime::createFromFormat( DATE_W3C, $to );
 
-			if ( empty( $from_datetime ) && empty( $to_datetime ) ) {
-				return [];
-			}
-
 			return $this->dsl->build_range( $from_datetime, $to_datetime );
 		} catch ( Exception $e ) {
 			return [];
