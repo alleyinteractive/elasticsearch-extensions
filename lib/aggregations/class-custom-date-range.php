@@ -109,7 +109,7 @@ class Custom_Date_Range extends Aggregation {
 	 */
 	public function input(): void {
 		$timezone = wp_timezone();
-		$fields = [
+		$fields   = [
 			[
 				'date_w3c' => '',
 				'date_ymd' => '',
