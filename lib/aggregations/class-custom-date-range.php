@@ -74,7 +74,7 @@ class Custom_Date_Range extends Aggregation {
 	public function filter(): array {
 		$date_range = $this->get_date_range(
 			$this->query_values[0] ?? '',
-			$this->query_values[1] ?? '',
+			$this->query_values[1] ?? ''
 		);
 
 		return ! empty( $date_range )
