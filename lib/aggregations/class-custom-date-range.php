@@ -72,48 +72,14 @@ class Custom_Date_Range extends Aggregation {
 	 * @return array Array of DSL fragments to apply.
 	 */
 	public function filter(): array {
-		$from = $this->query_values[0] ?? $this->get_default_date_range( 'from' );
-		$to   = $this->query_values[1] ?? $this->get_default_date_range( 'to' );
-
-		$date_range = $this->get_date_range( $from, $to );
+		$date_range = $this->get_date_range(
+			$this->query_values[0] ?? '',
+			$this->query_values[1] ?? '',
+		);
 
 		return ! empty( $date_range )
 			? [ $this->dsl->range( 'post_date', $date_range ) ]
 			: [];
-	}
-
-	/**
-	 * Get the default date range.
-	 *
-	 * @param string $range The range to get the default date for.
-	 * @return string
-	 */
-	private function get_default_date_range( string $range ): string {
-		switch ( $range ) {
-			case 'from':
-				$datetime = gmdate( 'Y-m-d', 0 ); // Defaults to 1970-01-01.
-				break;
-			case 'to':
-				$datetime = gmdate( 'Y-m-d' );
-				break;
-			default:
-				$datetime = '';
-		}
-
-		if ( empty( $datetime ) ) {
-			return '';
-		}
-
-		try {
-			$default_date = DateTime::createFromFormat( DATE_W3C, $datetime, wp_timezone() );
-			if ( ! empty( $default_date ) ) {
-				return $default_date->format( DATE_W3C );
-			}
-
-			return '';
-		} catch ( Exception $e ) {
-			return '';
-		}
 	}
 
 	/**
@@ -129,9 +95,12 @@ class Custom_Date_Range extends Aggregation {
 		try {
 			$from_datetime = DateTime::createFromFormat( DATE_W3C, $from );
 			$to_datetime   = DateTime::createFromFormat( DATE_W3C, $to );
-			return $from_datetime && $to_datetime
-				? $this->dsl->build_range( $from_datetime, $to_datetime )
-				: [];
+
+			if ( empty( $from_datetime ) && empty( $to_datetime ) ) {
+				return [];
+			}
+
+			return $this->dsl->build_range( $from_datetime, $to_datetime );
 		} catch ( Exception $e ) {
 			return [];
 		}
