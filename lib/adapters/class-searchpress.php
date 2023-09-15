@@ -7,7 +7,6 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
-use Elasticsearch_Extensions\Adapters\Adapter;
 use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
 
 /**
@@ -57,7 +56,7 @@ class SearchPress extends Adapter {
 	 * @param \SP_WP_Search   $search  Search object.
 	 * @return \WP_Post[]|null The unmodified query results.
 	 */
-	public function extract_aggs_from_results( $results, $search ): void {
+	public function extract_aggs_from_results( $results, $search ) {
 		$aggs = $search->get_results( 'facets' );
 		if ( ! empty( $aggs ) ) {
 			$this->parse_aggregations( $aggs );

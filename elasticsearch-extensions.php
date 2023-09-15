@@ -27,4 +27,4 @@ function elasticsearch_extensions(): Controller {
 }
 
 // Bootstrap the plugin.
-elasticsearch_extensions()->load_adapter();
+add_action( 'after_setup_theme', fn () => elasticsearch_extensions()->load_adapter() );
