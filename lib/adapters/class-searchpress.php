@@ -71,11 +71,13 @@ class SearchPress extends Adapter {
 	 * configured. If no restrictions were specified, uses the default list
 	 * (all public post types).
 	 *
+	 * @todo Restricted_post_types needs a refactor to set the searchable post types, not indexed post types. This was
+	 *       written to be consistent with the VIP Enterprise Search adapter for now.
+	 *
 	 * @param array $post_types An array of post type slugs.
 	 * @return array The modified list of post types to index.
 	 */
 	public function apply_sync_post_types( $post_types ) {
-		// Determine whether we should filter the list or not.
 		$restricted_post_types = $this->get_restricted_post_types();
 		return empty( $restricted_post_types ) ? $post_types : $restricted_post_types;
 	}
