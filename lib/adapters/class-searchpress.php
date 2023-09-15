@@ -111,6 +111,7 @@ class SearchPress extends Adapter {
 		if ( $this->get_enable_search_suggestions() ) {
 			$restrict = $this->get_restricted_search_suggestions_post_types();
 
+			/* @phpstan-ignore-next-line */
 			if ( ! $restrict || in_array( $sp_post->post_type, $restrict, true ) ) {
 				/**
 				 * Filters the text to be indexed in the search suggestions field for a post.
@@ -120,8 +121,8 @@ class SearchPress extends Adapter {
 				 */
 				$data['search_suggest'] = apply_filters(
 					'elasticsearch_extensions_post_search_suggestions_text',
-					$sp_post->post_title,
-					$sp_post->post_id,
+					$sp_post->post_title, /* @phpstan-ignore-line */
+					$sp_post->post_id, /* @phpstan-ignore-line */
 				);
 			}
 		}
