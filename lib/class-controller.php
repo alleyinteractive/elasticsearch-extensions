@@ -9,6 +9,10 @@ namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Adapter;
 use Elasticsearch_Extensions\Aggregations\Aggregation;
+use Elasticsearch_Extensions\Exceptions\Invalid_Feature_Exception;
+use Elasticsearch_Extensions\Exceptions\Unsupported_Feature_Exception;
+use Elasticsearch_Extensions\Interfaces\Adapterable;
+use Elasticsearch_Extensions\Interfaces\Featurable;
 use Elasticsearch_Extensions\Interfaces\Hookable;
 
 /**
@@ -16,6 +20,16 @@ use Elasticsearch_Extensions\Interfaces\Hookable;
  * configuration.
  *
  * @package Elasticsearch_Extensions
+ * @method Controller disable_empty_search() Disable empty search query strings.
+ * @method Controller enable_cap_author_aggregation( array $args = [] ) Enables an aggregation for Co-Authors Plus authors.
+ * @method Controller enable_custom_date_range_aggregation( array $args = [] ) Enables a custom date range aggregation.
+ * @method Controller enable_empty_search() Enable empty search query strings.
+ * @method Controller enable_post_date_aggregation( array $args = [] ) Enables an aggregation based on post dates.
+ * @method Controller enable_post_type_aggregation( array $args = [] ) Enables an aggregation based on post type.
+ * @method Controller enable_relative_date_aggregation( array $args = [] ) Enables an aggregation based on relative dates.
+ * @method Controller enable_search_suggestions( array $args = [] ) Enables search-as-you-type suggestions.
+ * @method Controller enable_taxonomy_aggregation( string $taxonomy, array $args = [] ) A function to enable an aggregation for a specific taxonomy.
+ *
  */
 class Controller implements Hookable {
 
@@ -24,7 +38,14 @@ class Controller implements Hookable {
 	 *
 	 * @var Adapter
 	 */
-	private Adapter $adapter;
+	private Adapterable $adapter;
+
+	/**
+	 * An array of features.
+	 *
+	 * @var Featurable[]
+	 */
+	private array $features = [];
 
 	/**
 	 * A callback for the init action hook. Invokes a custom hook for this
@@ -44,135 +65,68 @@ class Controller implements Hookable {
 	}
 
 	/**
-	 * Disable empty search query strings.
+	 * Magic method which fires an action to enable or disable a feature if the adapter supports it.
 	 *
+	 * @throws Invalid_Feature_Exception     If the feature doesn't exist.
+	 * @throws Unsupported_Feature_Exception If the current adapter doesn't support the feature.
+	 *
+	 * @param string $name The name of the method being called.
+	 * @param array $arguments The arguments passed to the method.
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
-	public function disable_empty_search(): Controller {
-		$this->adapter->set_allow_empty_search( false );
+	public function __call( string $name, array $arguments ): Controller {
+		// If the name starts with "enable_" or "disable_", check if the adapter is capable of the feature.
+		if ( preg_match( '/^(enable|disable)_(.*)$/', $name, $matches ) ) {
+			$enabling = 'enable' === $matches[1];
 
-		return $this;
-	}
+			if ( str_ends_with( $matches[2], '_aggregation' ) ) {
+				$feature_name = 'Aggregations';
+			} else {
+				// Titlecase the feature, e.g. empty_search -> Empty_Search.
+				$feature_name = mb_convert_case( $matches[2], MB_CASE_TITLE );
+			}
 
-	/**
-	 * Enables an aggregation for Co-Authors Plus authors.
-	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_cap_author_aggregation( array $args = [] ): Controller {
-		$this->adapter->add_cap_author_aggregation( $args );
+			$feature_class = "\Elasticsearch_Extensions\Features\{$feature_name}";
 
-		return $this;
-	}
+			// Ensure the feature is valid.
+			if ( ! class_exists( $feature_class ) ) {
+				throw new Invalid_Feature_Exception();
+			}
 
-	/**
-	 * Enables a custom date range aggregation.
-	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_custom_date_range_aggregation( array $args = [] ): Controller {
-		$this->adapter->add_custom_date_range_aggregation( $args );
+			// Ensure the adapter supports the feature.
+			if ( ! $this->adapter_supports( $feature_class ) ) {
+				throw new Unsupported_Feature_Exception();
+			}
 
-		return $this;
-	}
+			// Instantiate the feature if it doesn't exist.
+			if ( ! isset( $this->features[ $feature_class ] ) ) {
+				$this->features[ $feature_class ] = new $feature_class( $arguments );
+			}
+			$feature = $this->features[ $feature_class ];
 
-	/**
-	 * Enable empty search query strings.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_empty_search(): Controller {
-		$this->adapter->set_allow_empty_search( true );
+			// Normalize the arguments.
+			$arguments = $arguments[0] ?? [];
 
-		return $this;
-	}
+			// Activate or deactivate the feature.
+			if ( $enabling ) {
+				$feature->activate( $arguments );
+			} else {
+				$feature->deactivate( $arguments );
+			}
 
-	/**
-	 * Enables an aggregation based on post dates.
-	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_post_date_aggregation( array $args = [] ): Controller {
-		$this->adapter->add_post_date_aggregation( $args );
+			/**
+			 * Fire an action to enable or disable a feature.
+			 *
+			 * @param array      $arguments  The arguments passed to the method.
+			 * @param Featurable $feature    The feature being enabled or disabled.
+			 * @param Controller $controller This controller instance.
+			 */
+			do_action( "elasticsearch_extensions_{$name}", $arguments, $feature, $this );
 
-		return $this;
-	}
+			return $this;
+		}
 
-	/**
-	 * Enables an aggregation based on post type.
-	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_post_type_aggregation( array $args = [] ): Controller {
-		$this->adapter->add_post_type_aggregation( $args );
-
-		return $this;
-	}
-
-	/**
-	 * Enables an aggregation based on relative dates.
-	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_relative_date_aggregation( array $args = [] ): Controller {
-		$this->adapter->add_relative_date_aggregation( $args );
-
-		return $this;
-	}
-
-	/**
-	 * Enables search-as-you-type suggestions.
-	 *
-	 * @param array $args {
-	 *     Optional. An array of arguments.
-	 *
-	 *     @type string[] $post_types   Limit suggestions to this subset of all
-	 *                                  indexed post types.
-	 *     @type bool     $show_in_rest Whether to register REST API search handlers
-	 *                                  for querying suggestions. Default true.
-	 * }
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_search_suggestions( array $args = [] ): Controller {
-		$args = wp_parse_args(
-			$args,
-			[
-				'post_types'   => [],
-				'show_in_rest' => true,
-			]
-		);
-
-		$args['post_types'] = array_filter( (array) $args['post_types'] );
-
-		$this->adapter->set_enable_search_suggestions( true );
-		$this->adapter->set_show_search_suggestions_in_rest( (bool) $args['show_in_rest'] );
-		$this->adapter->restrict_search_suggestions_post_types( $args['post_types'] );
-
-		return $this;
-	}
-
-	/**
-	 * A function to enable an aggregation for a specific taxonomy.
-	 *
-	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 * @param array  $args     Arguments to pass to the adapter's aggregation configuration.
-	 *
-	 * @return Controller The instance of the class to allow for chaining.
-	 */
-	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
-		$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
-
-		return $this;
+		throw new \BadMethodCallException( "Call to undefined method {$name}" );
 	}
 
 	/**
@@ -273,5 +227,15 @@ class Controller implements Hookable {
 	 */
 	public function unhook(): void {
 		remove_action( 'init', [ $this, 'action__init' ], 1000 );
+	}
+
+	/**
+	 * Check if the adapter supports a given feature.
+	 *
+	 * @param string $feature The feature (classname) to check.
+	 * @return bool True if the adapter supports the feature, false otherwise.
+	 */
+	public function adapter_supports( string $feature ): bool {
+		return in_array( $feature, $this->adapter->supports(), true );
 	}
 }

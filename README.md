@@ -1,4 +1,4 @@
-# Elasticsearch Extensions
+`# Elasticsearch Extensions
 
 [![read me standard badge](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 

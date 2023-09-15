@@ -26,42 +26,6 @@ use Elasticsearch_Extensions\Interfaces\Hookable;
 abstract class Adapter implements Hookable {
 
 	/**
-	 * Stores aggregation data from the Elasticsearch response.
-	 *
-	 * @var Aggregation[]
-	 */
-	private array $aggregations = [];
-
-	/**
-	 * Whether to allow empty searches (no keyword set).
-	 *
-	 * @var bool
-	 */
-	private bool $allow_empty_search = false;
-
-	/**
-	 * Whether to index search suggestions.
-	 *
-	 * @var bool
-	 */
-	private bool $enable_search_suggestions = false;
-
-	/**
-	 * Whether to make search suggestions available over the REST API.
-	 *
-	 * @var bool
-	 */
-	private bool $show_search_suggestions_in_rest = true;
-
-	/**
-	 * Holds an instance of the DSL class with the field map from this adapter
-	 * injected into it.
-	 *
-	 * @var DSL
-	 */
-	protected DSL $dsl;
-
-	/**
 	 * An optional array of meta fields to restrict search to.
 	 *
 	 * @var string[]
@@ -83,142 +47,10 @@ abstract class Adapter implements Hookable {
 	private array $restricted_taxonomies = [];
 
 	/**
-	 * An optional array of post types to restrict search suggestions to.
-	 *
-	 * @var string[]
-	 */
-	private array $restricted_search_suggestions_post_types = [];
-
-	/**
 	 * Constructor. Sets up the DSL object with this adapter's field map.
 	 */
 	public function __construct() {
 		$this->dsl = new DSL( $this->get_field_map() );
-	}
-
-	/**
-	 * Adds an Aggregation to the list of active aggregations.
-	 *
-	 * @param Aggregation $aggregation The aggregation to add.
-	 */
-	private function add_aggregation( Aggregation $aggregation ): void {
-		$this->aggregations[ $aggregation->get_query_var() ] = $aggregation;
-	}
-
-	/**
-	 * Adds a new Co-Authors Plus author aggregation to the list of active aggregations.
-	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_cap_author_aggregation( array $args = [] ): void {
-		$this->add_aggregation( new CAP_Author( $this->dsl, $args ) );
-	}
-
-	/**
-	 * Adds a new custom date range aggregation to the list of active aggregations.
-	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_custom_date_range_aggregation( array $args = [] ): void {
-		$this->add_aggregation( new Custom_Date_Range( $this->dsl, $args ) );
-	}
-
-	/**
-	 * Adds a new post date aggregation to the list of active aggregations.
-	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_post_date_aggregation( array $args = [] ): void {
-		$this->add_aggregation( new Post_Date( $this->dsl, $args ) );
-	}
-
-	/**
-	 * Adds a new post type aggregation to the list of active aggregations.
-	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_post_type_aggregation( array $args = [] ): void {
-		$this->add_aggregation( new Post_Type( $this->dsl, $args ) );
-	}
-
-	/**
-	 * Adds a new relative date aggregation to the list of active aggregations.
-	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_relative_date_aggregation( array $args = [] ): void {
-		$this->add_aggregation( new Relative_Date( $this->dsl, $args ) );
-	}
-
-	/**
-	 * Adds a new taxonomy aggregation to the list of active aggregations.
-	 *
-	 * @param string $taxonomy The taxonomy slug to add (e.g., category, post_tag).
-	 * @param array  $args     Optional. Additional arguments to pass to the aggregation.
-	 */
-	public function add_taxonomy_aggregation( string $taxonomy, array $args = [] ): void {
-		$this->add_aggregation( new Taxonomy( $this->dsl, wp_parse_args( $args, [ 'taxonomy' => $taxonomy ] ) ) );
-	}
-
-	/**
-	 * Get an aggregation by its label.
-	 *
-	 * @param string $label Aggregation label.
-	 *
-	 * @return ?Aggregation The aggregation, if found, or null if not.
-	 */
-	public function get_aggregation_by_label( string $label ): ?Aggregation {
-		foreach ( $this->aggregations as $aggregation ) {
-			if ( $label === $aggregation->get_label() ) {
-				return $aggregation;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get an aggregation by its query var.
-	 *
-	 * @param string $query_var Aggregation query var.
-	 *
-	 * @return ?Aggregation The aggregation, if found, or null if not.
-	 */
-	public function get_aggregation_by_query_var( string $query_var ): ?Aggregation {
-		foreach ( $this->aggregations as $aggregation ) {
-			if ( $query_var === $aggregation->get_query_var() ) {
-				return $aggregation;
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the aggregation configuration.
-	 *
-	 * @return Aggregation[]
-	 */
-	public function get_aggregations(): array {
-		return $this->aggregations;
-	}
-
-	/**
-	 * Gets the value for allow_empty_search.
-	 *
-	 * @return bool Whether to allow empty search or not.
-	 */
-	public function get_allow_empty_search(): bool {
-		return $this->allow_empty_search;
-	}
-
-	/**
-	 * Gets the value for enable_search_suggestions.
-	 *
-	 * @return bool Whether search suggestions are enabled.
-	 */
-	public function get_enable_search_suggestions(): bool {
-		return $this->enable_search_suggestions;
 	}
 
 	/**
@@ -260,15 +92,6 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
-	 * Gets the list of restricted post types for search suggestions.
-	 *
-	 * @return string[] The list of restricted post type slugs.
-	 */
-	protected function get_restricted_search_suggestions_post_types(): array {
-		return $this->restricted_search_suggestions_post_types;
-	}
-
-	/**
 	 * Returns a list of searchable post types. Defaults come from the filter
 	 * function used in the adapter. Allows for applying different logic
 	 * depending on the context (e.g., main search vs. custom search
@@ -289,49 +112,6 @@ abstract class Adapter implements Hookable {
 		 * @param array $post_types The array of post type slugs to include in search.
 		 */
 		return apply_filters( 'elasticsearch_extensions_searchable_post_types', $post_types );
-	}
-
-	/**
-	 * Returns whether support for a REST API search handler for suggestions is enabled.
-	 *
-	 * @return bool
-	 */
-	public function is_show_search_suggestions_in_rest_enabled(): bool {
-		return $this->get_enable_search_suggestions() && $this->show_search_suggestions_in_rest;
-	}
-
-	/**
-	 * Parses aggregations from an aggregations object in an Elasticsearch
-	 * response into the loaded aggregations.
-	 *
-	 * @param array $aggregations Aggregations from the Elasticsearch response.
-	 */
-	protected function parse_aggregations( array $aggregations ): void {
-		foreach ( $aggregations as $aggregation_key => $aggregation ) {
-			if ( isset( $this->aggregations[ $aggregation_key ] ) ) {
-				$this->aggregations[ $aggregation_key ]->parse_buckets( $aggregation['buckets'] ?? [] );
-			}
-		}
-	}
-
-	/**
-	 * Suggest posts that match the given search term.
-	 *
-	 * @param string $search Search string.
-	 * @param array  $args   {
-	 *     Optional. An array of arguments.
-	 *
-	 *     @type string[] $subtypes Limit suggestions to this subset of all post
-	 *                              types that support search suggestions.
-	 *     @type int      $page     Page of results.
-	 *     @type int      $per_page Results per page. Default 10.
-	 *     @type int[]    $include  Search within these post IDs.
-	 *     @type int[]    $exclude  Exclude these post IDs from results.
-	 * }
-	 * @return int[] Post IDs in this page of results and total number of results.
-	 */
-	public function query_post_suggestions( string $search, array $args = [] ): array {
-		return [ [], 0 ];
 	}
 
 	/**
@@ -359,41 +139,5 @@ abstract class Adapter implements Hookable {
 	 */
 	public function restrict_taxonomies( array $taxonomies ): void {
 		$this->restricted_taxonomies = $taxonomies;
-	}
-
-	/**
-	 * Restricts post types indexed for search suggestions to the provided list.
-	 *
-	 * @param string[] $post_types The array of post types to restrict to.
-	 */
-	public function restrict_search_suggestions_post_types( array $post_types ): void {
-		$this->restricted_search_suggestions_post_types = $post_types;
-	}
-
-	/**
-	 * Sets the value for allow_empty_search.
-	 *
-	 * @param bool $allow_empty_search Whether to allow empty search or not.
-	 */
-	public function set_allow_empty_search( bool $allow_empty_search ): void {
-		$this->allow_empty_search = $allow_empty_search;
-	}
-
-	/**
-	 * Sets the value for enable_search_suggestions.
-	 *
-	 * @param bool $enable_search_suggestions Whether to enable search suggestions.
-	 */
-	public function set_enable_search_suggestions( bool $enable_search_suggestions ): void {
-		$this->enable_search_suggestions = $enable_search_suggestions;
-	}
-
-	/**
-	 * Sets the value for show_search_suggestions_in_rest.
-	 *
-	 * @param bool $show_in_rest Whether to make search suggestions available over the REST API.
-	 */
-	public function set_show_search_suggestions_in_rest( bool $show_in_rest ): void {
-		$this->show_search_suggestions_in_rest = $show_in_rest;
 	}
 }
