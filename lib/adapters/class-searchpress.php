@@ -199,6 +199,9 @@ class SearchPress extends Adapter {
 	 * default list (all public taxonomies).
 	 *
 	 * @todo This should probably not impact _indexing_, but rather, _searching_.
+	 *
+	 * @param array $post_data Post data to be indexed.
+	 * @return array The modified post data to index.
 	 */
 	public function apply_allowed_taxonomies( $post_data ) {
 		$taxonomies = $this->get_restricted_taxonomies();
@@ -371,7 +374,7 @@ class SearchPress extends Adapter {
 			];
 
 			$search = new \SP_Search( $query );
-			$out = [
+			$out    = [
 				$search->pluck_field( 'post_id' ),
 				$search->get_results( 'total' ),
 			];
@@ -381,6 +384,8 @@ class SearchPress extends Adapter {
 	}
 
 	/**
+	 * Get the field map for the adapter.
+	 *
 	 * @inheritDoc
 	 */
 	public function get_field_map(): array {
