@@ -156,7 +156,6 @@ class SearchPress extends Adapter {
 	 * from SearchPress, which includes all indexed post types.
 	 *
 	 * @param array $post_types An associative array of post type slugs.
-	 *
 	 * @return array The modified list of post types to include in searches.
 	 */
 	public function apply_searchable_post_types( $post_types ) {
