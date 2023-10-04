@@ -224,6 +224,8 @@ class Controller implements Hookable {
 			$this->adapter = $adapter;
 		} elseif ( defined( 'VIP_ENABLE_VIP_SEARCH' ) && VIP_ENABLE_VIP_SEARCH ) {
 			$this->adapter = Factory::vip_enterprise_search_adapter();
+		} elseif ( defined( 'SP_VERSION' ) ) {
+			$this->adapter = Factory::searchpress_adapter();
 		} else {
 			$this->adapter = Factory::generic_adapter();
 		}

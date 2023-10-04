@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions;
 
 use Elasticsearch_Extensions\Adapters\Generic;
+use Elasticsearch_Extensions\Adapters\SearchPress;
 use Elasticsearch_Extensions\Adapters\VIP_Enterprise_Search;
 
 /**
@@ -72,5 +73,14 @@ class Factory {
 	 */
 	public static function vip_enterprise_search_adapter(): VIP_Enterprise_Search {
 		return self::initialize( new VIP_Enterprise_Search() );
+	}
+
+	/**
+	 * Returns an initialized SearchPress adapter.
+	 *
+	 * @return SearchPress
+	 */
+	public static function searchpress_adapter(): SearchPress {
+		return self::initialize( new SearchPress() );
 	}
 }

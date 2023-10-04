@@ -43,10 +43,10 @@ on the sites that depend on it.
 This plugin is a work in progress. It currently supports the following adapters:
 
 - [VIP Enterprise Search](https://docs.wpvip.com/technical-references/enterprise-search/)
+- [SearchPress](https://github.com/alleyinteractive/searchpress)
 
 With future support planned for the following adapters:
 
-- [SearchPress](https://github.com/alleyinteractive/searchpress)
 - [ElasticPress](https://www.elasticpress.io/)
 
 Test coverage is also a work in progress, but the goal is to have test coverage
