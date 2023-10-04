@@ -8,6 +8,7 @@
 namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
+use SP_WP_Search;
 use WP_Query;
 
 use function SP_Integration;
@@ -61,11 +62,19 @@ class SearchPress extends Adapter {
 	 * @return string The modified SQL for the posts_request operation.
 	 */
 	public function extract_aggs_from_results( $sql, $query ) {
+		// Only attempt to get aggs from results for the main search query.
 		if ( ! $query->is_main_query() || ! $query->is_search() ) {
 			return $sql;
 		}
 
-		$aggs = SP_Integration()->search_obj->get_results( 'facets' );
+		// Attempt to get the SP_WP_Search object. Bail if it isn't set.
+		$sp_wp_search = SP_Integration()->search_obj;
+		if ( ! $sp_wp_search instanceof SP_WP_Search ) {
+			return $sql;
+		}
+
+		// If we have facets, parse them.
+		$aggs = $sp_wp_search->get_results( 'facets' );
 		if ( ! empty( $aggs ) ) {
 			$this->parse_aggregations( $aggs );
 		}
