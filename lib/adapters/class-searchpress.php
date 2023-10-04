@@ -8,6 +8,9 @@
 namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
+use WP_Query;
+
+use function SP_Integration;
 
 /**
  * SearchPress class.
@@ -19,7 +22,7 @@ class SearchPress extends Adapter {
 	 */
 	public function hook(): void {
 		// Register filter hooks.
-		add_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ], 10, 2 );
+		add_filter( 'posts_request', [ $this, 'extract_aggs_from_results' ], 6, 2 );
 		add_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
 		add_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
 		add_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ], 10, 2 );
@@ -36,7 +39,7 @@ class SearchPress extends Adapter {
 	 */
 	public function unhook(): void {
 		// Unregister filter hooks.
-		remove_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ] );
+		remove_filter( 'posts_request', [ $this, 'extract_aggs_from_results' ] );
 		remove_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
 		remove_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
 		remove_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ] );
@@ -48,21 +51,26 @@ class SearchPress extends Adapter {
 	}
 
 	/**
-	 * A callback for the sp_pre_search_results action hook. Parses aggregations
+	 * A callback for the posts_request filter hook. Parses aggregations
 	 * from the raw Elasticsearch response and adds the buckets to the
 	 * configured aggregations.
 	 *
-	 * @param \WP_Post[]|null $results Query results.
-	 * @param \SP_WP_Search   $search  Search object.
-	 * @return \WP_Post[]|null The unmodified query results.
+	 * @param string   $sql   The SQL to be filtered.
+	 * @param WP_Query $query The query object for the query to be filtered.
+	 *
+	 * @return string The modified SQL for the posts_request operation.
 	 */
-	public function extract_aggs_from_results( $results, $search ) {
-		$aggs = $search->get_results( 'facets' );
+	public function extract_aggs_from_results( $sql, $query ) {
+		if ( ! $query->is_main_query() || ! $query->is_search() ) {
+			return $sql;
+		}
+
+		$aggs = SP_Integration()->search_obj->get_results( 'facets' );
 		if ( ! empty( $aggs ) ) {
 			$this->parse_aggregations( $aggs );
 		}
 
-		return $results;
+		return $sql;
 	}
 
 	/**
