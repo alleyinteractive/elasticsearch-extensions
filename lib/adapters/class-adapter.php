@@ -11,6 +11,7 @@ use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\Aggregations\CAP_Author;
 use Elasticsearch_Extensions\Aggregations\Custom_Date_Range;
 use Elasticsearch_Extensions\Aggregations\Post_Date;
+use Elasticsearch_Extensions\Aggregations\Post_Meta;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
 use Elasticsearch_Extensions\Aggregations\Relative_Date;
 use Elasticsearch_Extensions\Aggregations\Taxonomy;
@@ -130,6 +131,16 @@ abstract class Adapter implements Hookable {
 	 */
 	public function add_post_date_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Post_Date( $this->dsl, $args ) );
+	}
+
+	/**
+	 * Adds a new post meta aggregation to the list of active aggregations.
+	 *
+	 * @param string $meta_key The meta key to aggregate on.
+	 * @param array  $args     Optional. Additional arguments to pass to the aggregation.
+	 */
+	public function add_post_meta_aggregation( string $meta_key, array $args = [] ): void {
+		$this->add_aggregation( new Post_Meta( $this->dsl, wp_parse_args( $args, [ 'meta_key' => $meta_key ] ) ) );
 	}
 
 	/**

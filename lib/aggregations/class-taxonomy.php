@@ -15,19 +15,7 @@ use WP_Taxonomy;
  * for aggregations as well as holding the result of the aggregation after a
  * response was received.
  */
-class Taxonomy extends Aggregation {
-
-	/**
-	 * The logical relationship between each selected term when there is more
-	 * than one. If set to AND, all specified terms must be present on a single
-	 * post in order for it to be included in the results. If set to OR, only
-	 * one of the specified terms needs to be present on a single post in order
-	 * for it to be included in the results. Defaults to AND so that selecting
-	 * additional terms makes the result set smaller, not larger.
-	 *
-	 * @var string
-	 */
-	protected string $relation = 'AND';
+class Taxonomy extends Term {
 
 	/**
 	 * A reference to the taxonomy this aggregation is associated with.
@@ -46,9 +34,10 @@ class Taxonomy extends Aggregation {
 		// Try to get a taxonomy object based on the provided taxonomy slug.
 		$taxonomy = get_taxonomy( $args['taxonomy'] ?? null );
 		if ( ! empty( $taxonomy ) ) {
-			$this->taxonomy  = $taxonomy;
-			$this->label     = $taxonomy->labels->singular_name;
-			$this->query_var = 'taxonomy_' . $taxonomy->name;
+			$this->taxonomy   = $taxonomy;
+			$this->label      = $taxonomy->labels->singular_name;
+			$this->query_var  = 'taxonomy_' . $taxonomy->name;
+			$this->term_field = $dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() );
 		}
 
 		// Remove the taxonomy slug from arguments before passing them to the constructor so we don't overwrite $this->taxonomy.
@@ -57,31 +46,6 @@ class Taxonomy extends Aggregation {
 		}
 
 		parent::__construct( $dsl, $args );
-	}
-
-	/**
-	 * Gets an array of DSL representing each filter for this aggregation that
-	 * should be applied in the query in order to match the requested values.
-	 *
-	 * @return array Array of DSL fragments to apply.
-	 */
-	public function filter(): array {
-		if ( empty( $this->query_values ) ) {
-			return [];
-		}
-
-		// Fork for AND vs. OR logic.
-		$filters = [];
-		$field   = $this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() );
-		if ( 'OR' === $this->relation ) {
-			$filters[] = $this->dsl->terms( $field, $this->query_values );
-		} else {
-			foreach ( $this->query_values as $query_value ) {
-				$filters[] = $this->dsl->terms( $field, $query_value );
-			}
-		}
-
-		return $filters;
 	}
 
 	/**
@@ -130,19 +94,5 @@ class Taxonomy extends Aggregation {
 			}
 		}
 		$this->set_buckets( $bucket_objects );
-	}
-
-	/**
-	 * Get DSL for the aggregation to add to the Elasticsearch request object.
-	 * Instructs Elasticsearch to return buckets for this aggregation in the
-	 * response.
-	 *
-	 * @return array DSL fragment.
-	 */
-	public function request(): array {
-		return $this->dsl->aggregate_terms(
-			$this->query_var,
-			$this->dsl->map_tax_field( $this->taxonomy->name, $this->get_term_field() )
-		);
 	}
 }

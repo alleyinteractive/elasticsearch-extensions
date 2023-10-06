@@ -14,7 +14,7 @@ use Elasticsearch_Extensions\DSL;
  * for aggregations as well as holding the result of the aggregation after a
  * response was received.
  */
-class Post_Type extends Aggregation {
+class Post_Type extends Term {
 
 	/**
 	 * Configure the Post Type aggregation.
@@ -23,21 +23,10 @@ class Post_Type extends Aggregation {
 	 * @param array $args Optional. Additional arguments to pass to the aggregation.
 	 */
 	public function __construct( DSL $dsl, array $args ) {
-		$this->label     = __( 'Content Type', 'elasticsearch-extensions' );
-		$this->query_var = 'post_type';
+		$this->label      = __( 'Content Type', 'elasticsearch-extensions' );
+		$this->query_var  = 'post_type';
+		$this->term_field = $dsl->map_field( 'post_type' );
 		parent::__construct( $dsl, $args );
-	}
-
-	/**
-	 * Gets an array of DSL representing each filter for this aggregation that
-	 * should be applied in the query in order to match the requested values.
-	 *
-	 * @return array Array of DSL fragments to apply.
-	 */
-	public function filter(): array {
-		return ! empty( $this->query_values )
-			? [ $this->dsl->terms( 'post_type', $this->query_values ) ]
-			: [];
 	}
 
 	/**
@@ -66,19 +55,5 @@ class Post_Type extends Aggregation {
 			);
 		}
 		$this->set_buckets( $bucket_objects );
-	}
-
-	/**
-	 * Get DSL for the aggregation to add to the Elasticsearch request object.
-	 * Instructs Elasticsearch to return buckets for this aggregation in the
-	 * response.
-	 *
-	 * @return array DSL fragment.
-	 */
-	public function request(): array {
-		return $this->dsl->aggregate_terms(
-			$this->query_var,
-			$this->dsl->map_field( 'post_type' )
-		);
 	}
 }

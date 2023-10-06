@@ -105,6 +105,20 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables an aggregation based on post meta.
+	 *
+	 * @param string $meta_key The meta key to aggregate on.
+	 * @param array  $args     Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_post_meta_aggregation( string $meta_key, array $args = [] ): Controller {
+		$this->adapter->add_post_meta_aggregation( $meta_key, $args );
+
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 *
 	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
