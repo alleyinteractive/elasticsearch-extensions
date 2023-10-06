@@ -132,7 +132,8 @@ class SearchPress extends Adapter {
 
 	/**
 	 * A callback for the sp_search_query_args filter. Adds aggregations to the
-	 * request so that the response will include aggregation buckets.
+	 * request so that the response will include aggregation buckets, and
+	 * filters by any aggregations set.
 	 *
 	 * @param array $es_args The request args to be filtered.
 	 * @return array The filtered request args.
@@ -140,9 +141,28 @@ class SearchPress extends Adapter {
 	public function add_aggs_to_es_query( $es_args ): array {
 		// Add our aggregations.
 		foreach ( $this->get_aggregations() as $aggregation ) {
+			// Add aggregations to the request so buckets will be returned with results.
 			$request = $aggregation->request();
 			if ( ! empty( $request ) ) {
 				$es_args['aggs'][ $aggregation->get_query_var() ] = $request;
+			}
+
+			// Add any set aggregations to the query so results are properly filtered.
+			if ( ! empty( $es_args['query']['bool']['must'] ) && is_array( $es_args['query']['bool']['must'] ) ) {
+				$filter = $aggregation->filter();
+				if ( ! empty( $filter ) ) {
+					// If this is a post type query and there is already a post type filter set, remove it.
+					if ( 'post_type' === $aggregation->get_query_var() ) {
+						foreach ( $es_args['query']['bool']['must'] as $key => $must ) {
+							if ( isset( $must['terms']['post_type.raw'] ) ) {
+								unset( $es_args['query']['bool']['must'][ $key ] );
+							}
+						}
+					}
+
+					// Merge our new filters with the existing ones.
+					$es_args['query']['bool']['must'] = array_merge( $es_args['query']['bool']['must'], $filter );
+				}
 			}
 		}
 
