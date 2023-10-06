@@ -34,7 +34,7 @@ class Post_Meta extends Term {
 			$this->label      = ucwords( str_replace( [ '-', '_' ], ' ', $args['meta_key'] ) );
 			$this->meta_key   = $args['meta_key'];
 			$this->query_var  = 'post_meta_' . $args['meta_key'];
-			$this->term_field = $dsl->map_meta_field( $args['meta_key'] );
+			$this->term_field = $dsl->map_meta_field( $args['meta_key'], $args['data_type'] ?? '' );
 			unset( $args['meta_key'] );
 		}
 
