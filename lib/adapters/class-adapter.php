@@ -15,6 +15,7 @@ use Elasticsearch_Extensions\Aggregations\Post_Meta;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
 use Elasticsearch_Extensions\Aggregations\Relative_Date;
 use Elasticsearch_Extensions\Aggregations\Taxonomy;
+use Elasticsearch_Extensions\Aggregations\Term;
 use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Interfaces\Hookable;
 
@@ -169,6 +170,28 @@ abstract class Adapter implements Hookable {
 	 */
 	public function add_taxonomy_aggregation( string $taxonomy, array $args = [] ): void {
 		$this->add_aggregation( new Taxonomy( $this->dsl, wp_parse_args( $args, [ 'taxonomy' => $taxonomy ] ) ) );
+	}
+
+	/**
+	 * Adds a new generic term aggregation to the list of active aggregations.
+	 *
+	 * @param string $term_field The term field to aggregate on.
+	 * @param string $query_var  The query var to use for this aggregation for filters on the front-end.
+	 * @param array  $args       Arguments to pass to the adapter's aggregation configuration.
+	 */
+	public function add_term_aggregation( string $term_field, string $query_var, array $args = [] ): void {
+		$this->add_aggregation(
+			new Term(
+				$this->dsl,
+				wp_parse_args(
+					$args,
+					[
+						'query_var'  => $query_var,
+						'term_field' => $this->dsl->map_field( $term_field ),
+					]
+				)
+			)
+		);
 	}
 
 	/**

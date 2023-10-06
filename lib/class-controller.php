@@ -190,6 +190,24 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * A function to enable a generic Elasticsearch 'term' aggregation. Users must provide an
+	 * Elasticsearch term field to aggregate on and a query var to use. This function should only
+	 * be used if a more specific term-type aggregation (e.g., taxonomy, post type) is not
+	 * available for the kind of aggregation you want to create.
+	 *
+	 * @param string $term_field The term field to aggregate on.
+	 * @param string $query_var  The query var to use for this aggregation for filters on the front-end.
+	 * @param array  $args       Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_term_aggregation( string $term_field, string $query_var, array $args = [] ): Controller {
+		$this->adapter->add_term_aggregation( $term_field, $query_var, $args );
+
+		return $this;
+	}
+
+	/**
 	 * Get a specific aggregation from the adapter by its label.
 	 *
 	 * @param string $label Label for the aggregation.
