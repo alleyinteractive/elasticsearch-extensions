@@ -175,17 +175,19 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new generic term aggregation to the list of active aggregations.
 	 *
+	 * @param string $label      The human-readable label for this aggregation.
 	 * @param string $term_field The term field to aggregate on.
 	 * @param string $query_var  The query var to use for this aggregation for filters on the front-end.
 	 * @param array  $args       Arguments to pass to the adapter's aggregation configuration.
 	 */
-	public function add_term_aggregation( string $term_field, string $query_var, array $args = [] ): void {
+	public function add_term_aggregation( string $label, string $term_field, string $query_var, array $args = [] ): void {
 		$this->add_aggregation(
 			new Term(
 				$this->dsl,
 				wp_parse_args(
 					$args,
 					[
+						'label'      => $label,
 						'query_var'  => $query_var,
 						'term_field' => $this->dsl->map_field( $term_field ),
 					]
