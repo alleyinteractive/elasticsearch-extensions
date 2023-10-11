@@ -151,16 +151,6 @@ class SearchPress extends Adapter {
 			if ( ! empty( $es_args['query']['bool']['must'] ) && is_array( $es_args['query']['bool']['must'] ) ) {
 				$filter = $aggregation->filter();
 				if ( ! empty( $filter ) ) {
-					// If this is a post type query and there is already a post type filter set, remove it.
-					if ( 'post_type' === $aggregation->get_query_var() ) {
-						foreach ( $es_args['query']['bool']['must'] as $key => $must ) {
-							if ( isset( $must['terms']['post_type.raw'] ) ) {
-								unset( $es_args['query']['bool']['must'][ $key ] );
-							}
-						}
-					}
-
-					// Merge our new filters with the existing ones.
 					$es_args['query']['bool']['must'] = array_merge( $es_args['query']['bool']['must'], $filter );
 				}
 			}
