@@ -148,10 +148,12 @@ class SearchPress extends Adapter {
 			}
 
 			// Add any set aggregations to the query so results are properly filtered.
-			if ( ! empty( $es_args['query']['bool']['must'] ) && is_array( $es_args['query']['bool']['must'] ) ) {
-				$filter = $aggregation->filter();
-				if ( ! empty( $filter ) ) {
-					$es_args['query']['bool']['must'] = array_merge( $es_args['query']['bool']['must'], $filter );
+			$filter = $aggregation->filter();
+			if ( ! empty( $filter ) ) {
+				if ( isset( $es_args['query']['bool'] ) ) {
+					$es_args['query']['bool']['filter'] = array_merge( $es_args['query']['bool']['filter'] ?? [], $filter );
+				} elseif ( isset( $es_args['query']['function_score']['query']['bool'] ) ) {
+					$es_args['query']['function_score']['query']['bool']['filter'] = array_merge( $es_args['query']['function_score']['query']['bool']['filter'] ?? [], $filter );
 				}
 			}
 		}
