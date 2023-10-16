@@ -132,7 +132,8 @@ class SearchPress extends Adapter {
 
 	/**
 	 * A callback for the sp_search_query_args filter. Adds aggregations to the
-	 * request so that the response will include aggregation buckets.
+	 * request so that the response will include aggregation buckets, and
+	 * filters by any aggregations set.
 	 *
 	 * @param array $es_args The request args to be filtered.
 	 * @return array The filtered request args.
@@ -140,9 +141,20 @@ class SearchPress extends Adapter {
 	public function add_aggs_to_es_query( $es_args ): array {
 		// Add our aggregations.
 		foreach ( $this->get_aggregations() as $aggregation ) {
+			// Add aggregations to the request so buckets will be returned with results.
 			$request = $aggregation->request();
 			if ( ! empty( $request ) ) {
 				$es_args['aggs'][ $aggregation->get_query_var() ] = $request;
+			}
+
+			// Add any set aggregations to the query so results are properly filtered.
+			$filter = $aggregation->filter();
+			if ( ! empty( $filter ) ) {
+				if ( isset( $es_args['query']['bool'] ) ) {
+					$es_args['query']['bool']['filter'] = array_merge( $es_args['query']['bool']['filter'] ?? [], $filter );
+				} elseif ( isset( $es_args['query']['function_score']['query']['bool'] ) ) {
+					$es_args['query']['function_score']['query']['bool']['filter'] = array_merge( $es_args['query']['function_score']['query']['bool']['filter'] ?? [], $filter );
+				}
 			}
 		}
 
