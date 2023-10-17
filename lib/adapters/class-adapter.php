@@ -11,9 +11,11 @@ use Elasticsearch_Extensions\Aggregations\Aggregation;
 use Elasticsearch_Extensions\Aggregations\CAP_Author;
 use Elasticsearch_Extensions\Aggregations\Custom_Date_Range;
 use Elasticsearch_Extensions\Aggregations\Post_Date;
+use Elasticsearch_Extensions\Aggregations\Post_Meta;
 use Elasticsearch_Extensions\Aggregations\Post_Type;
 use Elasticsearch_Extensions\Aggregations\Relative_Date;
 use Elasticsearch_Extensions\Aggregations\Taxonomy;
+use Elasticsearch_Extensions\Aggregations\Term;
 use Elasticsearch_Extensions\DSL;
 use Elasticsearch_Extensions\Interfaces\Hookable;
 
@@ -108,7 +110,21 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new Co-Authors Plus author aggregation to the list of active aggregations.
 	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'display_name'|'first_name'|'key'|'label'|'last_name', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to 'Author'.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'display_name',
+	 *                              'first_name', 'key', 'label', 'last_name'. Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'taxonomy_author'.
+	 *     @type string $relation   Optional. The logical relationship between each selected author when there is more
+	 *                              than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              value of the taxonomy name for the 'author' taxonomy, as looked up in the DSL map.
+	 * }
 	 */
 	public function add_cap_author_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new CAP_Author( $this->dsl, $args ) );
@@ -117,7 +133,14 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new custom date range aggregation to the list of active aggregations.
 	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 * @param array{label?: string, query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Custom Date
+	 *                             Range'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'custom_date_range'.
+	 * }
 	 */
 	public function add_custom_date_range_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Custom_Date_Range( $this->dsl, $args ) );
@@ -126,16 +149,69 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new post date aggregation to the list of active aggregations.
 	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 * @param array{interval?: 'year'|'quarter'|'month'|'week'|'day'|'hour'|'minute', label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $interval  Optional. The unit of time to aggregate results by. Valid options are 'year',
+	 *                             'quarter', 'month', 'week', 'day', 'hour', 'minute'. Defaults to 'year'.
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Date'.
+	 *     @type string $order     Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                             Defaults to 'DESC'.
+	 *     @type string $orderby   Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                             Defaults to 'count'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'post_date'.
+	 * }
 	 */
 	public function add_post_date_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Post_Date( $this->dsl, $args ) );
 	}
 
 	/**
+	 * Adds a new post meta aggregation to the list of active aggregations.
+	 *
+	 * @param string $meta_key The meta key to aggregate on.
+	 * @param array{data_type?: string, label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $data_type  Optional. The data type of the meta key, if the meta key is indexed using multiple
+	 *                              data types (e.g., 'long'). Defaults to empty and uses the "raw" postmeta value.
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to a halfhearted
+	 *                              attempt at turning the meta key into a title case string.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'post_meta_%s' where %s is the meta key.
+	 *     @type string $relation   Optional. The logical relationship between each selected meta value when there is
+	 *                              more than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              value of the post meta key, as looked up in the DSL map.
+	 * }
+	 */
+	public function add_post_meta_aggregation( string $meta_key, array $args = [] ): void {
+		$this->add_aggregation( new Post_Meta( $this->dsl, wp_parse_args( $args, [ 'meta_key' => $meta_key ] ) ) );
+	}
+
+	/**
 	 * Adds a new post type aggregation to the list of active aggregations.
 	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to 'Content Type'.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'post_type'.
+	 *     @type string $relation   Optional. The logical relationship between each selected author when there is more
+	 *                              than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              'post_type' field, as looked up in the DSL map.
+	 * }
 	 */
 	public function add_post_type_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Post_Type( $this->dsl, $args ) );
@@ -144,7 +220,19 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new relative date aggregation to the list of active aggregations.
 	 *
-	 * @param array $args Optional. Additional arguments to pass to the aggregation.
+	 * @param array{intervals?: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type int[]  $intervals Optional. The number of days prior to the current date to include in each bucket.
+	 *                             Accepts an array of integers. Defaults to `[7, 30, 90]`.
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Relative Date'.
+	 *     @type string $order     Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                             Defaults to 'DESC'.
+	 *     @type string $orderby   Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                             Defaults to 'count'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'relative_date'.
+	 * }
 	 */
 	public function add_relative_date_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Relative_Date( $this->dsl, $args ) );
@@ -153,11 +241,59 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new taxonomy aggregation to the list of active aggregations.
 	 *
-	 * @param string $taxonomy The taxonomy slug to add (e.g., category, post_tag).
-	 * @param array  $args     Optional. Additional arguments to pass to the aggregation.
+	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to the singular
+	 *                              name of the taxonomy (e.g., 'Category').
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'taxonomy_%s' where %s is the taxonomy slug.
+	 *     @type string $relation   Optional. The logical relationship between each term when there is more than one.
+	 *                              Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              taxonomy's slug field, as looked up in the DSL map.
+	 * }
 	 */
 	public function add_taxonomy_aggregation( string $taxonomy, array $args = [] ): void {
 		$this->add_aggregation( new Taxonomy( $this->dsl, wp_parse_args( $args, [ 'taxonomy' => $taxonomy ] ) ) );
+	}
+
+	/**
+	 * Adds a new generic term aggregation to the list of active aggregations.
+	 *
+	 * @param string $label The human-readable label for this aggregation.
+	 * @param string $term_field The term field to aggregate on.
+	 * @param string $query_var The query var to use for this aggregation for filters on the front-end.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', relation?: 'AND'|'OR'} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $relation   Optional. The logical relationship between each term when there is more than one.
+	 *                              Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 * }
+	 */
+	public function add_term_aggregation( string $label, string $term_field, string $query_var, array $args = [] ): void {
+		$this->add_aggregation(
+			new Term(
+				$this->dsl,
+				wp_parse_args(
+					$args,
+					[
+						'label'      => $label,
+						'query_var'  => $query_var,
+						'term_field' => $this->dsl->map_field( $term_field ),
+					]
+				)
+			)
+		);
 	}
 
 	/**
@@ -228,7 +364,7 @@ abstract class Adapter implements Hookable {
 	 * between each plugin's Elasticsearch implementation, and use the result
 	 * of this function when initializing the DSL class in the constructor.
 	 *
-	 * @return array The field map.
+	 * @return array<string, string> The field map.
 	 */
 	abstract protected function get_field_map(): array;
 
@@ -274,9 +410,9 @@ abstract class Adapter implements Hookable {
 	 * depending on the context (e.g., main search vs. custom search
 	 * interfaces).
 	 *
-	 * @param array $post_types The default list of post type slugs from the adapter.
+	 * @param string[] $post_types The default list of post type slugs from the adapter.
 	 *
-	 * @return array An array of searchable post type slugs.
+	 * @return string[] An array of searchable post type slugs.
 	 */
 	protected function get_searchable_post_types( array $post_types ): array {
 		/**
@@ -304,7 +440,7 @@ abstract class Adapter implements Hookable {
 	 * Parses aggregations from an aggregations object in an Elasticsearch
 	 * response into the loaded aggregations.
 	 *
-	 * @param array $aggregations Aggregations from the Elasticsearch response.
+	 * @param array<string, mixed> $aggregations Aggregations from the Elasticsearch response.
 	 */
 	protected function parse_aggregations( array $aggregations ): void {
 		foreach ( $aggregations as $aggregation_key => $aggregation ) {
@@ -318,7 +454,7 @@ abstract class Adapter implements Hookable {
 	 * Suggest posts that match the given search term.
 	 *
 	 * @param string $search Search string.
-	 * @param array  $args   {
+	 * @param array{subtypes?: string[], page?: int, per_page?: int, include?: int[], exclude?: int[]} $args   {
 	 *     Optional. An array of arguments.
 	 *
 	 *     @type string[] $subtypes Limit suggestions to this subset of all post

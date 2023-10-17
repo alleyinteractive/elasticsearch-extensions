@@ -67,20 +67,20 @@ class Factory {
 	}
 
 	/**
-	 * Returns an initialized VIP Enterprise Search adapter.
-	 *
-	 * @return VIP_Enterprise_Search
-	 */
-	public static function vip_enterprise_search_adapter(): VIP_Enterprise_Search {
-		return self::initialize( new VIP_Enterprise_Search() );
-	}
-
-	/**
 	 * Returns an initialized SearchPress adapter.
 	 *
 	 * @return SearchPress
 	 */
 	public static function searchpress_adapter(): SearchPress {
 		return self::initialize( new SearchPress() );
+	}
+
+	/**
+	 * Returns an initialized VIP Enterprise Search adapter.
+	 *
+	 * @return VIP_Enterprise_Search
+	 */
+	public static function vip_enterprise_search_adapter(): VIP_Enterprise_Search {
+		return self::initialize( new VIP_Enterprise_Search() );
 	}
 }

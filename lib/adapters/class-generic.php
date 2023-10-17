@@ -16,7 +16,7 @@ class Generic extends Adapter {
 	/**
 	 * Gets the field map for this adapter.
 	 *
-	 * @return array The field map.
+	 * @return array<string, string> The field map.
 	 */
 	public function get_field_map(): array {
 		return [];

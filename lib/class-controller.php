@@ -57,7 +57,21 @@ class Controller implements Hookable {
 	/**
 	 * Enables an aggregation for Co-Authors Plus authors.
 	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'display_name'|'first_name'|'key'|'label'|'last_name', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to 'Author'.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'display_name',
+	 *                              'first_name', 'key', 'label', 'last_name'. Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'taxonomy_author'.
+	 *     @type string $relation   Optional. The logical relationship between each selected author when there is more
+	 *                              than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              value of the taxonomy name for the 'author' taxonomy, as looked up in the DSL map.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -70,7 +84,14 @@ class Controller implements Hookable {
 	/**
 	 * Enables a custom date range aggregation.
 	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{label?: string, query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Custom Date
+	 *                             Range'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'custom_date_range'.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -94,7 +115,19 @@ class Controller implements Hookable {
 	/**
 	 * Enables an aggregation based on post dates.
 	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{interval?: 'year'|'quarter'|'month'|'week'|'day'|'hour'|'minute', label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $interval  Optional. The unit of time to aggregate results by. Valid options are 'year',
+	 *                             'quarter', 'month', 'week', 'day', 'hour', 'minute'. Defaults to 'year'.
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Date'.
+	 *     @type string $order     Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                             Defaults to 'DESC'.
+	 *     @type string $orderby   Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                             Defaults to 'count'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'post_date'.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -105,9 +138,54 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables an aggregation based on post meta.
+	 *
+	 * @param string $meta_key The meta key to aggregate on.
+	 * @param array{data_type?: string, label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $data_type  Optional. The data type of the meta key, if the meta key is indexed using multiple
+	 *                              data types (e.g., 'long'). Defaults to empty and uses the "raw" postmeta value.
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to a halfhearted
+	 *                              attempt at turning the meta key into a title case string.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'post_meta_%s' where %s is the meta key.
+	 *     @type string $relation   Optional. The logical relationship between each selected meta value when there is
+	 *                              more than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              value of the post meta key, as looked up in the DSL map.
+	 * }
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_post_meta_aggregation( string $meta_key, array $args = [] ): Controller {
+		$this->adapter->add_post_meta_aggregation( $meta_key, $args );
+
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post type.
 	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to 'Content Type'.
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'post_type'.
+	 *     @type string $relation   Optional. The logical relationship between each selected author when there is more
+	 *                              than one. Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              'post_type' field, as looked up in the DSL map.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -120,7 +198,19 @@ class Controller implements Hookable {
 	/**
 	 * Enables an aggregation based on relative dates.
 	 *
-	 * @param array $args Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{intervals?: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type int[]  $intervals Optional. The number of days prior to the current date to include in each bucket.
+	 *                             Accepts an array of integers. Defaults to `[7, 30, 90]`.
+	 *     @type string $label     Optional. The human-readable name for this aggregation. Defaults to 'Relative Date'.
+	 *     @type string $order     Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                             Defaults to 'DESC'.
+	 *     @type string $orderby   Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                             Defaults to 'count'.
+	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                             'relative_date'.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -133,13 +223,13 @@ class Controller implements Hookable {
 	/**
 	 * Enables search-as-you-type suggestions.
 	 *
-	 * @param array $args {
+	 * @param array{post_types?: string[], show_in_rest?: bool} $args {
 	 *     Optional. An array of arguments.
 	 *
-	 *     @type string[] $post_types   Limit suggestions to this subset of all
-	 *                                  indexed post types.
-	 *     @type bool     $show_in_rest Whether to register REST API search handlers
-	 *                                  for querying suggestions. Default true.
+	 *     @type string[] $post_types   Optional. Limit suggestions to this subset of all indexed post types. Accepts an
+	 *                                  array of strings containing post type slugs. Defaults to all post types.
+	 *     @type bool     $show_in_rest Optional. Whether to register REST API search handlers for querying suggestions.
+	 *                                  Default true.
 	 * }
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
@@ -165,12 +255,55 @@ class Controller implements Hookable {
 	 * A function to enable an aggregation for a specific taxonomy.
 	 *
 	 * @param string $taxonomy The taxonomy slug for which to enable an aggregation.
-	 * @param array  $args     Arguments to pass to the adapter's aggregation configuration.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $label      Optional. The human-readable name for this aggregation. Defaults to the singular
+	 *                              name of the taxonomy (e.g., 'Category').
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $query_var  Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
+	 *                              'taxonomy_%s' where %s is the taxonomy slug.
+	 *     @type string $relation   Optional. The logical relationship between each term when there is more than one.
+	 *                              Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 *     @type string $term_field Optional. The term field to use in the DSL for this aggregation. Defaults to the
+	 *                              taxonomy's slug field, as looked up in the DSL map.
+	 * }
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_taxonomy_aggregation( string $taxonomy, array $args = [] ): Controller {
 		$this->adapter->add_taxonomy_aggregation( $taxonomy, $args );
+
+		return $this;
+	}
+
+	/**
+	 * A function to enable a generic Elasticsearch 'term' aggregation. Users must provide an
+	 * Elasticsearch term field to aggregate on and a query var to use. This function should only
+	 * be used if a more specific term-type aggregation (e.g., taxonomy, post type) is not
+	 * available for the kind of aggregation you want to create.
+	 *
+	 * @param string $label The human-readable label for this aggregation.
+	 * @param string $term_field The term field to aggregate on.
+	 * @param string $query_var The query var to use for this aggregation for filters on the front-end.
+	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', relation?: 'AND'|'OR'} $args {
+	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
+	 *
+	 *     @type string $order      Optional. How to sort by the `orderby` field. Valid options are 'ASC', 'DESC'.
+	 *                              Defaults to 'DESC'.
+	 *     @type string $orderby    Optional. The field to order results by. Valid options are 'count', 'key', 'label'.
+	 *                              Defaults to 'count'.
+	 *     @type string $relation   Optional. The logical relationship between each term when there is more than one.
+	 *                              Valid options are 'AND', 'OR'. Defaults to 'AND'.
+	 * }
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_term_aggregation( string $label, string $term_field, string $query_var, array $args = [] ): Controller {
+		$this->adapter->add_term_aggregation( $label, $term_field, $query_var, $args );
 
 		return $this;
 	}
@@ -200,7 +333,7 @@ class Controller implements Hookable {
 	/**
 	 * Get all aggregations from the adapter.
 	 *
-	 * @return array An array of aggregation data grouped by aggregation type.
+	 * @return Aggregation[] An array of aggregation data grouped by aggregation type.
 	 */
 	public function get_aggregations(): array {
 		return $this->adapter->get_aggregations();
