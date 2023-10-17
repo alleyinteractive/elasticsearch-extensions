@@ -198,7 +198,7 @@ class Controller implements Hookable {
 	/**
 	 * Enables an aggregation based on relative dates.
 	 *
-	 * @param array{intervals: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 * @param array{intervals?: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
 	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
 	 *
 	 *     @type int[]  $intervals Optional. The number of days prior to the current date to include in each bucket.

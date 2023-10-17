@@ -3,7 +3,10 @@
   <description>PHP_CodeSniffer standard for Elasticsearch Extensions.</description>
 
   <!-- Include Alley Rules -->
-  <rule ref="Alley-Interactive"/>
+  <rule ref="Alley-Interactive">
+    <!-- Turn off spacing after param type because it does some undesirable things with phpstan annotations. -->
+    <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType" />
+  </rule>
 
   <!--
   Pass some flags to PHPCS:

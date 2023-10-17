@@ -220,7 +220,7 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Adds a new relative date aggregation to the list of active aggregations.
 	 *
-	 * @param array{intervals: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
+	 * @param array{intervals?: int[], label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
 	 *     Optional. Arguments to pass to the adapter's aggregation configuration.
 	 *
 	 *     @type int[]  $intervals Optional. The number of days prior to the current date to include in each bucket.
