@@ -92,6 +92,7 @@ class Controller implements Hookable {
 	 *     @type string $query_var Optional. The query var to use in the URL. Accepts any URL-safe string. Defaults to
 	 *                             'custom_date_range'.
 	 * }
+	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */
 	public function enable_custom_date_range_aggregation( array $args = [] ): Controller {
