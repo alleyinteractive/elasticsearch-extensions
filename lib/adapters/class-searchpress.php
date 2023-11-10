@@ -499,8 +499,8 @@ class SearchPress extends Adapter {
 	public function unhook(): void {
 		// Unregister filter hooks.
 		remove_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ] );
-		remove_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_statuses' ] );
-		remove_filter( 'sp_config_sync_statuses', [ $this, 'apply_sync_post_types' ] );
+		remove_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
+		remove_filter( 'sp_config_sync_statuses', [ $this, 'apply_sync_post_statuses' ] );
 		remove_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
 		remove_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ] );
 		remove_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
