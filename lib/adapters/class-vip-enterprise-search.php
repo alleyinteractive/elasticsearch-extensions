@@ -81,6 +81,26 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * A callback for the ep_indexable_post_status filter hook. Filters the list
+	 * of post statuses that should be indexed in ElasticPress based on what was
+	 * configured. If no restrictions were specified, uses the default list.
+	 *
+	 * @param array $post_statuses Indexabled post statuses.
+	 * @return string[] The modified list of post statuses to index.
+	 */
+	public function filter__ep_indexable_post_statuses( $post_statuses ): array {
+
+		// Determine whether we should filter the list or not.
+		$restricted_post_statuses = $this->get_restricted_post_statuses();
+
+		if ( empty( $restricted_post_statuses ) ) {
+			return $post_statuses;
+		}
+
+		return array_unique( array_merge( $post_statuses, $restricted_post_statuses ) );
+	}
+
+	/**
 	 * A callback for the ep_post_mapping filter. Adds the 'search_suggest'
 	 * field to the mapping if search suggestions are enabled.
 	 *
@@ -251,7 +271,7 @@ class VIP_Enterprise_Search extends Adapter {
 
 	/**
 	 * A callback for the vip_search_post_meta_allow_list filter hook.
-	 * Filters the list of post meta fields that should be indexed in 
+	 * Filters the list of post meta fields that should be indexed in
 	 * ElasticPress based on what was configured.
 	 *
 	 * @param array $post_meta A list of meta keys.
@@ -547,6 +567,7 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Register filter hooks.
 		add_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ], 10, 2 );
+		add_filter( 'ep_indexable_post_status', [ $this, 'filter__ep_indexable_post_statuses' ] );
 		add_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		add_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
 		add_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ], 10, 2 );
@@ -568,6 +589,7 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Unregister filter hooks.
 		remove_filter( 'ep_elasticpress_enabled', [ $this, 'filter__ep_elasticpress_enabled' ] );
+		remove_filter( 'ep_indexable_post_status', [ $this, 'filter__ep_indexable_post_statuses' ] );
 		remove_filter( 'ep_indexable_post_types', [ $this, 'filter__ep_indexable_post_types' ] );
 		remove_filter( 'ep_post_mapping', [ $this, 'filter__ep_post_mapping' ] );
 		remove_filter( 'ep_post_sync_args_post_prepare_meta', [ $this, 'filter__ep_post_sync_args_post_prepare_meta' ] );

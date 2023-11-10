@@ -78,6 +78,13 @@ abstract class Adapter implements Hookable {
 	private array $restricted_post_types = [];
 
 	/**
+	 * An optional array of indexable post statuses to restrict to.
+	 *
+	 * @var string[]
+	 */
+	private array $restricted_post_statuses = [];
+
+	/**
 	 * An optional array of taxonomies to restrict search to.
 	 *
 	 * @var string[]
@@ -387,6 +394,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Gets the list of restricted post statuses.
+	 *
+	 * @return string[] The list of restricted post statuses.
+	 */
+	protected function get_restricted_post_statuses(): array {
+		return $this->restricted_post_statuses;
+	}
+
+	/**
 	 * Gets the list of restricted taxonomies.
 	 *
 	 * @return string[] The list of restricted taxonomy slugs.
@@ -486,6 +502,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function restrict_post_types( array $post_types ): void {
 		$this->restricted_post_types = $post_types;
+	}
+
+	/**
+	 * Restricts indexable post statuses to the provided list.
+	 *
+	 * @param string[] $post_statuses The array of indexabled post statuses to restrict to.
+	 */
+	public function restrict_post_statuses( array $post_statuses ): void {
+		$this->restricted_post_statuses = $post_statuses;
 	}
 
 	/**
