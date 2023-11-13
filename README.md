@@ -1,6 +1,6 @@
 # Elasticsearch Extensions
 
-[![read me standard badge](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Project Status: Active.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 A WordPress plugin to make integrating sites with
 [Elasticsearch](https://www.elastic.co/webinars/getting-started-elasticsearch)
@@ -10,22 +10,6 @@ easier:
 - Simplifies common Elasticsearch operations like adding aggregations and
   filtering indexable post types, taxonomies, and postmeta in an
   implementation-agnostic way.
-
-## Table of Contents
-
-- [Background](#background)
-- [Releases](#Releases)
-	- [Install](#install)
-	- [Use](#use)
-	- [Source](#from-source)
-	- [Changelog](#changelog)
-- [Development Process](#development-process)
-	- [Contributing](#contributing)
-- [Project Structure](#project-structure)
-- [Third-Party Dependencies](#third-party-dependencies)
-- [Related Efforts](#related-efforts)
-- [Maintainers](#maintainers)
-- [License](#license)
 
 ## Background
 
@@ -65,14 +49,13 @@ test coverage and full support for all target adapters.
 For a list of all releases, please see the
 [releases page](https://github.com/alleyinteractive/elasticsearch-extensions/releases).
 
-
 ### Install
 
 In order to use this plugin, you must install it alongside a supported
 Elasticsearch plugin:
 
 - [VIP Enterprise Search](https://docs.wpvip.com/technical-references/enterprise-search/)
-
+- [SearchPress](https://github.com/alleyinteractive/searchpress)
 
 ### Use
 
@@ -89,6 +72,7 @@ add_action(
 	'elasticsearch_extensions_config',
 	 function( $es_config ) {
 		$es_config
+            ->restrict_post_statuses( [ 'publish', 'my-custom-status' ] )
 			->restrict_post_types( [ 'post', 'page' ] )
 			->enable_empty_search()
 			->enable_post_type_aggregation()
@@ -101,7 +85,6 @@ add_action(
 For detailed information on all configuration options, action and filter hooks,
 and how to integrate aggregation controls into the search template, see
 [the wiki](https://github.com/alleyinteractive/elasticsearch-extensions/wiki).
-
 
 ### From Source
 
@@ -139,7 +122,6 @@ You will also need to ensure that you are running Elasticsearch in a location
 where the plugins can access it, and you will need to configure a connection to
 Elasticsearch for the plugin you are working on (e.g., VIP Enterprise Search).
 
-
 ### Changelog
 
 This project keeps a [changelog](CHANGELOG.md).
@@ -153,7 +135,6 @@ the community and will be considered for inclusion.
 
 See [our contributor guidelines](CONTRIBUTING.md) for instructions on how to
 contribute to this open source project.
-
 
 ## Project Structure
 
@@ -188,12 +169,10 @@ design choice makes it possible to call several configuration methods in a row
 without having to reference the object again (see the Use section above for
 an example of how this works in practice).
 
-
 ## Third-Party Dependencies
 
 In order to use this plugin, you need to have an Elasticsearch cluster available
 and a supported Elasticsearch plugin installed and configured to connect to it.
-
 
 ## Related Efforts
 
@@ -213,7 +192,6 @@ open source plugins developed and maintained by [Alley](https://alley.co):
 ### Contributors
 
 Thanks to all of the [contributors](CONTRIBUTORS.md) to this project.
-
 
 ## License
 
