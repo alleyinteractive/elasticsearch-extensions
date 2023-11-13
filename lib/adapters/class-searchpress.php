@@ -15,39 +15,6 @@ use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
 class SearchPress extends Adapter {
 
 	/**
-	 * Registers action and/or filter hooks with WordPress.
-	 */
-	public function hook(): void {
-		// Register filter hooks.
-		add_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ], 10, 2 );
-		add_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
-		add_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
-		add_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ], 10, 2 );
-		add_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
-		add_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
-		add_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
-		add_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
-		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
-	}
-
-	/**
-	 * Unregisters action and/or filter hooks that were registered in the hook
-	 * method.
-	 */
-	public function unhook(): void {
-		// Unregister filter hooks.
-		remove_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ] );
-		remove_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
-		remove_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
-		remove_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ] );
-		remove_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
-		remove_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
-		remove_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
-		remove_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
-		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
-	}
-
-	/**
 	 * A callback for the sp_pre_search_results action hook. Parses aggregations
 	 * from the raw Elasticsearch response and adds the buckets to the
 	 * configured aggregations.
@@ -80,6 +47,26 @@ class SearchPress extends Adapter {
 	public function apply_sync_post_types( $post_types ) {
 		$restricted_post_types = $this->get_restricted_post_types();
 		return empty( $restricted_post_types ) ? $post_types : $restricted_post_types;
+	}
+
+	/**
+	 * A callback for the sp_config_sync_statuses filter hook. Filters the list
+	 * of post statuses that should be indexed in SearchPress based on what was
+	 * configured. If no restrictions were specified, uses the default list.
+	 *
+	 * @param array $post_statuses Indexabled post statuses.
+	 * @return string[] The modified list of post status to index.
+	 */
+	public function apply_sync_post_statuses( $post_statuses ): array {
+
+		// Determine whether we should filter the list or not.
+		$restricted_post_statuses = $this->get_restricted_post_statuses();
+
+		if ( empty( $restricted_post_statuses ) ) {
+			return $post_statuses;
+		}
+
+		return array_unique( array_merge( $post_statuses, $restricted_post_statuses ) );
 	}
 
 	/**
@@ -486,5 +473,40 @@ class SearchPress extends Adapter {
 			// This isn't indexed in SearchPress by default.
 			'term_tt_id'                    => 'terms.%s.term_taxonomy_id',
 		];
+	}
+
+	/**
+	 * Registers action and/or filter hooks with WordPress.
+	 */
+	public function hook(): void {
+		// Register filter hooks.
+		add_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ], 10, 2 );
+		add_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
+		add_filter( 'sp_config_sync_statuses', [ $this, 'apply_sync_post_statuses' ] );
+		add_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
+		add_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ], 10, 2 );
+		add_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
+		add_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
+		add_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
+		add_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
+		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
+	}
+
+	/**
+	 * Unregisters action and/or filter hooks that were registered in the hook
+	 * method.
+	 */
+	public function unhook(): void {
+		// Unregister filter hooks.
+		remove_filter( 'sp_pre_search_results', [ $this, 'extract_aggs_from_results' ] );
+		remove_filter( 'sp_config_sync_post_types', [ $this, 'apply_sync_post_types' ] );
+		remove_filter( 'sp_config_sync_statuses', [ $this, 'apply_sync_post_statuses' ] );
+		remove_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
+		remove_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ] );
+		remove_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
+		remove_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
+		remove_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
+		remove_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
+		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
 }
