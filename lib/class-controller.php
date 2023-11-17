@@ -113,6 +113,17 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Enables phrase matching for search queries.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function enable_phrase_matching(): Controller {
+		$this->adapter->set_enable_phrase_matching( true );
+
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation based on post dates.
 	 *
 	 * @param array{interval?: 'year'|'quarter'|'month'|'week'|'day'|'hour'|'minute', label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'key'|'label', query_var?: string} $args {
