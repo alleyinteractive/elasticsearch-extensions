@@ -55,6 +55,17 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Disables phrase matching for queries.
+	 *
+	 * @return Controller The instance of the class to allow for chaining.
+	 */
+	public function disable_phrase_matching(): Controller {
+		$this->adapter->set_enable_phrase_matching( false );
+
+		return $this;
+	}
+
+	/**
 	 * Enables an aggregation for Co-Authors Plus authors.
 	 *
 	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'display_name'|'first_name'|'key'|'label'|'last_name', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {
