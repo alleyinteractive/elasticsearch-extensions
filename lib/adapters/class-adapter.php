@@ -42,6 +42,13 @@ abstract class Adapter implements Hookable {
 	private bool $allow_empty_search = false;
 
 	/**
+	 * Whether to enable phrase matching in queries.
+	 *
+	 * @var bool
+	 */
+	private bool $enable_phrase_matching = false;
+
+	/**
 	 * Whether to index search suggestions.
 	 *
 	 * @var bool
@@ -356,6 +363,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Gets the value for enable_phrase_matching.
+	 *
+	 * @return bool Whether phrase matching is enabled.
+	 */
+	public function get_enable_phrase_matching(): bool {
+		return $this->enable_phrase_matching;
+	}
+
+	/**
 	 * Gets the value for enable_search_suggestions.
 	 *
 	 * @return bool Whether search suggestions are enabled.
@@ -538,6 +554,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function set_allow_empty_search( bool $allow_empty_search ): void {
 		$this->allow_empty_search = $allow_empty_search;
+	}
+
+	/**
+	 * Enables phrase matching for the main search query.
+	 *
+	 * @param bool $enable_phrase_matching Whether to enable phrase matching.
+	 */
+	public function set_enable_phrase_matching( bool $enable_phrase_matching ) {
+		$this->enable_phrase_matching = $enable_phrase_matching;
 	}
 
 	/**
