@@ -330,9 +330,9 @@ abstract class Adapter implements Hookable {
 		}
 
 		// Break down the search string into the desired "phrase matched" parts.
-		// TODO: Add filter for phrase_match_delimiter.
-		$phrase_match_delimiter = '"';
-		preg_match_all( '/' . $phrase_match_delimiter . '(.*?)' . $phrase_match_delimiter . '/', $search, $matches );
+		// TODO: Add filter for phrase_match_delineator.
+		$phrase_match_delineator = '"';
+		preg_match_all( '/' . $phrase_match_delineator . '(.*?)' . $phrase_match_delineator . '/', $search, $matches );
 		if ( empty( $matches ) ) {
 			return $es_args;
 		}
@@ -341,7 +341,7 @@ abstract class Adapter implements Hookable {
 		$unmatched = implode(
 			' ',
 			array_filter(
-				explode( ' ', preg_replace( '/' . $phrase_match_delimiter . '.*?' . $phrase_match_delimiter . '/', '', $search ) )
+				explode( ' ', preg_replace( '/' . $phrase_match_delineator . '.*?' . $phrase_match_delineator . '/', '', $search ) )
 			)
 		);
 
