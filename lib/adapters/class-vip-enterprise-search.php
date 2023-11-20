@@ -31,6 +31,73 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * Add aggs to formatted ES query args.
+	 *
+	 * @param $formatted_args array The formatted ES arg.
+	 * @return array
+	 */
+	public function add_aggs_to_es_query( $formatted_args ) {
+		/**
+		 * ElasticPress uses post_filter to filter results after search, but
+		 * post_filter only applies to search hits, not aggregations. In order
+		 * to apply the filter to aggregations as well, we need to ensure that
+		 * there is a query with a filter clause, even if there is no search
+		 * term.
+		 *
+		 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html
+		 */
+		if ( ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
+			if ( empty( $formatted_args['query'] ) ) {
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+			} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
+				$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
+					$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
+					$formatted_args['post_filter']['bool']['must']
+				);
+			} elseif ( ! empty( $formatted_args['query']['match_all'] ) ) {
+				// This condition triggers on secondary queries that use ep_integrate.
+				// Adding filters to match_all queries requires converting it to a bool query with the match_all clause nested within.
+				$formatted_args['query']['bool']['must']['match_all'] = $formatted_args['query']['match_all'];
+				// Unset the original DSL, since this will use a bool query instead.
+				unset( $formatted_args['query']['match_all'] );
+				// Add bool query with filters.
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+			}
+		}
+
+		// Add requested aggregations.
+		$use_filter = ! empty( $formatted_args['query']['bool']['filter'] );
+		foreach ( $this->get_aggregations() as $aggregation ) {
+			$filter = $aggregation->filter();
+			if ( ! empty( $filter ) ) {
+				if ( $use_filter ) {
+					// If we aren't using a search term, just use a basic query filter.
+					$formatted_args['query']['bool']['filter'] = array_merge(
+						$formatted_args['query']['bool']['filter'],
+						$filter
+					);
+				} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
+					$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
+						$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
+						$filter
+					);
+				}
+			}
+		}
+
+		// If we are searching for a keyword and applying filters, ensure both are required.
+		if (
+			! empty( $formatted_args['query']['function_score']['query']['bool']['filter'] )
+			&& ! empty( $formatted_args['query']['function_score']['query']['bool']['should'] )
+			&& ! isset( $formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] )
+		) {
+			$formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] = 1;
+		}
+
+		return $formatted_args;
+	}
+
+	/**
 	 * A callback for the ep_elasticpress_enabled filter hook. Overrides the
 	 * normal behavior for ElasticPress to determine if it is enabled to allow
 	 * for an empty search string, if allowable by the configuration on this
@@ -167,61 +234,10 @@ class VIP_Enterprise_Search extends Adapter {
 	 * @return array The modified Elasticsearch query arguments.
 	 */
 	public function filter__ep_post_formatted_args( $formatted_args, $args ) {
-		/**
-		 * ElasticPress uses post_filter to filter results after search, but
-		 * post_filter only applies to search hits, not aggregations. In order
-		 * to apply the filter to aggregations as well, we need to ensure that
-		 * there is a query with a filter clause, even if there is no search
-		 * term.
-		 *
-		 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/filter-search-results.html
-		 */
-		if ( ! empty( $formatted_args['post_filter']['bool']['must'] ) ) {
-			if ( empty( $formatted_args['query'] ) ) {
-				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
-			} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
-				$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
-					$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
-					$formatted_args['post_filter']['bool']['must']
-				);
-			} elseif ( ! empty( $formatted_args['query']['match_all'] ) ) {
-				// This condition triggers on secondary queries that use ep_integrate.
-				// Adding filters to match_all queries requires converting it to a bool query with the match_all clause nested within.
-				$formatted_args['query']['bool']['must']['match_all'] = $formatted_args['query']['match_all'];
-				// Unset the original DSL, since this will use a bool query instead.
-				unset( $formatted_args['query']['match_all'] );
-				// Add bool query with filters.
-				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
-			}
-		}
+		// Phrase matching. This only adds phrase matching if the feature is enabled.
+		$formatted_args = $this->add_phrase_matching_to_es_args( $formatted_args );
 
-		// Add requested aggregations.
-		$use_filter = ! empty( $formatted_args['query']['bool']['filter'] );
-		foreach ( $this->get_aggregations() as $aggregation ) {
-			$filter = $aggregation->filter();
-			if ( ! empty( $filter ) ) {
-				if ( $use_filter ) {
-					// If we aren't using a search term, just use a basic query filter.
-					$formatted_args['query']['bool']['filter'] = array_merge(
-						$formatted_args['query']['bool']['filter'],
-						$filter
-					);
-				} elseif ( ! empty( $formatted_args['query']['function_score']['query']['bool'] ) ) {
-					$formatted_args['query']['function_score']['query']['bool']['filter'] = array_merge(
-						$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
-						$filter
-					);
-				}
-			}
-		}
-
-		// If we are searching for a keyword and applying filters, ensure both are required.
-		if ( ! empty( $formatted_args['query']['function_score']['query']['bool']['filter'] )
-			&& ! empty( $formatted_args['query']['function_score']['query']['bool']['should'] )
-			&& ! isset( $formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] )
-		) {
-			$formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] = 1;
-		}
+		$this->add_aggs_to_es_query( $formatted_args );
 
 		return $formatted_args;
 	}
