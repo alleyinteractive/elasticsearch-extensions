@@ -33,7 +33,7 @@ class VIP_Enterprise_Search extends Adapter {
 	/**
 	 * Add aggs to formatted ES query args.
 	 *
-	 * @param $formatted_args array The formatted ES arg.
+	 * @param array $formatted_args The formatted ES arg.
 	 * @return array
 	 */
 	public function add_aggs_to_es_query( $formatted_args ) {
