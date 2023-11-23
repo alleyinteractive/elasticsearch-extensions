@@ -50,4 +50,8 @@
       <property name="prefixes" type="array" value="elasticsearch_extensions"/>
     </properties>
   </rule>
+
+  <!-- Disallow functions deprecated and/or aliased for backwards compatibility -->
+  <rule ref="Generic.PHP.DeprecatedFunctions"/>
+  <rule ref="Generic.PHP.ForbiddenFunctions"/>
 </ruleset>
