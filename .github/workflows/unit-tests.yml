@@ -29,11 +29,6 @@ jobs:
             multisite: 0
             wp_version: '6.4'
             es_adapter: 'vip-search'
-          - php: 7.4
-            es_version: '6.8.23'
-            multisite: 0
-            wp_version: '6.4'
-            es_adapter: 'searchpress'
     env:
       WP_CORE_DIR: /tmp/wordpress
       WP_VERSION: ${{ matrix.wp_version }}
