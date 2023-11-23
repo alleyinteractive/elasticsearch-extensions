@@ -71,7 +71,7 @@
   },
   "require-dev": {
     "alleyinteractive/alley-coding-standards": "^0.3.0",
-    "alleyinteractive/pest-plugin-wordpress": "^0.4.0",
+    "alleyinteractive/pest-plugin-wordpress": "^0.4.1",
     "alleyinteractive/searchpress": "^0.4.1",
     "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
