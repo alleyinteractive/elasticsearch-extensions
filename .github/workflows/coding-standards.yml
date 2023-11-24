@@ -12,7 +12,4 @@ jobs:
   coding-standards:
     uses: alleyinteractive/.github/.github/workflows/php-coding-standards.yml@main
     with:
-      php:
-        default: "8.1"
-        required: false
-        type: string
+      php: "8.1"
