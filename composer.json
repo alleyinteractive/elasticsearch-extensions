@@ -79,8 +79,7 @@
     "yoast/phpunit-polyfills": "^1.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.8",
-    "szepeviktor/phpstan-wordpress": "^1.1.6",
-    "mantle-framework/support": "^0.12.9"
+    "szepeviktor/phpstan-wordpress": "^1.1.6"
   },
   "scripts": {
     "phpcbf": "phpcbf .",
