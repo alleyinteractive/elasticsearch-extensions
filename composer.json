@@ -67,7 +67,7 @@
     }
   ],
   "require": {
-    "php": "^7.4 || ^8.0 || ^8.1 || ^8.2"
+    "php": "^8.0 || ^8.1 || ^8.2"
   },
   "require-dev": {
     "alleyinteractive/alley-coding-standards": "^0.3.0",
