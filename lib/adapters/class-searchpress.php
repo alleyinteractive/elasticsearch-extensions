@@ -509,4 +509,19 @@ class SearchPress extends Adapter {
 		remove_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
 		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
 	}
+
+	protected function direct( array $query, $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'endpoint' => '/_search',
+				'method' => 'GET',
+				'output' => OBJECT,
+			)
+		);
+
+		$result = \SP_API()->request( $args['endpoint'], $args['method'], $query, $args );
+
+		return $this->parse_result( $result, $args['output'] );
+	}
 }

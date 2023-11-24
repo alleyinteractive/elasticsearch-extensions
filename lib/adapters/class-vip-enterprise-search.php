@@ -7,6 +7,7 @@
 
 namespace Elasticsearch_Extensions\Adapters;
 
+use ElasticPress\Elasticsearch;
 use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
 use WP_Query;
 
@@ -599,5 +600,23 @@ class VIP_Enterprise_Search extends Adapter {
 		remove_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		remove_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		remove_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
+	}
+
+	protected function direct( array $query, $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'endpoint' => '/_search',
+				'method' => 'GET',
+				'output' => OBJECT,
+				'index' => '',
+			)
+		);
+
+		$elasticsearch = new Elasticsearch();
+
+		$result = $elasticsearch->query( $args['index'], null, $args['endpoint'], $args['method'], $query, $args );
+
+		return $this->parse_result( $result, $args['output'] );
 	}
 }

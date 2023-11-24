@@ -409,4 +409,9 @@ class Controller implements Hookable {
 	public function unhook(): void {
 		remove_action( 'init', [ $this, 'action__init' ], 1000 );
 	}
+
+	public function raw_query( $query ) {
+		$query = apply_filters( 'elasticsearch_extensions_raw_query', $this->sanitize_raw_query( $query ) );
+		return $this->adapter->direct( $query );
+	}
 }

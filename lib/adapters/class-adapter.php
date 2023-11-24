@@ -557,4 +557,21 @@ abstract class Adapter implements Hookable {
 	public function set_show_search_suggestions_in_rest( bool $show_in_rest ): void {
 		$this->show_search_suggestions_in_rest = $show_in_rest;
 	}
+
+	public function parse_result( $result, $format ) {
+
+		try {
+			if ( $format === OBJECT ) {
+				return json_decode( $result, false, 512, JSON_THROW_ON_ERROR );
+			}
+
+			if ( $format === ARRAY_A ) {
+				return json_decode( $result, true, 512, JSON_THROW_ON_ERROR );
+			}
+
+			return $result;
+		} catch ( \JsonException $e ) {
+			return new \WP_Error( 'json_decode_error', $e->getMessage() );
+		}
+	}
 }
