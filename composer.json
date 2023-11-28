@@ -56,12 +56,12 @@
       "type": "package",
       "package": {
         "name": "alleyinteractive/searchpress",
-        "version": "0.4.1",
+        "version": "dev-main",
         "type": "wordpress-plugin",
         "source": {
           "url": "https://github.com/alleyinteractive/searchpress.git",
           "type": "git",
-          "reference": "v0.4.1"
+          "reference": "main"
         }
       }
     }
