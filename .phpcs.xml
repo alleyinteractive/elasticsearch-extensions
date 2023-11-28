@@ -52,6 +52,8 @@
   </rule>
 
   <!-- Disallow functions deprecated and/or aliased for backwards compatibility -->
-  <rule ref="Generic.PHP.DeprecatedFunctions"/>
+  <rule ref="Generic.PHP.DeprecatedFunctions">
+    <type>warning</type>
+  </rule>
   <rule ref="Generic.PHP.ForbiddenFunctions"/>
 </ruleset>
