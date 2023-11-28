@@ -4,7 +4,8 @@
 	colors="true"
 	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="true"
-	convertWarningsToExceptions="false"
+	convertWarningsToExceptions="true"
+	convertDeprecationsToExceptions="false"
 >
 	<testsuites>
 		<testsuite name="searchpress">
