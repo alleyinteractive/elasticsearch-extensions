@@ -71,12 +71,12 @@
   },
   "require-dev": {
     "alleyinteractive/alley-coding-standards": "^0.3.0",
-    "alleyinteractive/pest-plugin-wordpress": "dev-feature/php-8-1-upgrade",
+    "alleyinteractive/pest-plugin-wordpress": "^0.5.0",
     "alleyinteractive/searchpress": "dev-main",
     "automattic/vip-go-mu-plugins-built": "dev-master",
     "composer/installers": "^1.0",
     "wpackagist-plugin/elasticpress": "^4.2",
-    "yoast/phpunit-polyfills": "^1.0",
+    "yoast/phpunit-polyfills": "^2.0",
     "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.8",
     "szepeviktor/phpstan-wordpress": "^1.1.6"
@@ -91,5 +91,7 @@
       "composer install"
     ]
   },
-  "type": "wordpress-plugin"
+  "type": "wordpress-plugin",
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
