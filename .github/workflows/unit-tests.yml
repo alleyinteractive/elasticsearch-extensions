@@ -9,25 +9,27 @@ jobs:
     strategy:
       fail-fast: false # do not fail fast, let all the failing tests fail.
       matrix:
-        php: [8.0]
-        es_version: [7.17.5]
+        php: [8.1, 8.2]
+        es_version: [8.11.1]
         multisite: [0]
         wp_version: ["latest"]
+        es_adapter: ["searchpress", "vip-search"]
         include:
-          - php: 8.0
-            es_version: '7.17.5'
-            multisite: 0
-            wp_version: '6.1'
-            es_adapter: 'searchpress'
-          - php: 7.4
-            es_version: '7.17.5'
-            multisite: 0
-            wp_version: '6.1'
-            es_adapter: 'vip-search'
-          - php: 7.4
-            es_version: '6.8.23'
+          - php: 8.2
+            es_version: '8.11.1'
             multisite: 1
-            wp_version: '6.1'
+            wp_version: 'latest'
+            es_adapter: 'searchpress'
+          - php: 8.2
+            es_version: '7.17.15'
+            multisite: 1
+            wp_version: 'latest'
+            es_adapter: 'vip-search'
+          - php: 8.1
+            es_version: '7.17.15'
+            multisite: 1
+            wp_version: 'latest'
+            es_adapter: 'searchpress'
     env:
       WP_CORE_DIR: /tmp/wordpress
       WP_VERSION: ${{ matrix.wp_version }}

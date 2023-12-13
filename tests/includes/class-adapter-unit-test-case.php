@@ -9,7 +9,7 @@
 /**
  * Adapter_UnitTestCase class.
  */
-abstract class Adapter_UnitTestCase extends \Pest\PestPluginWordPress\FrameworkTestCase {
+abstract class Adapter_UnitTestCase extends Mantle\Testkit\Test_Case {
 
 	/**
 	 * Flush the index.
