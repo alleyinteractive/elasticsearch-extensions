@@ -24,8 +24,6 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	/**
 	 * Flush the index.
 	 *
-	 * TODO implement.
-	 *
 	 * @see See Adapter_UnitTestCase::flush()
 	 */
 	protected static function flush(): void {
@@ -35,17 +33,15 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 * Force Elasticsearch to refresh its index to make content changes
 	 * available to search.
 	 *
-	 * TODO implement
-	 *
 	 * @see See Adapter_UnitTestCase::refresh_index()
 	 */
 	protected static function refresh_index(): void {
+		$ep = new \ElasticPress\Elasticsearch();
+		$ep->refresh_indices();
 	}
 
 	/**
 	 * Index one or more posts in Elasticsearch.
-	 *
-	 * TODO implement
 	 *
 	 * @see See Adapter_UnitTestCase::index()
 	 * @see See Adapter_UnitTestCase::index_content()
@@ -54,5 +50,6 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 *                     an array of any of the above.
 	 */
 	protected static function index_content( $posts ): void {
+		\ElasticPress\Indexables::factory()->get( 'post' )->bulk_index( $posts );
 	}
 }
