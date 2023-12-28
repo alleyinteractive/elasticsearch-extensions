@@ -7,6 +7,7 @@
  */
 
 it( 'tests that phrase matching is disabled by default', function () {
+	// TODO Perform a search to determine that phrase matching is disabled.
 	$this->assertEquals( false, true );
 } );
 
@@ -17,6 +18,8 @@ it( 'tests that phrase matching is enabled via function', function () {
 			$es_config->enable_phrase_matching();
 		}
 	);
+
+	// TODO Perform a search to determine that phrase matching is enabled.
 
 	$this->assertEquals( false, true );
 } );
@@ -39,5 +42,6 @@ it( 'tests that phrase matching is disabled via function', function () {
 		11
 	);
 
+	// TODO Perform a search to determine that phrase matching is disabled.
 	$this->assertEquals( false, true );
 } );

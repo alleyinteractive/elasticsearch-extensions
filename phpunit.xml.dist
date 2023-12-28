@@ -15,6 +15,14 @@
 			<directory prefix="test-vip-search" suffix=".php">./tests/adapters/vip-search/</directory>
 		</testsuite>
 
+		<testsuite name="searchpress-features">
+			<directory prefix="test-feature" suffix=".php">./tests/adapters/searchpress/features/</directory>
+		</testsuite>
+
+		<testsuite name="vip-search-features">
+			<directory prefix="test-feature" suffix=".php">./tests/adapters/vip-search/features/</directory>
+		</testsuite>
+
 		<testsuite name="plugin">
 			<directory prefix="test-" suffix=".php">./tests/</directory>
 			<exclude>./tests/adapters/searchpress/</exclude>
