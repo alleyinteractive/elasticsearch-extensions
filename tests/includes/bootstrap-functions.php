@@ -81,6 +81,8 @@ function elasticsearch_bootup() {
 
 	// VIP Search.
 	if ( true === class_exists( '\Automattic\VIP\Search\Search' ) ) {
+		$vip_search = new \Automattic\VIP\Search\Search;
+		$vip_search->init();
 		define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
 		define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ $host ] );
 		define( 'VIP_ELASTICSEARCH_USERNAME', 'vip-search' );
