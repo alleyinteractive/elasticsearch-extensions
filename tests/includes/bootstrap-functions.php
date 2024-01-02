@@ -81,14 +81,6 @@ function elasticsearch_bootup() {
 
 	// VIP Search.
 	if ( true === class_exists( '\Automattic\VIP\Search\Search' ) ) {
-		$vip_search = new \Automattic\VIP\Search\Search;
-		$vip_search->init();
-		define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
-		define( 'VIP_ELASTICSEARCH_ENDPOINTS', [ $host ] );
-		define( 'VIP_ELASTICSEARCH_USERNAME', 'vip-search' );
-		define( 'VIP_ELASTICSEARCH_PASSWORD', 'password' );
-		define( 'FILES_CLIENT_SITE_ID', 'test-project' );
-
 		echo "-- The VIP Enterprise Search plugin is available! \o/\n";
 	} else {
 		echo "-- The VIP Enterprise Search plugin IS NOT available! =(\n";

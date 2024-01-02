@@ -6,19 +6,25 @@
  * @subpackage Tests
  */
 
+use \ElasticPress\Elasticsearch;
+use \ElasticPress\Indexables;
+
 /**
  * VIP_Enterprise_Search_Adapter_UnitTestCase class.
  */
 class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
+	public static function setUpBeforeClass(): void {
+		parent::setUpBeforeClass();
+
 		static::flush();
 	}
 
-	public static function tear_down_after_class() {
+	protected function tearDown(): void {
+		// Reset to default state. Includes features and config as well.
 		static::flush();
-		parent::tear_down_after_class();
+		self::flush();
+		parent::tearDown();
 	}
 
 	/**
@@ -27,6 +33,8 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 * @see See Adapter_UnitTestCase::flush()
 	 */
 	protected static function flush(): void {
+		$ep = new Elasticsearch();
+		$ep->delete_all_indices();
 	}
 
 	/**
@@ -36,7 +44,7 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 * @see See Adapter_UnitTestCase::refresh_index()
 	 */
 	protected static function refresh_index(): void {
-		$ep = new \ElasticPress\Elasticsearch();
+		$ep = new Elasticsearch();
 		$ep->refresh_indices();
 	}
 
@@ -50,6 +58,6 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 	 *                     an array of any of the above.
 	 */
 	protected static function index_content( $posts ): void {
-		\ElasticPress\Indexables::factory()->get( 'post' )->bulk_index( $posts );
+		Indexables::factory()->get( 'post' )->bulk_index( $posts );
 	}
 }
