@@ -355,14 +355,23 @@ abstract class Adapter implements Hookable {
 			}
 		}
 
-		// TODO: Add filter for these defaults.
-		$default_multi_match_fields = [
-			'post_title^3',
-			'post_excerpt^2',
-			'post_content',
-			'post_author.display_name',
-			'terms.author.name',
-		];
+		/**
+		 * Filters the list of multimatch fields.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array $default_multi_match_fields The array of multimatch fields with weighting to be included in phrase matching queries.
+		 */
+		$default_multi_match_fields = apply_filters(
+			'elasticsearch_extensions_phrase_match_multimatch_fields',
+			[
+				'post_title^3',
+				'post_excerpt^2',
+				'post_content',
+				'post_author.display_name',
+				'terms.author.name',
+			]
+		);
 
 		// Loop over phrase matches and add each.
 		foreach ( $matches[1] as $query ) {
