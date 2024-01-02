@@ -42,6 +42,13 @@ abstract class Adapter implements Hookable {
 	private bool $allow_empty_search = false;
 
 	/**
+	 * Whether to enable phrase matching in queries.
+	 *
+	 * @var bool
+	 */
+	private bool $enable_phrase_matching = false;
+
+	/**
 	 * Whether to index search suggestions.
 	 *
 	 * @var bool
@@ -304,6 +311,102 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * A callback to filter es args.
+	 * Adds phrase matching to the request args if it is enabled.
+	 *
+	 * @param array $es_args The request args to be filtered.
+	 * @return array The filtered request args.
+	 */
+	public function add_phrase_matching_to_es_args( array $es_args ): array {
+		if ( ! $this->get_enable_phrase_matching() ) {
+			return $es_args;
+		}
+
+		$search = get_query_var( 's' );
+
+		// Bail early if this isn't a search.
+		if ( empty( $search ) ) {
+			return $es_args;
+		}
+
+		// Break down the search string into the desired "phrase matched" parts.
+		// TODO: Add filter for phrase_match_delineator.
+		$phrase_match_delineator = '"';
+		preg_match_all( '/' . $phrase_match_delineator . '(.*?)' . $phrase_match_delineator . '/', $search, $matches );
+		if ( empty( $matches ) ) {
+			return $es_args;
+		}
+
+		// Get the search query without the "phrase matched" parts.
+		$unmatched = implode(
+			' ',
+			array_filter(
+				explode( ' ', preg_replace( '/' . $phrase_match_delineator . '.*?' . $phrase_match_delineator . '/', '', $search ) )
+			)
+		);
+
+		// Replace the main multi_match query with the "unmatched" string.
+		$es_arg = $this->find_multimatch_query( $es_args );
+		if ( ! empty( $es_arg['multi_match']['query'] ) ) {
+			if ( ! empty( $unmatched ) ) {
+				$es_arg['multi_match']['query'] = $unmatched;
+			} else {
+				unset( $es_arg );
+			}
+		}
+
+		// TODO: Add filter for these defaults.
+		$default_multi_match_fields = [
+			'post_title^3',
+			'post_excerpt^2',
+			'post_content',
+			'post_author.display_name',
+			'terms.author.name',
+		];
+
+		// Loop over phrase matches and add each.
+		foreach ( $matches[1] as $query ) {
+			$es_args['query']['bool']['must'][] = [
+				'multi_match' => [
+					'fields' => $es_arg['multi_match']['fields'] ?? $default_multi_match_fields,
+					'query'  => $query,
+					'type'   => 'phrase',
+				],
+			];
+		}
+
+		return $es_args;
+	}
+
+	/**
+	 * Finds the first multi_match query and returns a reference to it.
+	 *
+	 * @param array $es_args Elasticsearch DSL to filter.
+	 *
+	 * @return ?array A reference to the multi_match array on success, null on failure.
+	 */
+	protected function find_multimatch_query( array $es_args ): ?array {
+
+		// Skip if this is the wrong type of query.
+		if (
+			empty( $es_args['query']['bool']['must'] )
+			|| ! is_array( $es_args['query']['bool']['must'] )
+		) {
+			return null;
+		}
+
+		// Loop over the query arguments to try to find multi_match queries.
+		foreach ( $es_args['query']['bool']['must'] as &$es_arg ) {
+			// If this is a multi_match query, return a reference to it.
+			if ( ! empty( $es_arg['multi_match'] ) ) {
+				return $es_arg;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get an aggregation by its label.
 	 *
 	 * @param string $label Aggregation label.
@@ -353,6 +456,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function get_allow_empty_search(): bool {
 		return $this->allow_empty_search;
+	}
+
+	/**
+	 * Gets the value for enable_phrase_matching.
+	 *
+	 * @return bool Whether phrase matching is enabled.
+	 */
+	public function get_enable_phrase_matching(): bool {
+		return $this->enable_phrase_matching;
 	}
 
 	/**
@@ -538,6 +650,15 @@ abstract class Adapter implements Hookable {
 	 */
 	public function set_allow_empty_search( bool $allow_empty_search ): void {
 		$this->allow_empty_search = $allow_empty_search;
+	}
+
+	/**
+	 * Enables phrase matching for the main search query.
+	 *
+	 * @param bool $enable_phrase_matching Whether to enable phrase matching.
+	 */
+	public function set_enable_phrase_matching( bool $enable_phrase_matching ) {
+		$this->enable_phrase_matching = $enable_phrase_matching;
 	}
 
 	/**

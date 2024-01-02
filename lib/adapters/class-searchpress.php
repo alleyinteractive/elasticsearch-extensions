@@ -486,6 +486,7 @@ class SearchPress extends Adapter {
 		add_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
 		add_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ], 10, 2 );
 		add_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
+		add_filter( 'sp_search_query_args', [ $this, 'add_phrase_matching_to_es_args' ] );
 		add_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
 		add_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
 		add_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
@@ -504,6 +505,7 @@ class SearchPress extends Adapter {
 		remove_filter( 'sp_config_mapping', [ $this, 'add_search_suggest_to_mapping' ] );
 		remove_filter( 'sp_post_pre_index', [ $this, 'add_search_suggest_to_indexed_post_data' ] );
 		remove_filter( 'sp_search_query_args', [ $this, 'add_aggs_to_es_query' ] );
+		remove_filter( 'sp_search_query_args', [ $this, 'add_phrase_matching_to_es_args' ] );
 		remove_filter( 'sp_searchable_post_types', [ $this, 'apply_searchable_post_types' ] );
 		remove_filter( 'sp_post_allowed_meta', [ $this, 'apply_allowed_meta' ] );
 		remove_filter( 'sp_post_pre_index', [ $this, 'apply_allowed_taxonomies' ] );
