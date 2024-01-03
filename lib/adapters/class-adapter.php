@@ -44,6 +44,15 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Whether to enable phrase matching in queries.
 	 *
+	 * Under the hood, this uses a multi_match query with the type set to
+	 * "phrase" for each phrase matched part of the search string. This
+	 * allows for more precise matching of phrases in the search string. For
+	 * example, when active, a search for "foo bar" will match "foo bar" but not "foo
+	 * baz bar".
+	 *
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase.html
+	 *
 	 * @var bool
 	 */
 	private bool $enable_phrase_matching = false;
@@ -333,7 +342,7 @@ abstract class Adapter implements Hookable {
 		// TODO: Add filter for phrase_match_delineator.
 		$phrase_match_delineator = '"';
 		preg_match_all( '/' . $phrase_match_delineator . '(.*?)' . $phrase_match_delineator . '/', $search, $matches );
-		if ( empty( $matches ) ) {
+		if ( empty( $matches[1] ) ) {
 			return $es_args;
 		}
 
@@ -666,7 +675,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param bool $enable_phrase_matching Whether to enable phrase matching.
 	 */
-	public function set_enable_phrase_matching( bool $enable_phrase_matching ) {
+	public function set_enable_phrase_matching( bool $enable_phrase_matching ): void {
 		$this->enable_phrase_matching = $enable_phrase_matching;
 	}
 

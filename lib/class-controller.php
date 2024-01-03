@@ -55,7 +55,7 @@ class Controller implements Hookable {
 	}
 
 	/**
-	 * Disables phrase matching for queries.
+	 * Disables phrase matching for search queries.
 	 *
 	 * @return Controller The instance of the class to allow for chaining.
 	 */

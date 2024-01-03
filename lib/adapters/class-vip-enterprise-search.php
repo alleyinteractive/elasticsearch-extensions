@@ -33,10 +33,10 @@ class VIP_Enterprise_Search extends Adapter {
 	/**
 	 * Add aggs to formatted ES query args.
 	 *
-	 * @param array $formatted_args The formatted ES arg.
+	 * @param array $formatted_args The formatted ES args.
 	 * @return array
 	 */
-	public function add_aggs_to_es_query( $formatted_args ) {
+	public function add_aggs_to_es_query( $formatted_args ): array {
 		/**
 		 * ElasticPress uses post_filter to filter results after search, but
 		 * post_filter only applies to search hits, not aggregations. In order
@@ -237,7 +237,8 @@ class VIP_Enterprise_Search extends Adapter {
 		// Phrase matching. This only adds phrase matching if the feature is enabled.
 		$formatted_args = $this->add_phrase_matching_to_es_args( $formatted_args );
 
-		$this->add_aggs_to_es_query( $formatted_args );
+		// Add aggs to query.
+		$formatted_args = $this->add_aggs_to_es_query( $formatted_args );
 
 		return $formatted_args;
 	}
