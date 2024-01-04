@@ -233,7 +233,6 @@ abstract class Adapter implements Hookable {
 		);
 
 		// Loop over phrase matches and add each.
-		$updated_query = false;
 		foreach ( $matches[1] as $query ) {
 			$es_args['query']['function_score']['query']['bool']['must'][] = [
 				'multi_match' => [
