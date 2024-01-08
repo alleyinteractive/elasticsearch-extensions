@@ -44,6 +44,15 @@ abstract class Adapter implements Hookable {
 	/**
 	 * Whether to enable phrase matching in queries.
 	 *
+	 * Under the hood, this uses a multi_match query with the type set to
+	 * "phrase" for each phrase matched part of the search string. This
+	 * allows for more precise matching of phrases in the search string. For
+	 * example, when active, a search for "foo bar" will match "foo bar" but not "foo
+	 * baz bar".
+	 *
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+	 * @link https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query-phrase.html
+	 *
 	 * @var bool
 	 */
 	private bool $enable_phrase_matching = false;
@@ -158,6 +167,83 @@ abstract class Adapter implements Hookable {
 	 */
 	public function add_custom_date_range_aggregation( array $args = [] ): void {
 		$this->add_aggregation( new Custom_Date_Range( $this->dsl, $args ) );
+	}
+
+	/**
+	 * A callback to filter es args.
+	 * Adds phrase matching to the request args if it is enabled.
+	 *
+	 * @param array $es_args The request args to be filtered.
+	 * @return array The filtered request args.
+	 */
+	public function add_phrase_matching_to_es_args( array $es_args ): array {
+		if ( ! $this->get_enable_phrase_matching() ) {
+			return $es_args;
+		}
+
+		$search = get_query_var( 's' );
+
+		// Bail early if this isn't a search.
+		if ( empty( $search ) ) {
+			return $es_args;
+		}
+
+		// Break down the search string into the desired "phrase matched" parts.
+		// TODO: Add filter for phrase_match_delineator.
+		$phrase_match_delineator = '"';
+		preg_match_all( '/' . $phrase_match_delineator . '(.*?)' . $phrase_match_delineator . '/', $search, $matches );
+		if ( empty( $matches[1] ) ) {
+			return $es_args;
+		}
+
+		// Get the search query without the "phrase matched" parts.
+		$unmatched = implode(
+			' ',
+			array_filter(
+				explode( ' ', preg_replace( '/' . $phrase_match_delineator . '.*?' . $phrase_match_delineator . '/', '', $search ) )
+			)
+		);
+
+		// Replace the main multi_match query with the "unmatched" string.
+		$es_arg = $this->find_multimatch_query( $es_args );
+		if ( ! empty( $es_arg['multi_match']['query'] ) ) {
+			if ( ! empty( $unmatched ) ) {
+				$es_arg['multi_match']['query'] = $unmatched;
+			} else {
+				unset( $es_arg );
+			}
+		}
+
+		/**
+		 * Filters the list of multimatch fields.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array $default_multi_match_fields The array of multimatch fields with weighting to be included in phrase matching queries.
+		 */
+		$default_multi_match_fields = apply_filters(
+			'elasticsearch_extensions_phrase_match_multimatch_fields',
+			[
+				'post_title^3',
+				'post_excerpt^2',
+				'post_content',
+				'post_author.display_name',
+				'terms.author.name',
+			]
+		);
+
+		// Loop over phrase matches and add each.
+		foreach ( $matches[1] as $query ) {
+			$es_args['query']['function_score']['query']['bool']['must'][] = [
+				'multi_match' => [
+					'fields' => $default_multi_match_fields,
+					'query'  => $query,
+					'type'   => 'phrase',
+				],
+			];
+		}
+
+		return $es_args;
 	}
 
 	/**
@@ -311,74 +397,6 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
-	 * A callback to filter es args.
-	 * Adds phrase matching to the request args if it is enabled.
-	 *
-	 * @param array $es_args The request args to be filtered.
-	 * @return array The filtered request args.
-	 */
-	public function add_phrase_matching_to_es_args( array $es_args ): array {
-		if ( ! $this->get_enable_phrase_matching() ) {
-			return $es_args;
-		}
-
-		$search = get_query_var( 's' );
-
-		// Bail early if this isn't a search.
-		if ( empty( $search ) ) {
-			return $es_args;
-		}
-
-		// Break down the search string into the desired "phrase matched" parts.
-		// TODO: Add filter for phrase_match_delineator.
-		$phrase_match_delineator = '"';
-		preg_match_all( '/' . $phrase_match_delineator . '(.*?)' . $phrase_match_delineator . '/', $search, $matches );
-		if ( empty( $matches ) ) {
-			return $es_args;
-		}
-
-		// Get the search query without the "phrase matched" parts.
-		$unmatched = implode(
-			' ',
-			array_filter(
-				explode( ' ', preg_replace( '/' . $phrase_match_delineator . '.*?' . $phrase_match_delineator . '/', '', $search ) )
-			)
-		);
-
-		// Replace the main multi_match query with the "unmatched" string.
-		$es_arg = $this->find_multimatch_query( $es_args );
-		if ( ! empty( $es_arg['multi_match']['query'] ) ) {
-			if ( ! empty( $unmatched ) ) {
-				$es_arg['multi_match']['query'] = $unmatched;
-			} else {
-				unset( $es_arg );
-			}
-		}
-
-		// TODO: Add filter for these defaults.
-		$default_multi_match_fields = [
-			'post_title^3',
-			'post_excerpt^2',
-			'post_content',
-			'post_author.display_name',
-			'terms.author.name',
-		];
-
-		// Loop over phrase matches and add each.
-		foreach ( $matches[1] as $query ) {
-			$es_args['query']['bool']['must'][] = [
-				'multi_match' => [
-					'fields' => $es_arg['multi_match']['fields'] ?? $default_multi_match_fields,
-					'query'  => $query,
-					'type'   => 'phrase',
-				],
-			];
-		}
-
-		return $es_args;
-	}
-
-	/**
 	 * Finds the first multi_match query and returns a reference to it.
 	 *
 	 * @param array $es_args Elasticsearch DSL to filter.
@@ -389,14 +407,14 @@ abstract class Adapter implements Hookable {
 
 		// Skip if this is the wrong type of query.
 		if (
-			empty( $es_args['query']['bool']['must'] )
-			|| ! is_array( $es_args['query']['bool']['must'] )
+			empty( $es_args['query']['function_score']['query']['bool']['must'] )
+			|| ! is_array( $es_args['query']['function_score']['query']['bool']['must'] )
 		) {
 			return null;
 		}
 
 		// Loop over the query arguments to try to find multi_match queries.
-		foreach ( $es_args['query']['bool']['must'] as &$es_arg ) {
+		foreach ( $es_args['query']['function_score']['query']['bool']['must'] as &$es_arg ) {
 			// If this is a multi_match query, return a reference to it.
 			if ( ! empty( $es_arg['multi_match'] ) ) {
 				return $es_arg;
@@ -657,7 +675,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param bool $enable_phrase_matching Whether to enable phrase matching.
 	 */
-	public function set_enable_phrase_matching( bool $enable_phrase_matching ) {
+	public function set_enable_phrase_matching( bool $enable_phrase_matching ): void {
 		$this->enable_phrase_matching = $enable_phrase_matching;
 	}
 
