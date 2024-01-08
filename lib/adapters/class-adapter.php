@@ -407,14 +407,14 @@ abstract class Adapter implements Hookable {
 
 		// Skip if this is the wrong type of query.
 		if (
-			empty( $es_args['query']['bool']['must'] )
-			|| ! is_array( $es_args['query']['bool']['must'] )
+			empty( $es_args['query']['function_score']['query']['bool']['must'] )
+			|| ! is_array( $es_args['query']['function_score']['query']['bool']['must'] )
 		) {
 			return null;
 		}
 
 		// Loop over the query arguments to try to find multi_match queries.
-		foreach ( $es_args['query']['bool']['must'] as &$es_arg ) {
+		foreach ( $es_args['query']['function_score']['query']['bool']['must'] as &$es_arg ) {
 			// If this is a multi_match query, return a reference to it.
 			if ( ! empty( $es_arg['multi_match'] ) ) {
 				return $es_arg;
