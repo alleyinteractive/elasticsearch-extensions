@@ -583,8 +583,8 @@ class VIP_Enterprise_Search extends Adapter {
 	 */
 	private function get_site_index( string $slug = 'post' ): string {
 		$post_indexable = \ElasticPress\Indexables::factory()->get( $slug );
-
-		return $post_indexable->get_index_name( get_current_blog_id() ) ?? '';
+		$index_name = $post_indexable->get_index_name( get_current_blog_id() );
+		return ! empty( $index_name ) ? $index_name : '';
 	}
 
 	/**
@@ -625,9 +625,7 @@ class VIP_Enterprise_Search extends Adapter {
 
 		// Execute the query.
 		$response = \ElasticPress\Elasticsearch::factory()->query( $index, $type, $es_args, $wp_query_args );
-		var_dump($response);
-		return [];
-
+		return ! empty( $response ) ? $response : [];
 	}
 
 	/**
