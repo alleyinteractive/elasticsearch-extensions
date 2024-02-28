@@ -393,7 +393,7 @@ class Controller implements Hookable {
 	 *
 	 * @return array The response from Elasticsearch.
 	 */
-	public function search( array $es_args ) {
+	public function search( array $es_args ): array {
 		return $this->adapter->search( $es_args );
 	}
 
