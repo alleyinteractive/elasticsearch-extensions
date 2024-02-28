@@ -390,12 +390,11 @@ class Controller implements Hookable {
 	 * Directly query Elasticsearch.
 	 *
 	 * @param array $es_args The query to send to Elasticsearch.
-	 * @param array $wp_query_args The WP query args to send to Elasticsearch. Only used for VIP Search.
 	 *
 	 * @return array The response from Elasticsearch.
 	 */
-	public function query_es( array $es_args, array $wp_query_args = [] ) {
-		return $this->adapter->query_es( $es_args, $wp_query_args );
+	public function search( array $es_args ) {
+		return $this->adapter->search( $es_args );
 	}
 
 	/**

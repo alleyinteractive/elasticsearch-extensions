@@ -236,10 +236,9 @@ class SearchPress extends Adapter {
 	 * Query Elasticsearch directly.
 	 *
 	 * @param array $es_args       Elasticsearch query arguments.
-	 * @param array $wp_query_args Optional. An array of query arguments.
 	 * @return array|object Elasticsearch response. Defaults to array.
 	 */
-	public function search( array $es_args, array $wp_query_args = [] ): array|object {
+	public function search( array $es_args ): array|object {
 		return SP_API()->search( wp_json_encode( $es_args ), [ 'output' => ARRAY_A ] );
 	}
 

@@ -612,19 +612,18 @@ class VIP_Enterprise_Search extends Adapter {
 	 * Query Elasticsearch directly.
 	 *
 	 * @param array $es_args       Formatted es query arguments.
-	 * @param array $wp_query_args WP_Query args.
 	 * @return array|object The raw Elasticsearch response.
 	 *
 	 * @see \Elasticsearch_Extensions\Adapters\Adapter::query_es()
 	 */
-	public function search( array $es_args, array $wp_query_args = [] ): array|object {
+	public function search( array $es_args ): array|object {
 		// Get Elasticsearch instance from EP.
 		$elasticsearch = \ElasticPress\Elasticsearch::factory();
 		$type          = 'post';
 		$index         = $this->get_site_index( $type );
 
 		// Execute the query.
-		$response = \ElasticPress\Elasticsearch::factory()->query( $index, $type, $es_args, $wp_query_args );
+		$response = \ElasticPress\Elasticsearch::factory()->query( $index, $type, $es_args, [] );
 		return ! empty( $response ) ? $response : [];
 	}
 
