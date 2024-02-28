@@ -387,6 +387,18 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Directly query Elasticsearch.
+	 *
+	 * @param array $es_args The query to send to Elasticsearch.
+	 * @param array $wp_query_args The WP query args to send to Elasticsearch. Only used for VIP Search.
+	 *
+	 * @return array The response from Elasticsearch.
+	 */
+	public function query_es( array $es_args, array $wp_query_args = [] ) {
+		return $this->adapter->query_es( $es_args, $wp_query_args );
+	}
+
+	/**
 	 * Restricts indexable meta to the provided list.
 	 *
 	 * @param string[] $post_meta The array of meta fields to restrict to.
