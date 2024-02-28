@@ -595,6 +595,14 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Query Elasticsearch directly. Must be implemented in child classes for specific adapters.
+	 *
+	 * @param array $es_args Arguments to pass to the Elasticsearch server.
+	 * @return array|object The response from the Elasticsearch server.
+	 */
+	abstract protected function query_es( array $es_args ): array|object;
+
+	/**
 	 * Suggest posts that match the given search term.
 	 *
 	 * @param string $search Search string.
