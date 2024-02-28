@@ -601,7 +601,7 @@ abstract class Adapter implements Hookable {
 	 * @param array $wp_query_args Arguments to pass to the WordPress query.
 	 * @return array|object The response from the Elasticsearch server.
 	 */
-	abstract protected function query_es( array $es_args, array $wp_query_args = [] ): array|object;
+	abstract protected function search( array $es_args, array $wp_query_args = [] ): array|object;
 
 	/**
 	 * Suggest posts that match the given search term.

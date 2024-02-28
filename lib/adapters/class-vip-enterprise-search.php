@@ -617,7 +617,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 *
 	 * @see \Elasticsearch_Extensions\Adapters\Adapter::query_es()
 	 */
-	public function query_es( array $es_args, array $wp_query_args = [] ): array|object {
+	public function search( array $es_args, array $wp_query_args = [] ): array|object {
 		// Get Elasticsearch instance from EP.
 		$elasticsearch = \ElasticPress\Elasticsearch::factory();
 		$type          = 'post';
