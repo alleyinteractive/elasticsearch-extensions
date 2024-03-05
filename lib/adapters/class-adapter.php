@@ -599,11 +599,10 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param array $es_args       Arguments to pass to the Elasticsearch server.
 	 *
-	 * @return ?array The response from the Elasticsearch server.
-	 * @throws \Exception
+	 * @return array|\WP_Error The response from the Elasticsearch server.
 	 */
-	public function search( array $es_args ): ?array {
-		throw new \Exception( 'Method `search()` must be implemented by the child class' );
+	public function search( array $es_args ) {
+		return new \WP_Error( 'not_implemented', 'Method `search()` must be implemented by the child class' );
 	}
 
 	/**
