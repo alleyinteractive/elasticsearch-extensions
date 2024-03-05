@@ -601,7 +601,9 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @return array The response from the Elasticsearch server.
 	 */
-	abstract protected function search( array $es_args ): array;
+	public function search( array $es_args ): array {
+		throw new \Exception( 'Method `search()` must be implemented by the child class' );
+	}
 
 	/**
 	 * Suggest posts that match the given search term.

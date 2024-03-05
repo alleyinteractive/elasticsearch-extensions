@@ -583,7 +583,8 @@ class VIP_Enterprise_Search extends Adapter {
 	 */
 	private function get_site_index( string $slug = 'post' ): string {
 		$post_indexable = \ElasticPress\Indexables::factory()->get( $slug );
-		$index_name = $post_indexable->get_index_name( get_current_blog_id() );
+		$index_name     = $post_indexable->get_index_name( get_current_blog_id() );
+
 		return ! empty( $index_name ) ? $index_name : '';
 	}
 
@@ -618,7 +619,6 @@ class VIP_Enterprise_Search extends Adapter {
 	 */
 	public function search( array $es_args ): array {
 		// Get Elasticsearch instance from EP.
-		$elasticsearch = \ElasticPress\Elasticsearch::factory();
 		$type          = 'post';
 		$index         = $this->get_site_index( $type );
 
