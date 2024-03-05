@@ -28,6 +28,17 @@ class Generic extends Adapter {
 	public function hook(): void {}
 
 	/**
+	 * Query Elasticsearch directly. Must be implemented in child classes for specific adapters.
+	 *
+	 * @param array $es_args Arguments to pass to the Elasticsearch server.
+	 *
+	 * @return array The response from the Elasticsearch server.
+	 */
+	public function search( array $es_args ) {
+		return [];
+	}
+
+	/**
 	 * Unregisters action and/or filter hooks that were registered in the hook
 	 * method.
 	 */
