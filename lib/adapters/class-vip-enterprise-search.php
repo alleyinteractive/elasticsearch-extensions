@@ -619,11 +619,12 @@ class VIP_Enterprise_Search extends Adapter {
 	 */
 	public function search( array $es_args ): array {
 		// Get Elasticsearch instance from EP.
-		$type          = 'post';
-		$index         = $this->get_site_index( $type );
+		$type  = 'post';
+		$index = $this->get_site_index( $type );
 
 		// Execute the query.
 		$response = \ElasticPress\Elasticsearch::factory()->query( $index, $type, $es_args, [] );
+
 		return ! empty( $response ) ? $response : [];
 	}
 
