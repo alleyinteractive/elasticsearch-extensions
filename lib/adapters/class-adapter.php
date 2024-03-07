@@ -601,7 +601,7 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @return array The response from the Elasticsearch server.
 	 */
-	abstract public function search( array $es_args );
+	abstract public function search( array $es_args ): array;
 
 	/**
 	 * Suggest posts that match the given search term.

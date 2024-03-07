@@ -34,7 +34,7 @@ class Generic extends Adapter {
 	 *
 	 * @return array The response from the Elasticsearch server.
 	 */
-	public function search( array $es_args ) {
+	public function search( array $es_args ): array {
 		return [];
 	}
 
