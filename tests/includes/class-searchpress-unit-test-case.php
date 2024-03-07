@@ -46,7 +46,7 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		self::$sp_settings = SP_Config()->get_settings();
 	}
 
-	public function tear_down() {
+	public function tear_down(): void {
 		$this->reset_post_types();
 		$this->reset_taxonomies();
 		$this->reset_post_statuses();
