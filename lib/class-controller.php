@@ -387,6 +387,17 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Directly query Elasticsearch.
+	 *
+	 * @param array $es_args The query to send to Elasticsearch.
+	 *
+	 * @return array The response from Elasticsearch.
+	 */
+	public function search( array $es_args ): array {
+		return $this->adapter->search( $es_args );
+	}
+
+	/**
 	 * Restricts indexable meta to the provided list.
 	 *
 	 * @param string[] $post_meta The array of meta fields to restrict to.

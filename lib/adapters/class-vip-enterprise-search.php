@@ -576,6 +576,19 @@ class VIP_Enterprise_Search extends Adapter {
 	}
 
 	/**
+	 * Gets the post index name for the current site.
+	 *
+	 * @param string $slug Indexable slug. Defaults to 'post'.
+	 * @return string The index name.
+	 */
+	private function get_site_index( string $slug = 'post' ): string {
+		$post_indexable = \ElasticPress\Indexables::factory()->get( $slug );
+		$index_name     = $post_indexable->get_index_name( get_current_blog_id() );
+
+		return ! empty( $index_name ) ? $index_name : '';
+	}
+
+	/**
 	 * Registers action and/or filter hooks with WordPress.
 	 */
 	public function hook(): void {
@@ -594,6 +607,25 @@ class VIP_Enterprise_Search extends Adapter {
 		add_filter( 'vip_search_post_meta_allow_list', [ $this, 'filter__vip_search_post_meta_allow_list' ] );
 		add_filter( 'vip_search_post_taxonomies_allow_list', [ $this, 'filter__vip_search_post_taxonomies_allow_list' ] );
 		add_filter( 'wp_rest_search_handlers', [ $this, 'filter__wp_rest_search_handlers' ] );
+	}
+
+	/**
+	 * Query Elasticsearch directly.
+	 *
+	 * @param array $es_args       Formatted es query arguments.
+	 * @return array The raw Elasticsearch response.
+	 *
+	 * @see \Elasticsearch_Extensions\Adapters\Adapter::query_es()
+	 */
+	public function search( array $es_args ): array {
+		// Get Elasticsearch instance from EP.
+		$type  = 'post';
+		$index = $this->get_site_index( $type );
+
+		// Execute the query.
+		$response = \ElasticPress\Elasticsearch::factory()->query( $index, $type, $es_args, [] );
+
+		return ! empty( $response ) ? $response : [];
 	}
 
 	/**
