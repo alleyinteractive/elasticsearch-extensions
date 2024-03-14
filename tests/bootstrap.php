@@ -36,8 +36,10 @@ Mantle\Testing\manager()
 	})
 	->after(
 		function() {
+			// Create Table needed by EP.
+			\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
+
 			// Load plugins.
-			require_once dirname( __FILE__, 4 ) . '/mu-plugins/search/search.php';
 			require_once dirname( __FILE__, 3 ) . '/searchpress/searchpress.php';
 			require_once dirname( __DIR__ ) . '/elasticsearch-extensions.php';
 
