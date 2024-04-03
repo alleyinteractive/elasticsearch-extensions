@@ -41,13 +41,11 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		parent::tearDownAfterClass();
 	}
 
-	// TODO: Is this firing?
 	protected function setUp(): void {
 		parent::setUp();
 		self::$sp_settings = SP_Config()->get_settings();
 	}
 
-	// TODO Is this firing - is this function present in the test kit? Is this a duplicate of the tearDown method above?
 	protected function tearDown(): void {
 		$this->reset_post_types();
 		$this->reset_taxonomies();
