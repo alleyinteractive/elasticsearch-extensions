@@ -106,6 +106,11 @@ abstract class Adapter_UnitTestCase extends Mantle\Testkit\Test_Case {
 		$posts_to_index[] = self::factory()->post->create( array( 'post_title' => 'child-three', 'post_parent' => $parent_two, 'post_date' => '2007-01-01 00:00:06' ) );
 		$posts_to_index[] = self::factory()->post->create( array( 'post_title' => 'child-four', 'post_parent' => $parent_two, 'post_date' => '2007-01-01 00:00:07' ) );
 
+		// Phrase Matching Test Posts.
+		$posts_to_index[] = self::factory()->post->create( [ 'post_title' => 'Phrase Matching Text A', 'post_content' => 'exact match.', 'post_date' => '2010-10-01 00:00:00' ] );
+		$posts_to_index[] = self::factory()->post->create( [ 'post_title' => 'Phrase Matching Text B', 'post_content' => 'This match exact text should not contain a match.', 'post_date' => '2010-10-01 00:00:00' ] );
+		$posts_to_index[] = self::factory()->post->create( [ 'post_title' => 'Phrase Matching Text C', 'post_content' => 'Lorem Ipsum.', 'post_date' => '2010-10-01 00:00:00' ] );
+
 		return $posts_to_index;
 	}
 
