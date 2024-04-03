@@ -184,6 +184,7 @@ abstract class Adapter implements Hookable {
 		// TODO This isn't working as expected when using WP_Query to trigger a search from the context of the test suite.
 		$search = get_query_var( 's' );
 		// If query vars aren't set, then try to pull this from the actual ES Query instead of the WP Query Object.
+		// This may only work for VIP Search.
 		if ( empty( $search ) ) {
 			$search = $es_args['query']['function_score']['query']['bool']['should'][0]['multi_match']['query'] ?? '';
 		}
