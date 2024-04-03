@@ -29,7 +29,7 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		sp_remove_sync_hooks();
 	}
 
-	protected function tearDown(): void {
+	public static function tearDownAfterClass(): void {
 		SP_Sync_Meta()->reset( 'save' );
 		SP_Sync_Manager()->published_posts = false;
 		self::flush();
@@ -38,17 +38,17 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		wp_clear_scheduled_hook( 'sp_reindex' );
 		wp_clear_scheduled_hook( 'sp_heartbeat' );
 
-		parent::tear_down_after_class();
+		parent::tearDownAfterClass();
 	}
 
 	// TODO: Is this firing?
-	public function set_up() {
-		parent::set_up();
+	protected function setUp(): void {
+		parent::setUp();
 		self::$sp_settings = SP_Config()->get_settings();
 	}
 
 	// TODO Is this firing - is this function present in the test kit? Is this a duplicate of the tearDown method above?
-	public function tear_down(): void {
+	protected function tearDown(): void {
 		$this->reset_post_types();
 		$this->reset_taxonomies();
 		$this->reset_post_statuses();
@@ -58,7 +58,7 @@ class SearchPress_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		sp_searchable_post_types( true );
 		sp_searchable_post_statuses( true );
 
-		parent::tear_down();
+		parent::tearDown();
 	}
 
 	/**
