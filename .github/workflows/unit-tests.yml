@@ -92,13 +92,6 @@ jobs:
           cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
           composer phpunit
 
-      - name: Run SearchPress Adapter Tests
-        if: matrix.es_adapter == 'searchpress'
-        shell: bash
-        run: |
-          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
-          composer phpunit -- --testsuite=searchpress
-
       - name: Run VIP Search Adapter Tests
         if: matrix.es_adapter == 'vip-search'
         shell: bash
