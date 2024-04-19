@@ -41,6 +41,7 @@ Mantle\Testing\manager()
 	->after(
 		function() {
 			// DEBUG CODE, REMOVE THIS.
+			var_dump(getenv() );
 			echo defined( 'WPVIP_MU_PLUGIN_DIR' ) ? "----WPVIP_MU_PLUGIN_DIR const is defined! \n" : "----WPVIP_MU_PLUGIN_DIR const is NOT defined! \n";
 
 			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
@@ -48,6 +49,8 @@ Mantle\Testing\manager()
 			} else {
 				echo "----VIP Environment class is NOT loaded! \n";
 			}
+
+
 			// Create Table needed by EP.
 			// RE-enable code. commented for DEBUGGING only.
 			//\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
