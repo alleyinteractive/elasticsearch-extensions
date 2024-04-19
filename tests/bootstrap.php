@@ -41,7 +41,8 @@ Mantle\Testing\manager()
 	->after(
 		function() {
 			// DEBUG CODE, REMOVE THIS.
-			var_dump(getenv() );
+			echo pwd() . "\n";
+
 			echo defined( 'WPVIP_MU_PLUGIN_DIR' ) ? "----WPVIP_MU_PLUGIN_DIR const is defined! \n" : "----WPVIP_MU_PLUGIN_DIR const is NOT defined! \n";
 
 			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
