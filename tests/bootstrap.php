@@ -37,6 +37,7 @@ Mantle\Testing\manager()
 		// uses( \SearchPress_Adapter_UnitTestCase::class)->in('adapters/searchpress' );
 		uses( \VIP_Enterprise_Search_Adapter_UnitTestCase::class)->in('adapters/vip-search' );
 	})
+	->with_vip_mu_plugins()
 	->after(
 		function() {
 			// DEBUG CODE, REMOVE THIS.
