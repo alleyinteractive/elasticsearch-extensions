@@ -46,7 +46,8 @@ Mantle\Testing\manager()
 				echo "----VIP Environment class is NOT loaded! \n";
 			}
 			// Create Table needed by EP.
-			\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
+			// RE-enable code. commented for DEBUGGING only.
+			//\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
 
 			// Load plugins.
 			// TODO Re-enable SP tests once they have been fixed.
