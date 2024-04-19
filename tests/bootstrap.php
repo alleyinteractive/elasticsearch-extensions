@@ -39,6 +39,11 @@ Mantle\Testing\manager()
 	})
 	->after(
 		function() {
+			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
+				echo "----VIP Environment class is loaded! \n";
+			} else {
+				echo "----VIP Environment class is NOT loaded! \n";
+			}
 			// Create Table needed by EP.
 			\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
 
