@@ -40,6 +40,8 @@ Mantle\Testing\manager()
 	->after(
 		function() {
 			// DEBUG CODE, REMOVE THIS.
+			echo defined( 'WPVIP_MU_PLUGIN_DIR' ) ? "----WPVIP_MU_PLUGIN_DIR const is defined! \n" : "----WPVIP_MU_PLUGIN_DIR const is NOT defined! \n";
+
 			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
 				echo "----VIP Environment class is loaded! \n";
 			} else {
