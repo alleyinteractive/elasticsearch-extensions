@@ -19,7 +19,6 @@ defined( 'VIP_ELASTICSEARCH_USERNAME' ) || define( 'VIP_ELASTICSEARCH_USERNAME',
 defined( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT' ) || define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
 
 Mantle\Testing\manager()
-	->maybe_rsync_wp_content()
 	->with_vip_mu_plugins()
 	->before( function() {
 		// Define bootstrap helper functions.
