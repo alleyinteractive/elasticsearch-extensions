@@ -39,6 +39,7 @@ Mantle\Testing\manager()
 	})
 	->after(
 		function() {
+			// DEBUG CODE, REMOVE THIS.
 			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
 				echo "----VIP Environment class is loaded! \n";
 			} else {
