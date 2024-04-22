@@ -40,9 +40,6 @@ Mantle\Testing\manager()
 	})
 	->after(
 		function() {
-			// DEBUG CODE, REMOVE THIS.
-			echo defined( 'WPVIP_MU_PLUGIN_DIR' ) ? "----WPVIP_MU_PLUGIN_DIR const is defined! \n" : "----WPVIP_MU_PLUGIN_DIR const is NOT defined! \n";
-
 			if ( class_exists( '\Automattic\VIP\Environment' ) ) {
 				echo "----VIP Environment class is loaded! \n";
 			} else {
@@ -51,8 +48,7 @@ Mantle\Testing\manager()
 
 
 			// Create Table needed by EP.
-			// RE-enable code. commented for DEBUGGING only.
-			//\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
+			\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
 
 			// Load plugins.
 			// TODO Re-enable SP tests once they have been fixed.
