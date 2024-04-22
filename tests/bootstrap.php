@@ -24,18 +24,15 @@ Mantle\Testing\manager()
 		// Define bootstrap helper functions.
 		require_once __DIR__ . '/includes/bootstrap-functions.php';
 
-		// TODO Re-enable SP tests once they have been fixed.
 		// Load adapters bootstrap files.
-		// require_once __DIR__ . '/includes/searchpress-bootstrap.php';
+		require_once __DIR__ . '/includes/searchpress-bootstrap.php';
 
 		// Loading Elasticsearch Extensions testcases.
 		require_once __DIR__ . '/includes/class-adapter-unit-test-case.php';
-		// TODO Re-enable SP tests once they have been fixed.
-		// require_once __DIR__ . '/includes/class-searchpress-unit-test-case.php';
+		require_once __DIR__ . '/includes/class-searchpress-unit-test-case.php';
 		require_once __DIR__ . '/includes/class-vip-enterprise-search-unit-test-case.php';
 
-		// TODO Re-enable SP tests once they have been fixed.
-		// uses( \SearchPress_Adapter_UnitTestCase::class)->in('adapters/searchpress' );
+		uses( \SearchPress_Adapter_UnitTestCase::class)->in('adapters/searchpress' );
 		uses( \VIP_Enterprise_Search_Adapter_UnitTestCase::class)->in('adapters/vip-search' );
 	})
 	->after(
@@ -46,13 +43,11 @@ Mantle\Testing\manager()
 				echo "----VIP Environment class is NOT loaded! \n";
 			}
 
-
 			// Create Table needed by EP.
 			\Automattic\VIP\Search\Search::instance()->queue->schema->prepare_table();
 
 			// Load plugins.
-			// TODO Re-enable SP tests once they have been fixed.
-			// require_once dirname( __FILE__, 3 ) . '/searchpress/searchpress.php';
+			require_once dirname( __FILE__, 3 ) . '/searchpress/searchpress.php';
 			require_once dirname( __DIR__ ) . '/elasticsearch-extensions.php';
 
 			elasticsearch_bootup(); // Boot up ES.
