@@ -21,6 +21,12 @@ it( 'tests that phrase matching matches phrase exactly.', function () {
 	$this->assertEquals( 1, $wp_query->found_posts );
 } );
 
+/**
+ * Test that phrase matching is enabled.
+ *
+ * TODO Test that the behavior is also disabled.
+ * @see https://github.com/alleyinteractive/elasticsearch-extensions/issues/78
+ */
 it( 'tests that disabling phrase matching disables the feature.', function () {
 	// Adapter is loaded in the VIP Unit Test Case.
 	// Enable phrase matching.
@@ -29,7 +35,7 @@ it( 'tests that disabling phrase matching disables the feature.', function () {
 
 	// Disable the feature.
 	elasticsearch_extensions()->disable_phrase_matching();
-
+	// Test the setter.
 	$this->assertFalse( elasticsearch_extensions()->get_enable_phrase_matching() );
 } );
 
