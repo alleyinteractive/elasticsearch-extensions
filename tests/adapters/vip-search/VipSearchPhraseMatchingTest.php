@@ -19,6 +19,7 @@ it( 'tests that phrase matching matches phrase exactly.', function () {
 
 	// Only 1 of the 3 posts should be found with hits for the words "exact match".
 	$this->assertEquals( 1, $wp_query->found_posts );
+	$this->assertEquals( $wp_query->posts[0]->post_title, 'Phrase Matching Text A' );
 } );
 
 /**
