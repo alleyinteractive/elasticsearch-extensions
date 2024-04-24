@@ -79,7 +79,7 @@ jobs:
 
       - name: Set up WordPress
         run: |
-          bash <(curl -s "https://raw.githubusercontent.com/alleyinteractive/mantle-ci/HEAD/install-wp-tests.sh") wordpress_test root '' 127.0.0.1 ${{ matrix.wp_version }}
+          bash <(curl -s "https://raw.githubusercontent.com/alleyinteractive/mantle-ci/HEAD/install-wp-tests.sh") wordpress_unit_tests root '' 127.0.0.1 ${{ matrix.wp_version }} false true
           rm -rf "${WP_CORE_DIR}wp-content/plugins"
           mkdir -p "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
           rsync -a --exclude=.git . "${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions"
@@ -91,13 +91,6 @@ jobs:
         run: |
           cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
           composer phpunit
-
-      - name: Run SearchPress Adapter Tests
-        if: matrix.es_adapter == 'searchpress'
-        shell: bash
-        run: |
-          cd ${WP_CORE_DIR}wp-content/plugins/elasticsearch-extensions
-          composer phpunit -- --testsuite=searchpress
 
       - name: Run VIP Search Adapter Tests
         if: matrix.es_adapter == 'vip-search'

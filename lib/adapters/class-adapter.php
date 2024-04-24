@@ -181,6 +181,7 @@ abstract class Adapter implements Hookable {
 			return $es_args;
 		}
 
+		// Get search query from query vars.
 		$search = get_query_var( 's' );
 
 		// Bail early if this isn't a search.

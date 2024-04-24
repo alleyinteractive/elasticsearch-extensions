@@ -362,6 +362,15 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Get value of adapter's enable_phrase_matching property.
+	 *
+	 * @return bool Whether phrase matching is enabled.
+	 */
+	public function get_enable_phrase_matching(): bool {
+		return $this->adapter->get_enable_phrase_matching();
+	}
+
+	/**
 	 * Registers action and/or filter hooks with WordPress.
 	 */
 	public function hook(): void {

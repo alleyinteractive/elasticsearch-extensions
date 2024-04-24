@@ -8,15 +8,15 @@
 >
 	<testsuites>
 		<testsuite name="searchpress">
-			<directory prefix="test-searchpress" suffix=".php">./tests/adapters/searchpress/</directory>
+			<directory suffix="Test.php">./tests/adapters/searchpress/</directory>
 		</testsuite>
 
 		<testsuite name="vip-search">
-			<directory prefix="test-vip-search" suffix=".php">./tests/adapters/vip-search/</directory>
+			<directory suffix="Test.php">./tests/adapters/vip-search/</directory>
 		</testsuite>
 
 		<testsuite name="plugin">
-			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<directory suffix="Test.php">./tests/</directory>
 			<exclude>./tests/adapters/searchpress/</exclude>
 			<exclude>./tests/adapters/vip-search/</exclude>
 		</testsuite>
