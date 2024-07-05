@@ -131,6 +131,15 @@ abstract class Adapter implements Hookable {
 	}
 
 	/**
+	 * Adds a custom Aggregation to the list of active aggregations.
+	 *
+	 * @param Aggregation $aggregation The aggregation to add.
+	 */
+	public function add_custom_aggregation( Aggregation $aggregation ): void {
+		$this->add_aggregation( $aggregation );
+	}
+
+	/**
 	 * Adds a new Co-Authors Plus author aggregation to the list of active aggregations.
 	 *
 	 * @param array{label?: string, order?: 'ASC'|'DESC', orderby?: 'count'|'display_name'|'first_name'|'key'|'label'|'last_name', query_var?: string, relation?: 'AND'|'OR', term_field?: string} $args {

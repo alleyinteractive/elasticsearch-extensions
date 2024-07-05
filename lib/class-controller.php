@@ -243,6 +243,15 @@ class Controller implements Hookable {
 	}
 
 	/**
+	 * Adds a custom Aggregation to the list of active aggregations.
+	 *
+	 * @param Aggregation $aggregation The aggregation to add.
+	 */
+	public function add_custom_aggregation( Aggregation $aggregation ): void {
+		$this->adapter->add_custom_aggregation( $aggregation );
+	}
+
+	/**
 	 * Enables search-as-you-type suggestions.
 	 *
 	 * @param array{post_types?: string[], show_in_rest?: bool} $args {
