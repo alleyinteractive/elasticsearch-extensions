@@ -81,7 +81,6 @@ class VIP_Enterprise_Search extends Adapter {
 						$formatted_args['query']['function_score']['query']['bool']['filter'] ?? [],
 						$filter
 					);
-				} else {
 					// If we are using a search term, we need to add the filter to the post_filter.
 					$formatted_args['post_filter']['bool']['must'] = array_merge(
 						$formatted_args['post_filter']['bool']['must'] ?? [],
