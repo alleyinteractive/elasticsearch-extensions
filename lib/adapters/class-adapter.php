@@ -126,17 +126,8 @@ abstract class Adapter implements Hookable {
 	 *
 	 * @param Aggregation $aggregation The aggregation to add.
 	 */
-	private function add_aggregation( Aggregation $aggregation ): void {
+	public function add_aggregation( Aggregation $aggregation ): void {
 		$this->aggregations[ $aggregation->get_query_var() ] = $aggregation;
-	}
-
-	/**
-	 * Adds a custom Aggregation to the list of active aggregations.
-	 *
-	 * @param Aggregation $aggregation The aggregation to add.
-	 */
-	public function add_custom_aggregation( Aggregation $aggregation ): void {
-		$this->add_aggregation( $aggregation );
 	}
 
 	/**
