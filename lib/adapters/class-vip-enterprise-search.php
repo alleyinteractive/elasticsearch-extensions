@@ -62,6 +62,9 @@ class VIP_Enterprise_Search extends Adapter {
 				unset( $formatted_args['query']['match_all'] );
 				// Add bool query with filters.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
+			} elseif ( ! empty( $formatted_args['query']['bool'] ) ){
+				// If we aren't using function score.
+				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
 		}
 
@@ -92,6 +95,15 @@ class VIP_Enterprise_Search extends Adapter {
 			&& ! isset( $formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] )
 		) {
 			$formatted_args['query']['function_score']['query']['bool']['minimum_should_match'] = 1;
+		}
+
+		// If we are not using function score.
+		if (
+			! empty( $formatted_args['query']['bool']['filter'] )
+			&& ! empty( $formatted_args['query']['bool']['should'] )
+			&& ! isset( $formatted_args['query']['bool']['minimum_should_match'] )
+		) {
+			$formatted_args['query']['bool']['minimum_should_match'] = 1;
 		}
 
 		return $formatted_args;
