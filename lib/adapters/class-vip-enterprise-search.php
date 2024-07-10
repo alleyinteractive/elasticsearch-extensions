@@ -62,7 +62,7 @@ class VIP_Enterprise_Search extends Adapter {
 				unset( $formatted_args['query']['match_all'] );
 				// Add bool query with filters.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
-			} elseif ( ! empty( $formatted_args['post_filter']['bool']['must'] ) ){
+			} elseif ( ! empty( $formatted_args['query']['bool'] ) ){
 				// If we aren't using function score.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
