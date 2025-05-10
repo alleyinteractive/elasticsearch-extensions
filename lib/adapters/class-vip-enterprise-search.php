@@ -123,7 +123,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 */
 	public function filter__ep_elasticpress_enabled( $enabled, $wp_query ) {
 		$search_condition = $wp_query instanceof WP_Term_Query
-			? isset( $term_query->query_vars['search'] )
+			? ! empty( $wp_query->query_vars['search'] )
 			: $wp_query->is_search() && $wp_query->is_main_query();
 
 		if ( $this->get_allow_empty_search()
