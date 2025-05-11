@@ -121,7 +121,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 *
 	 * @return bool Whether ElasticPress should be active for the query or not.
 	 */
-	public function filter__ep_elasticpress_enabled( $enabled, $wp_query ) {
+	public function filter__ep_elasticpress_enabled( bool $enabled, WP_Query|WP_Term_Query $wp_query ): bool {
 		$search_condition = $wp_query instanceof WP_Term_Query
 			? ! empty( $wp_query->query_vars['search'] )
 			: $wp_query->is_search() && $wp_query->is_main_query();
