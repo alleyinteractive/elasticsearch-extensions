@@ -9,6 +9,7 @@ namespace Elasticsearch_Extensions\Adapters;
 
 use Elasticsearch_Extensions\REST_API\Post_Suggestion_Search_Handler;
 use WP_Query;
+use WP_Term_Query;
 
 /**
  * An adapter for WordPress VIP Enterprise Search.
@@ -62,7 +63,7 @@ class VIP_Enterprise_Search extends Adapter {
 				unset( $formatted_args['query']['match_all'] );
 				// Add bool query with filters.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
-			} elseif ( ! empty( $formatted_args['query']['bool'] ) ){
+			} elseif ( ! empty( $formatted_args['query']['bool'] ) ) {
 				// If we aren't using function score.
 				$formatted_args['query']['bool']['filter'] = $formatted_args['post_filter']['bool']['must'];
 			}
@@ -115,15 +116,18 @@ class VIP_Enterprise_Search extends Adapter {
 	 * for an empty search string, if allowable by the configuration on this
 	 * adapter.
 	 *
-	 * @param bool     $enabled  Whether ElasticPress is enabled for the query or not.
-	 * @param WP_Query $wp_query The WP_Query being examined.
+	 * @param bool                   $enabled  Whether ElasticPress is enabled for the query or not.
+	 * @param WP_Query|WP_Term_Query $wp_query The WP_Query being examined.
 	 *
 	 * @return bool Whether ElasticPress should be active for the query or not.
 	 */
-	public function filter__ep_elasticpress_enabled( $enabled, $wp_query ) {
+	public function filter__ep_elasticpress_enabled( bool $enabled, WP_Query|WP_Term_Query $wp_query ): bool {
+		$search_condition = $wp_query instanceof WP_Term_Query
+			? ! empty( $wp_query->query_vars['search'] )
+			: $wp_query->is_search() && $wp_query->is_main_query();
+
 		if ( $this->get_allow_empty_search()
-			&& $wp_query->is_search()
-			&& $wp_query->is_main_query()
+			&& $search_condition
 			&& ! is_admin()
 		) {
 			return true;
