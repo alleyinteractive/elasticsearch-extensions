@@ -19,6 +19,20 @@ use Exception;
 class Custom_Date_Range extends Aggregation {
 
 	/**
+	 * The query var for the start date.
+	 *
+	 * @var string
+	 */
+	protected string $query_var_start = 'custom_date_range_start';
+
+	/**
+	 * The query var for the end date.
+	 *
+	 * @var string
+	 */
+	protected string $query_var_end = 'custom_date_range_end';
+
+	/**
 	 * Configure the Custom Date Range aggregation.
 	 *
 	 * @param DSL   $dsl  The DSL object, initialized with the map from the adapter.
@@ -33,15 +47,14 @@ class Custom_Date_Range extends Aggregation {
 
 	/**
 	 * Overrides the extract_query_values function in the primary Aggregation
-	 * class to allow for additional processing on date query values.
+	 * class to allow for inclusion of separate start and date keys and 
+	 * additional processing on date query values.
 	 *
 	 * @param string $key Optional. The key to look up. Defaults to the current query var.
 	 *
 	 * @return string[] The values for the given key.
 	 */
 	protected function extract_query_values( string $key = '' ): array {
-		$query_var = $key ?: $this->get_query_var();
-
 		/*
 		 * Get the raw query values and replace whitespace with + characters.
 		 * When ISO-8601 dates are added to URLs, timezone offsets are added via
@@ -54,15 +67,24 @@ class Custom_Date_Range extends Aggregation {
 			function( $query_value ) {
 				return str_replace( ' ', '+', $query_value );
 			},
-			(array) ( $_GET['fs'][ $query_var ] ?? [] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
+			[ $_GET['fs'][ $this->query_var_start ] ?? '', $_GET['fs'][ $this->query_var_end ] ?? '' ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
 		);
 
 		// This filter is documented in class-aggregation.php.
 		return apply_filters(
 			'elasticsearch_extensions_aggregation_query_values',
-			array_values( array_filter( $query_values ) ),
+			$query_values,
 			$this
 		);
+	}
+
+	/**
+	 * Get the query vars for this aggregation.
+	 *
+	 * @return array The query vars for this aggregation.
+	 */
+	public function get_query_vars(): array {
+		return [ $this->query_var_start, $this->query_var_end ];
 	}
 
 	/**
@@ -111,16 +133,18 @@ class Custom_Date_Range extends Aggregation {
 		$timezone = wp_timezone();
 		$fields   = [
 			[
-				'date_w3c' => '',
-				'date_ymd' => '',
-				'endtime'  => 'T00:00:00+00:00',
-				'label'    => __( 'Start Date', 'elasticsearch-extensions' ),
+				'query_var' => $this->query_var_start,
+				'date_w3c'  => '',
+				'date_ymd'  => '',
+				'endtime'   => 'T00:00:00+00:00',
+				'label'     => __( 'Start Date', 'elasticsearch-extensions' ),
 			],
 			[
-				'date_w3c' => '',
-				'date_ymd' => '',
-				'endtime'  => 'T23:59:59+00:00',
-				'label'    => __( 'End Date', 'elasticsearch-extensions' ),
+				'query_var' => $this->query_var_end,
+				'date_w3c'  => '',
+				'date_ymd'  => '',
+				'endtime'   => 'T23:59:59+00:00',
+				'label'     => __( 'End Date', 'elasticsearch-extensions' ),
 			],
 		];
 		try {
@@ -141,7 +165,7 @@ class Custom_Date_Range extends Aggregation {
 				<label>
 					<?php echo esc_html( $field['label'] ); ?>
 					<input
-						name="fs[<?php echo esc_attr( $this->query_var ); ?>][]"
+						name="fs[<?php echo esc_attr( $field['query_var'] ); ?>]"
 						type="hidden"
 						value="<?php echo esc_attr( $field['date_w3c'] ); ?>"
 					/>
