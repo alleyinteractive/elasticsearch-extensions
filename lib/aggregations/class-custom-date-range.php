@@ -23,14 +23,14 @@ class Custom_Date_Range extends Aggregation {
 	 *
 	 * @var string
 	 */
-	protected string $query_var_start = 'custom_date_range_start';
+	protected string $query_var_start = 'date_gte';
 
 	/**
 	 * The query var for the end date.
 	 *
 	 * @var string
 	 */
-	protected string $query_var_end = 'custom_date_range_end';
+	protected string $query_var_end = 'date_lte';
 
 	/**
 	 * Configure the Custom Date Range aggregation.
@@ -51,7 +51,7 @@ class Custom_Date_Range extends Aggregation {
 	 * additional processing on date query values.
 	 *
 	 * @param string $key Optional. The key to look up. Defaults to the current query var.
-	 *
+	 * 
 	 * @return string[] The values for the given key.
 	 */
 	protected function extract_query_values( string $key = '' ): array {
