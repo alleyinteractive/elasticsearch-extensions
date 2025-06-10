@@ -72,7 +72,7 @@ add_action(
 	'elasticsearch_extensions_config',
 	 function( $es_config ) {
 		$es_config
-            ->restrict_post_statuses( [ 'publish', 'my-custom-status' ] )
+			->restrict_post_statuses( [ 'publish', 'my-custom-status' ] )
 			->restrict_post_types( [ 'post', 'page' ] )
 			->enable_empty_search()
 			->enable_post_type_aggregation()
