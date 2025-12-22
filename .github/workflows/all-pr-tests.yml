@@ -80,6 +80,8 @@ jobs:
       cancel-in-progress: true
     # Name the job in the matrix
     name: "WP: ${{ matrix.wp_version }} - PHP: ${{ matrix.php }} - ES: ${{ matrix.es_version }} - Adapter: ${{ matrix.es_adapter || 'all' }} (MU: ${{ matrix.multisite }})"
+    env:
+      WP_PHPUNIT_PATH: 'composer phpunit'
 
     steps:
       - uses: actions/checkout@v5
