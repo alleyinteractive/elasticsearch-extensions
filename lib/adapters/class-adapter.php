@@ -619,6 +619,7 @@ abstract class Adapter implements Hookable {
 	 *     @type int[]    $exclude  Exclude these post IDs from results.
 	 * }
 	 * @return int[] Post IDs in this page of results and total number of results.
+	 * @phpstan-return array{0: int[], 1: int}
 	 */
 	public function query_post_suggestions( string $search, array $args = [] ): array {
 		return [ [], 0 ];
