@@ -1,21 +1,73 @@
 {
+  "name": "alleyinteractive/elasticsearch-extensions",
+  "description": "A WordPress plugin to make integrating sites with Elasticsearch easier.",
+  "license": "GPL-3.0-or-later",
+  "type": "wordpress-plugin",
   "authors": [
     {
       "name": "Alley",
       "email": "info@alley.co"
     }
   ],
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "alleyinteractive/alley-coding-standards": "^2.0",
+    "alleyinteractive/pest-plugin-wordpress": "^1.0",
+    "alleyinteractive/searchpress": "dev-main",
+    "automattic/vip-go-mu-plugins-built": "dev-master",
+    "phpstan/extension-installer": "^1.1",
+    "szepeviktor/phpstan-wordpress": "^2.0",
+    "wpackagist-plugin/elasticpress": "^4.2"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org",
+      "only": [
+        "wpackagist-plugin/*"
+      ]
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "automattic/vip-go-mu-plugins-built",
+        "type": "wordpress-plugin",
+        "version": "dev-master",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
+          "reference": "master"
+        }
+      }
+    },
+    {
+      "type": "package",
+      "package": {
+        "name": "alleyinteractive/searchpress",
+        "type": "wordpress-plugin",
+        "version": "dev-main",
+        "source": {
+          "type": "git",
+          "url": "https://github.com/alleyinteractive/searchpress.git",
+          "reference": "main"
+        }
+      }
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "config": {
     "allow-plugins": {
-      "composer/installers": true,
       "alleyinteractive/composer-wordpress-autoloader": true,
+      "composer/installers": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "pestphp/pest-plugin": true,
       "phpstan/extension-installer": true
     },
     "sort-packages": true
   },
-  "description": "A WordPress plugin to make integrating sites with Elasticsearch easier.",
   "extra": {
     "installer-paths": {
       "../../mu-plugins": [
@@ -29,69 +81,20 @@
       ]
     }
   },
-  "license": "GPL-3.0-or-later",
-  "name": "alleyinteractive/elasticsearch-extensions",
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://wpackagist.org",
-      "only": [
-        "wpackagist-plugin/*"
-      ]
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "automattic/vip-go-mu-plugins-built",
-        "version": "dev-master",
-        "type": "wordpress-plugin",
-        "source": {
-          "url": "https://github.com/Automattic/vip-go-mu-plugins-built.git",
-          "type": "git",
-          "reference": "master"
-        }
-      }
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "alleyinteractive/searchpress",
-        "version": "dev-main",
-        "type": "wordpress-plugin",
-        "source": {
-          "url": "https://github.com/alleyinteractive/searchpress.git",
-          "type": "git",
-          "reference": "main"
-        }
-      }
-    }
-  ],
-  "require": {
-    "php": "^8.1 || ^8.2"
-  },
-  "require-dev": {
-    "alleyinteractive/alley-coding-standards": "^0.3.0",
-    "alleyinteractive/pest-plugin-wordpress": "^0.5.0",
-    "alleyinteractive/searchpress": "dev-main",
-    "automattic/vip-go-mu-plugins-built": "dev-master",
-    "composer/installers": "^1.0",
-    "wpackagist-plugin/elasticpress": "^4.2",
-    "yoast/phpunit-polyfills": "^2.0",
-    "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.8",
-    "szepeviktor/phpstan-wordpress": "^1.1.6"
-  },
   "scripts": {
     "phpcbf": "phpcbf .",
     "phpcs": "phpcs .",
+    "phpstan": [
+      "phpstan analyze --ansi --memory-limit=1G"
+    ],
     "phpunit": "@test",
-    "phpstan": ["phpstan analyze --ansi --memory-limit=1G"],
-    "test": "pest",
     "setup": [
       "composer install"
-    ]
-  },
-  "type": "wordpress-plugin",
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    ],
+    "lint": [
+      "@phpcs",
+      "@phpstan"
+    ],
+    "test": "pest"
+  }
 }
