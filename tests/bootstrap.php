@@ -6,8 +6,10 @@
  * @subpackage Tests
  */
 
-// Load Composer's autoloader.
-require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+use Mantle\Support\Str;
+
+use function Mantle\Support\Helpers\collect;
+use function Mantle\Support\Helpers\data_get;
 
 // Define VIP Search constants early.
 defined( 'VIP_ENABLE_VIP_SEARCH' ) || define( 'VIP_ENABLE_VIP_SEARCH', true );
@@ -18,8 +20,38 @@ defined( 'VIP_ELASTICSEARCH_PASSWORD' ) || define( 'VIP_ELASTICSEARCH_PASSWORD',
 defined( 'VIP_ELASTICSEARCH_USERNAME' ) || define( 'VIP_ELASTICSEARCH_USERNAME', 'vip-search' );
 defined( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT' ) || define( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT', 10 );
 
-Mantle\Testing\manager()
-	->with_vip_mu_plugins()
+if ( ! file_exists( __DIR__ . '/../composer.lock' ) ) {
+	echo 'Please run "composer install" from the elasticsearch-extensions directory before running tests.' . PHP_EOL;
+	exit( 1 );
+}
+
+$manager = Mantle\Testing\manager()
+	->maybe_rsync_plugin()
+	->with_vip_mu_plugins();
+
+// Add plugins that are installed via Composer to rsync environments.
+collect( json_decode( file_get_contents( __DIR__ . '/../composer.lock' ), true )['packages-dev'] ?? [] )
+	->where( 'type', 'wordpress-plugin' )
+	->where( 'name', '!=', 'automattic/vip-go-mu-plugins-built' )
+	->each( function ( array $item ) use ( $manager ) {
+		$dist_url = data_get( $item, 'dist.url' );
+		$name     = Str::after( $item['name'], '/' );
+
+		if ( $dist_url ) {
+			return $manager->install_plugin( $name, $dist_url );
+		}
+
+		$source_url = data_get( $item, 'source.url' );
+
+		if ( $source_url && str_ends_with( $source_url, '.git' ) ) {
+			return $manager->install_plugin(
+				$name,
+				str_replace( '.git', '/archive/refs/heads/' . $item['source']['reference'] . '.zip', $source_url ),
+			);
+		}
+	} );
+
+$manager
 	->before( function() {
 		// Define bootstrap helper functions.
 		require_once __DIR__ . '/includes/bootstrap-functions.php';

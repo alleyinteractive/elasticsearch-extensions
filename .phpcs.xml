@@ -35,19 +35,23 @@
   <exclude-pattern>tests/</exclude-pattern>
 
   <!-- The version set here matches the minimum version tested in the CI. -->
-  <config name="minimum_supported_wp_version" value="5.9"/>
+  <config name="minimum_supported_wp_version" value="6.5"/>
 
   <!-- Set the text domain for i18n. -->
   <rule ref="WordPress.WP.I18n">
     <properties>
-      <property name="text_domain" type="array" value="elasticsearch-extensions"/>
+      <property name="text_domain" type="array">
+        <element value="elasticsearch-extensions" />
+      </property>
     </properties>
   </rule>
 
   <!-- Set the prefixes for functions etc. -->
   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
     <properties>
-      <property name="prefixes" type="array" value="elasticsearch_extensions"/>
+      <property name="prefixes" type="array">
+        <element value="elasticsearch_extensions" />
+      </property>
     </properties>
   </rule>
 

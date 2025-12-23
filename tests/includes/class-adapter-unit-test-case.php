@@ -144,4 +144,11 @@ abstract class Adapter_UnitTestCase extends Mantle\Testkit\Test_Case {
 		global $wp_version;
 		return floatval( $wp_version ) >= $min_version;
 	}
+
+	/**
+	 * Ignore all stray remote requests in this project.
+	 */
+	protected function report_stray_requests(): void {
+		// No op.
+	}
 }

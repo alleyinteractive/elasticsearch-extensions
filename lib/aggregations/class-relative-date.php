@@ -65,7 +65,7 @@ class Relative_Date extends Aggregation {
 	 *
 	 * @return array An array containing timestamps for from and to.
 	 */
-	private function get_relative_date( int $offset ) : array {
+	private function get_relative_date( int $offset ): array {
 		try {
 			$to   = new DateTime( 'tomorrow', wp_timezone() );
 			$from = new DateTime( 'tomorrow', wp_timezone() );
