@@ -21,6 +21,10 @@ defined( 'Automattic\WP\Cron_Control\JOB_CONCURRENCY_LIMIT' ) || define( 'Automa
 Mantle\Testing\manager()
 	->maybe_rsync_plugin()
 	->with_vip_mu_plugins()
+	// Install plugins when rsyncing. Locally, these plugins are installed by
+	// Composer. Perhaps we can combine these in the future.
+	->install_plugin( 'searchpress', 'https://github.com/alleyinteractive/searchpress/archive/refs/heads/main.zip' )
+	->install_plugin( 'elasticpress' )
 	->before( function() {
 		// Define bootstrap helper functions.
 		require_once __DIR__ . '/includes/bootstrap-functions.php';
