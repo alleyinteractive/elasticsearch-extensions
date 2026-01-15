@@ -7,7 +7,7 @@
  * Author URI:   https://alley.co/
  * Text Domain:  elasticsearch-extensions
  * Domain Path:  /languages
- * Version:      0.2.0
+ * Version:      0.2.1
  *
  * @package Elasticsearch_Extensions
  */
