@@ -107,7 +107,7 @@ class Post_Date extends Aggregation {
 
 		return [
 			'gte' => $from,
-			'lte'   => $to,
+			'lte' => $to,
 		];
 	}
 
