@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<phpunit
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+  bootstrap="tests/bootstrap.php"
+  backupGlobals="false"
+  colors="true"
+>
+  <testsuites>
+    <testsuite name="searchpress">
+      <directory suffix="Test.php">./tests/adapters/searchpress/</directory>
+    </testsuite>
+
+    <testsuite name="vip-search">
+      <directory suffix="Test.php">./tests/adapters/vip-search/</directory>
+    </testsuite>
+
+    <testsuite name="plugin">
+      <directory suffix="Test.php">./tests/</directory>
+      <exclude>./tests/adapters/searchpress/</exclude>
+      <exclude>./tests/adapters/vip-search/</exclude>
+    </testsuite>
+  </testsuites>
+</phpunit>

@@ -51,7 +51,7 @@ class Post_Date extends Aggregation {
 	 *
 	 * @return array An array containing timestamps for from and to. Null if no query is present.
 	 */
-	private function get_date_range( string $queried_date ) : array {
+	private function get_date_range( string $queried_date ): array {
 		switch ( $this->interval ) {
 			case 'year':
 				// Queried year.

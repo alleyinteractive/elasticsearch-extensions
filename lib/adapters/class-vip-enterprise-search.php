@@ -361,6 +361,7 @@ class VIP_Enterprise_Search extends Adapter {
 	 *     @type string[] $status   Post statuses to search. Default 'publish'.
 	 * }
 	 * @return int[] Post IDs in this page of results and total number of results.
+	 * @phpstan-return array{0: int[], 1: int}
 	 */
 	public function query_post_suggestions( string $search, array $args = [] ): array {
 		$out = [ [], 0 ];

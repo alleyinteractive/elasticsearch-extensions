@@ -12,7 +12,9 @@ use \ElasticPress\Indexables;
 /**
  * VIP_Enterprise_Search_Adapter_UnitTestCase class.
  */
+#[IgnoreRe]
 class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
+	protected bool $created_sample_content = false;
 
 	public static function setUpBeforeClass(): void {
 		parent::setUpBeforeClass();
@@ -24,9 +26,16 @@ class VIP_Enterprise_Search_Adapter_UnitTestCase extends Adapter_UnitTestCase {
 		$mapping = $indexable->generate_mapping();
 		Elasticsearch::factory()->put_mapping( $index_name, $mapping );
 
-		// Create and index posts.
-		$posts = self::create_sample_content();
-		self::index_content( $posts );
+	}
+
+	protected function setUp(): void {
+		parent::setUp();
+
+		if ( ! $this->created_sample_content ) {
+			$this->created_sample_content = true;
+
+			self::index_content( self::create_sample_content() );
+		}
 	}
 
 	protected function tearDown(): void {

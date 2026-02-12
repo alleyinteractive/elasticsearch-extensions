@@ -64,7 +64,7 @@ class Custom_Date_Range extends Aggregation {
 		 * a space as a plus for the purposes of date encoding.
 		 */
 		$query_values = array_map(
-			function( $query_value ) {
+			function ( $query_value ) {
 				return str_replace( ' ', '+', $query_value );
 			},
 			[ $_GET['fs'][ $this->query_var_start ] ?? '', $_GET['fs'][ $this->query_var_end ] ?? '' ] // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended
@@ -113,7 +113,7 @@ class Custom_Date_Range extends Aggregation {
 	 *
 	 * @return array An array containing timestamps for from and to.
 	 */
-	private function get_date_range( string $from, string $to ) : array {
+	private function get_date_range( string $from, string $to ): array {
 		try {
 			$from_datetime = DateTime::createFromFormat( DATE_W3C, $from );
 			$to_datetime   = DateTime::createFromFormat( DATE_W3C, $to );

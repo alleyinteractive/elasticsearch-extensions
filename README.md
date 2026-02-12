@@ -177,7 +177,7 @@ and a supported Elasticsearch plugin installed and configured to connect to it.
 ## Related Efforts
 
 This plugin is part of a collection of [Elasticsearch](https://www.elastic.co/)
-open source plugins developed and maintained by [Alley](https://alley.co):
+open source plugins developed and maintained by [Alley](https://alley.com/):
 
 - [SearchPress](https://github.com/alleyinteractive/searchpress)
 - [ES_WP_Query](https://github.com/alleyinteractive/es-wp-query)

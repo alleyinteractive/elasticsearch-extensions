@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Elasticsearch Extensions.
 
-Read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community
+Read our [Code of Conduct](https://github.com/alleyinteractive/.github/blob/main/CODE_OF_CONDUCT.md) to keep our community
 approachable and respectable.
 
 In this guide you will get an overview of the contribution workflow from opening
