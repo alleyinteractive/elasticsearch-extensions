@@ -25,17 +25,6 @@ if ( ! file_exists( __DIR__ . '/../composer.lock' ) ) {
 	exit( 1 );
 }
 
-// Load Elasticsearch Extensions test case classes and register them with Pest
-// here at bootstrap parse time, so Pest binds the right base class to tests
-// in the adapter directories before test files are collected. Doing this from
-// inside `->before()` runs too late under Pest 4.x.
-require_once __DIR__ . '/includes/class-adapter-unit-test-case.php';
-require_once __DIR__ . '/includes/class-searchpress-unit-test-case.php';
-require_once __DIR__ . '/includes/class-vip-enterprise-search-unit-test-case.php';
-
-uses( \SearchPress_Adapter_UnitTestCase::class )->in( 'adapters/searchpress' );
-uses( \VIP_Enterprise_Search_Adapter_UnitTestCase::class )->in( 'adapters/vip-search' );
-
 $manager = Mantle\Testing\manager()
 	->maybe_rsync_plugin()
 	->with_vip_mu_plugins();
@@ -69,6 +58,14 @@ $manager
 
 		// Load adapters bootstrap files.
 		require_once __DIR__ . '/includes/searchpress-bootstrap.php';
+
+		// Loading Elasticsearch Extensions testcases. Each adapter test file
+		// pairs itself to the correct base class via its own `uses()` call;
+		// loading the class files here ensures they're available when those
+		// `uses()` registrations fire at parse time.
+		require_once __DIR__ . '/includes/class-adapter-unit-test-case.php';
+		require_once __DIR__ . '/includes/class-searchpress-unit-test-case.php';
+		require_once __DIR__ . '/includes/class-vip-enterprise-search-unit-test-case.php';
 	})
 	->after(
 		function() {
