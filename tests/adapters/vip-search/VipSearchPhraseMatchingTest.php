@@ -7,6 +7,8 @@
  */
 use Elasticsearch_Extensions\Factory;
 
+uses( \VIP_Enterprise_Search_Adapter_UnitTestCase::class );
+
 it( 'tests that phrase matching matches phrase exactly.', function () {
 	// Adapter is loaded in the VIP Unit Test Case.
 	// Enable phrase matching.

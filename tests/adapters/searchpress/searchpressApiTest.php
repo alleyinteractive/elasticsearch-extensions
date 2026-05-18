@@ -6,6 +6,8 @@
  * @subpackage Tests
  */
 
+uses( \SearchPress_Adapter_UnitTestCase::class );
+
 it( 'should load the SP version', function () {
 	/*$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+/', SP_API()->version() );*/
 } );

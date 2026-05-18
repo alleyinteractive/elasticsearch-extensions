@@ -167,11 +167,11 @@ class DSL {
 		$range = [];
 
 		if ( $from instanceof DateTime ) {
-			$range['from'] = $from->format( 'Y-m-d H:i:s' );
+			$range['gte'] = $from->format( 'Y-m-d H:i:s' );
 		}
 
 		if ( $to instanceof DateTime ) {
-			$range['to'] = $to->format( 'Y-m-d H:i:s' );
+			$range['lte'] = $to->format( 'Y-m-d H:i:s' );
 		}
 
 		return $range;
