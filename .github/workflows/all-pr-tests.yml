@@ -42,6 +42,8 @@ jobs:
           php-version: '${{ matrix.php }}'
           test-command: 'composer lint'
           skip-wordpress-install: 'true'
+          # No runtime Composer dependencies to audit; Composer 2.10+ errors on an empty --no-dev audit.
+          skip-audit: 'true'
 
   unit-tests:
     # Don't run on draft PRs
@@ -110,6 +112,8 @@ jobs:
           php-version: '${{ matrix.php }}'
           test-command: ${{ matrix.es_adapter == 'vip-search' && 'composer phpunit -- --testsuite=vip-search' || 'composer phpunit' }}
           skip-wordpress-install: 'true'
+          # No runtime Composer dependencies to audit; Composer 2.10+ errors on an empty --no-dev audit.
+          skip-audit: 'true'
 
   # This required job ensures that all PR checks have passed before merging.
   all-pr-checks-passed:
