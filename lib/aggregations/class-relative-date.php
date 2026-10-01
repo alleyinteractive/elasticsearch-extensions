@@ -119,9 +119,15 @@ class Relative_Date extends Aggregation {
 		// Convert the relative date ranges from configuration to DSL.
 		$intervals = [];
 		foreach ( $this->intervals as $interval ) {
-			$intervals[] = array_merge(
-				[ 'key' => (string) $interval ],
-				$this->get_relative_date( $interval )
+			$range = $this->get_relative_date( $interval );
+
+			// Unlike range queries, date_range aggregations require from/to rather than gte/lte.
+			$intervals[] = array_filter(
+				[
+					'key'  => (string) $interval,
+					'from' => $range['gte'] ?? null,
+					'to'   => $range['lte'] ?? null,
+				]
 			);
 		}
 
