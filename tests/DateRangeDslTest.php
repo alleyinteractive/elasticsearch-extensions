@@ -11,6 +11,7 @@
  */
 
 use Elasticsearch_Extensions\Aggregations\Post_Date;
+use Elasticsearch_Extensions\Aggregations\Relative_Date;
 use Elasticsearch_Extensions\DSL;
 
 uses( \Mantle\Testkit\Test_Case::class );
@@ -47,6 +48,37 @@ it( 'Post_Date::filter wraps the date range in a range query using gte/lte', fun
 
 	$dsl        = new DSL( [ 'post_date' => 'post_date' ] );
 	$aggregation = new Post_Date( $dsl, [] );
+
+	$filters = $aggregation->filter();
+
+	expect( $filters )->toHaveCount( 1 )
+		->and( $filters[0] )->toHaveKey( 'range.post_date.gte' )
+		->and( $filters[0] )->toHaveKey( 'range.post_date.lte' )
+		->and( $filters[0] )->not->toHaveKey( 'range.post_date.from' )
+		->and( $filters[0] )->not->toHaveKey( 'range.post_date.to' );
+
+	unset( $_GET['fs'] );
+} );
+
+it( 'Relative_Date::request uses from/to for date_range aggregation ranges', function () {
+	$dsl         = new DSL( [ 'post_date' => 'post_date' ] );
+	$aggregation = new Relative_Date( $dsl, [ 'intervals' => [ 7, 30 ] ] );
+
+	$ranges = $aggregation->request()['date_range']['ranges'];
+
+	expect( $ranges )->toHaveCount( 2 );
+	foreach ( $ranges as $range ) {
+		expect( $range )->toHaveKeys( [ 'key', 'from', 'to' ] )
+			->and( $range )->not->toHaveKey( 'gte' )
+			->and( $range )->not->toHaveKey( 'lte' );
+	}
+} );
+
+it( 'Relative_Date::filter wraps the date range in a range query using gte/lte', function () {
+	$_GET['fs']['relative_date'] = [ '7' ];
+
+	$dsl         = new DSL( [ 'post_date' => 'post_date' ] );
+	$aggregation = new Relative_Date( $dsl, [] );
 
 	$filters = $aggregation->filter();
 
